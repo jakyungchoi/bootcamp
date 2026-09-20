@@ -1,0 +1,384 @@
+-- 원티드랩 부트캠프 교육사업 웹페이지 — 초기 스키마
+-- Supabase 대시보드 > SQL Editor 에 붙여넣고 실행하세요. (한 번만 실행하면 됩니다)
+-- 이 파일은 관리자 페이지(2단계) 개발 전까지는 프론트엔드가 src/lib/content.ts 의 목업 데이터를 사용하므로
+-- 지금 당장 실행하지 않아도 사이트는 정상 동작합니다. 실제 데이터 연동을 시작할 때 실행하세요.
+
+create extension if not exists "pgcrypto";
+
+-- 공통: 콘텐츠 공개/비공개, 정렬 순서를 갖는 테이블들
+create table if not exists course_categories (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  slug text not null unique,
+  "order" int not null default 0,
+  is_published boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists courses (
+  id uuid primary key default gen_random_uuid(),
+  category_id uuid references course_categories(id) on delete set null,
+  title text not null,
+  subtitle text,
+  description text,
+  highlights jsonb not null default '[]', -- string[]
+  project text,
+  image_url text,
+  detail_page_enabled boolean not null default false,
+  "order" int not null default 0,
+  is_published boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists culture_programs (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  subtitle text,
+  description text,
+  highlights jsonb not null default '[]',
+  image_url text,
+  "order" int not null default 0,
+  is_published boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists company_participation_types (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text,
+  icon text,
+  "order" int not null default 0,
+  is_published boolean not null default true
+);
+
+create table if not exists company_flow_steps (
+  id uuid primary key default gen_random_uuid(),
+  "order" int not null,
+  title text not null
+);
+
+create table if not exists company_case_studies (
+  id uuid primary key default gen_random_uuid(),
+  company_name text not null,
+  title text not null,
+  description text,
+  image_url text,
+  "order" int not null default 0,
+  is_published boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+-- 페이지의 고정 섹션(예: 홈 히어로, 학습자 관리 카드, 학습부진자 지도 계획)처럼
+-- 별도 목록형 테이블을 만들 필요 없는 콘텐츠를 위한 범용 테이블.
+-- page_key + section_key 조합으로 화면의 특정 블록을 가리킨다.
+create table if not exists content_blocks (
+  id uuid primary key default gen_random_uuid(),
+  page_key text not null, -- 'home' | 'education-management' | ...
+  section_key text not null, -- 'hero' | 'learner-management' | ...
+  title text,
+  description text,
+  body jsonb, -- 자유 형식 (목록, 표 등)
+  image_url text,
+  "order" int not null default 0,
+  is_published boolean not null default true,
+  updated_at timestamptz not null default now(),
+  unique (page_key, section_key)
+);
+
+-- 관리자 계정. 실제 로그인은 Supabase Auth(auth.users)를 사용하고,
+-- 이 테이블은 auth 사용자에 역할(role)을 매핑하는 프로필 테이블이다.
+create table if not exists admin_users (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text not null,
+  name text,
+  role text not null default 'ADMIN' check (role in ('SUPER_ADMIN', 'ADMIN', 'EDITOR')),
+  created_at timestamptz not null default now()
+);
+
+-- ── Row Level Security ──────────────────────────────────────────────
+-- 공개 페이지: 비로그인 사용자도 "공개(is_published=true)" 콘텐츠는 읽을 수 있어야 한다.
+-- 관리자 페이지: admin_users 에 등록된 로그인 사용자만 쓰기가 가능하다.
+
+alter table course_categories enable row level security;
+alter table courses enable row level security;
+alter table culture_programs enable row level security;
+alter table company_participation_types enable row level security;
+alter table company_flow_steps enable row level security;
+alter table company_case_studies enable row level security;
+alter table content_blocks enable row level security;
+alter table admin_users enable row level security;
+
+-- 공개 읽기 정책 (공개 테이블 전체에 동일하게 적용)
+-- company_flow_steps 는 is_published 컬럼이 없으므로 이 배열에서 제외하고, 바로 아래에서 따로 처리한다.
+do $$
+declare
+  t text;
+begin
+  foreach t in array array[
+    'course_categories', 'courses', 'culture_programs',
+    'company_participation_types', 'company_case_studies', 'content_blocks'
+  ]
+  loop
+    execute format('drop policy if exists "public read published" on %I;', t);
+    execute format(
+      'create policy "public read published" on %I for select using (is_published = true);',
+      t
+    );
+  end loop;
+end $$;
+
+-- company_flow_steps 는 공개/비공개 컬럼이 없으므로 전체 공개
+drop policy if exists "public read published" on company_flow_steps;
+drop policy if exists "public read all" on company_flow_steps;
+create policy "public read all" on company_flow_steps for select using (true);
+
+-- 관리자 쓰기 정책 (admin_users 에 등록된 로그인 사용자만 insert/update/delete 가능)
+do $$
+declare
+  t text;
+begin
+  foreach t in array array[
+    'course_categories', 'courses', 'culture_programs',
+    'company_participation_types', 'company_flow_steps', 'company_case_studies', 'content_blocks'
+  ]
+  loop
+    execute format('drop policy if exists "admin write" on %I;', t);
+    execute format(
+      'create policy "admin write" on %I for all using (auth.uid() in (select id from admin_users)) with check (auth.uid() in (select id from admin_users));',
+      t
+    );
+  end loop;
+end $$;
+
+drop policy if exists "admin can read own row" on admin_users;
+create policy "admin can read own row" on admin_users for select using (auth.uid() = id);
+
+-- ── 초기 시드 데이터 (선택) ───────────────────────────────────────────
+-- src/lib/content.ts 의 목업 데이터와 동일한 카테고리만 우선 넣어둔다.
+insert into course_categories (name, slug, "order") values
+  ('AI / AX', 'ai-ax', 1),
+  ('개발', 'dev', 2),
+  ('Career', 'career', 3)
+on conflict (slug) do nothing;
+
+insert into company_flow_steps ("order", title) values
+  (1, '기업의 문제/수요'),
+  (2, '교육 과정 설계'),
+  (3, '프로젝트 주제 선정'),
+  (4, '데이터·현업 지식 제공'),
+  (5, '교육생 프로젝트'),
+  (6, '기업 멘토링'),
+  (7, '결과물 공유'),
+  (8, '현장실습·채용·커리어 연계')
+on conflict do nothing;
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 — 홈/교육 관리 페이지의 나머지 콘텐츠 + 사이트 전역 설정
+-- 이 아래 블록은 기존 스키마를 실행한 뒤에 이어서 실행해도 안전합니다 (모두 if not exists).
+-- ══════════════════════════════════════════════════════════════════
+
+-- 교육 영역 카드에 표시되는 세부 토픽 (예: AI/AX -> AI Agent, 생성형 AI, ...)
+alter table course_categories add column if not exists topics jsonb not null default '[]';
+
+-- 운영 교육 과정 페이지 "02. 커리큘럼 구성" 단계
+create table if not exists curriculum_flow_steps (
+  id uuid primary key default gen_random_uuid(),
+  "order" int not null,
+  title text not null
+);
+
+-- 교육 관리 페이지 "01. 학습자 관리" 카드
+create table if not exists learner_management_items (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text,
+  icon text,
+  "order" int not null default 0,
+  is_published boolean not null default true
+);
+
+-- 교육 관리 페이지 "02. 학습부진자 지도 계획" 표
+create table if not exists support_plan_tracks (
+  id uuid primary key default gen_random_uuid(),
+  track_name text not null,
+  items jsonb not null default '[]', -- string[]
+  "order" int not null default 0
+);
+
+-- 교육 관리 페이지 "03. 교육 품질 관리" (만족도 관리 / 강사 관리)
+create table if not exists quality_management_items (
+  id uuid primary key default gen_random_uuid(),
+  "group" text not null check ("group" in ('satisfaction', 'instructor')),
+  title text not null,
+  description text,
+  "order" int not null default 0
+);
+
+-- 교육 관리 페이지 "협업 환경"에 표시되는 도구 목록
+create table if not exists collaboration_tools (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  "order" int not null default 0
+);
+
+-- 사이트 전역 설정 (로고, 사이트명, 홈 히어로, 홈 4개 영역 카드). 항상 딱 한 행만 존재한다.
+create table if not exists site_settings (
+  id int primary key default 1 check (id = 1),
+  site_name text not null default '원티드랩 교육사업',
+  logo_url text,
+  footer_description text not null default
+    '교육을 넘어, 실제 커리어로 연결되는 교육. 대학/기관, 참여 기업, 교육 관계자를 위한 원티드랩 교육사업 소개 페이지입니다.',
+  home_hero_eyebrow text not null default 'Wanted Lab Education',
+  home_hero_title text not null default '교육을 넘어, 실제 커리어로 연결되는 교육',
+  home_hero_subtitle text not null default
+    '직무 역량을 쌓고, 프로젝트를 경험하고, 현업과 연결되며 다음 커리어를 준비합니다.',
+  home_hero_image_url text,
+  -- 홈 화면 4개 핵심 영역 카드 (헤더 메뉴 이름도 여기서 함께 가져다 씁니다)
+  -- [{ "key": "courses", "href": "/courses", "title": "...", "eyebrow": "...", "description": "..." }, ...]
+  home_highlights jsonb not null default '[
+    {"key":"courses","href":"/courses","title":"운영 교육 과정","eyebrow":"What we teach","description":"다양한 직무와 트랙의 실무 중심 교육을 제공합니다."},
+    {"key":"management","href":"/education-management","title":"교육 관리","eyebrow":"How we operate","description":"체계적인 교육 관리와 품질 관리 시스템으로 안정적인 교육을 운영합니다."},
+    {"key":"culture","href":"/culture","title":"교육 문화","eyebrow":"What makes us different","description":"원티드랩만의 교육 경험과 성장 문화를 제공합니다."},
+    {"key":"partners","href":"/partners","title":"참여 기업 연계","eyebrow":"How we connect to industry","description":"기업의 현업 경험을 교육 과정에 연결합니다."}
+  ]',
+  updated_at timestamptz not null default now()
+);
+insert into site_settings (id) values (1) on conflict (id) do nothing;
+
+-- RLS: 새 테이블들도 공개 읽기 + 관리자만 쓰기
+alter table curriculum_flow_steps enable row level security;
+alter table learner_management_items enable row level security;
+alter table support_plan_tracks enable row level security;
+alter table quality_management_items enable row level security;
+alter table collaboration_tools enable row level security;
+alter table site_settings enable row level security;
+
+-- is_published 컬럼이 있는 테이블: 공개된 것만 읽기 허용
+do $$
+declare
+  t text;
+begin
+  foreach t in array array['learner_management_items']
+  loop
+    execute format('drop policy if exists "public read published" on %I;', t);
+    execute format(
+      'create policy "public read published" on %I for select using (is_published = true);',
+      t
+    );
+  end loop;
+end $$;
+
+-- is_published 컬럼이 없는 테이블: 전체 공개
+do $$
+declare
+  t text;
+begin
+  foreach t in array array[
+    'curriculum_flow_steps', 'support_plan_tracks', 'quality_management_items',
+    'collaboration_tools', 'site_settings'
+  ]
+  loop
+    execute format('drop policy if exists "public read all" on %I;', t);
+    execute format('create policy "public read all" on %I for select using (true);', t);
+  end loop;
+end $$;
+
+-- 관리자만 쓰기 (모든 새 테이블 공통)
+do $$
+declare
+  t text;
+begin
+  foreach t in array array[
+    'curriculum_flow_steps', 'learner_management_items', 'support_plan_tracks',
+    'quality_management_items', 'collaboration_tools', 'site_settings'
+  ]
+  loop
+    execute format('drop policy if exists "admin write" on %I;', t);
+    execute format(
+      'create policy "admin write" on %I for all using (auth.uid() in (select id from admin_users)) with check (auth.uid() in (select id from admin_users));',
+      t
+    );
+  end loop;
+end $$;
+
+-- 이미지 업로드용 스토리지 버킷 (로고, 과정/카드 이미지 등을 여기에 저장)
+insert into storage.buckets (id, name, public)
+values ('media', 'media', true)
+on conflict (id) do nothing;
+
+drop policy if exists "public read media" on storage.objects;
+create policy "public read media" on storage.objects for select using (bucket_id = 'media');
+
+drop policy if exists "admin write media" on storage.objects;
+create policy "admin write media" on storage.objects for all
+  using (bucket_id = 'media' and auth.uid() in (select id from admin_users))
+  with check (bucket_id = 'media' and auth.uid() in (select id from admin_users));
+
+-- 카테고리별 토픽 시드 (기존 목업 데이터와 동일)
+update course_categories set topics = '["AI Agent", "생성형 AI", "AI 활용", "업무 자동화", "AX"]'
+  where slug = 'ai-ax' and topics = '[]';
+update course_categories set topics = '["Backend", "Frontend", "Game Development", "C++", "Unreal Engine"]'
+  where slug = 'dev' and topics = '[]';
+update course_categories set topics = '["취업 역량", "프로젝트", "포트폴리오", "면접", "커리어 연계"]'
+  where slug = 'career' and topics = '[]';
+
+-- 아래 시드들은 테이블이 비어 있을 때만 한 번 들어가도록 되어 있어서, 이 파일을 여러 번
+-- 실행해도(예: 이후 스키마 업데이트를 다시 붙여넣어도) 데이터가 중복 생성되지 않습니다.
+
+insert into curriculum_flow_steps ("order", title)
+select * from (values
+  (1, '기초 역량'), (2, '직무 교육'), (3, '실습'), (4, '프로젝트'), (5, '현업 피드백'), (6, '취업 / 커리어 연계')
+) as v("order", title)
+where not exists (select 1 from curriculum_flow_steps);
+
+insert into learner_management_items (title, description, icon, "order")
+select * from (values
+  ('출결 관리', '출결 현황을 상시 확인하고 관리합니다.', 'CalendarCheck', 1),
+  ('학습 참여 관리', '학습 참여도를 추적하고 독려합니다.', 'Users', 2),
+  ('학습부진자 관리', '학습에 어려움을 겪는 교육생을 조기에 발견하고 지원합니다.', 'LifeBuoy', 3),
+  ('학습 현황 확인', '교육생별 학습 현황을 대시보드로 확인합니다.', 'LineChart', 4)
+) as v(title, description, icon, "order")
+where not exists (select 1 from learner_management_items);
+
+insert into support_plan_tracks (track_name, items, "order")
+select v.track_name, v.items::jsonb, v."order" from (values
+  ('공통', '["출결 관리"]', 1),
+  ('1과정', '["학습부진자 지원"]', 2),
+  ('2과정', '["인프런 강의 제공", "현장 강의 녹화본 제공", "특강 제공"]', 3),
+  ('3과정', '["학습부진자 지원"]', 4)
+) as v(track_name, items, "order")
+where not exists (select 1 from support_plan_tracks);
+
+insert into quality_management_items ("group", title, description, "order")
+select * from (values
+  ('만족도 관리', '교육 만족도', '과정 전반에 대한 만족도를 조사합니다.', 1),
+  ('만족도 관리', '강사 만족도', '강사별 강의 만족도를 조사합니다.', 2),
+  ('만족도 관리', '프로젝트 만족도', '프로젝트 진행 과정의 만족도를 조사합니다.', 3),
+  ('만족도 관리', '과정별 만족도', '과정 단위로 만족도를 비교 관리합니다.', 4),
+  ('강사 관리', '강사 Pool', '검증된 강사 풀을 관리합니다.', 5),
+  ('강사 관리', '강사 평가', '정기적인 강사 평가를 진행합니다.', 6),
+  ('강사 관리', '강의 품질 관리', '강의 콘텐츠와 진행 품질을 관리합니다.', 7),
+  ('강사 관리', '피드백', '교육생 피드백을 강사에게 전달하고 반영합니다.', 8)
+) as v("group", title, description, "order")
+where not exists (select 1 from quality_management_items);
+
+insert into collaboration_tools (name, "order")
+select * from (values
+  ('Notion', 1), ('Slack', 2), ('Google Workspace', 3), ('GitHub', 4), ('LMS', 5)
+) as v(name, "order")
+where not exists (select 1 from collaboration_tools);
+
+-- ══════════════════════════════════════════════════════════════════
+-- 교육 품질 관리 "구분"을 관리자 페이지에서 자유롭게 추가/삭제할 수 있도록 변경
+-- (기존에는 'satisfaction' / 'instructor' 두 값만 허용하는 제약이 있었다)
+-- ══════════════════════════════════════════════════════════════════
+alter table quality_management_items drop constraint if exists quality_management_items_group_check;
+
+-- 이미 예전 스키마로 시드된 적이 있다면 영문 값을 한글 표시용 이름으로 바꿔준다.
+update quality_management_items set "group" = '만족도 관리' where "group" = 'satisfaction';
+update quality_management_items set "group" = '강사 관리' where "group" = 'instructor';
+
+-- 홈 화면 히어로 상단의 영문 소제목 (예: "WANTED LAB EDUCATION")도 관리자 페이지에서 수정 가능하도록 추가
+alter table site_settings add column if not exists home_hero_eyebrow text not null default 'Wanted Lab Education';
