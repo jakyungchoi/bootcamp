@@ -2,26 +2,23 @@ import type { Metadata } from "next";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { FlowSteps } from "@/components/ui/flow-steps";
 import { Card, ImagePlaceholder } from "@/components/ui/card";
-import { getCourseCategories, getCourses, getCurriculumFlowSteps } from "@/lib/data";
+import { getCourseCategories, getCourses, getCurriculumFlowSteps, getPageHeader } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "운영 교육 과정 | 원티드랩 부트캠프 교육사업",
 };
 
 export default async function CoursesPage() {
-  const [categories, courses, flowSteps] = await Promise.all([
+  const [categories, courses, flowSteps, header] = await Promise.all([
     getCourseCategories(),
     getCourses(),
     getCurriculumFlowSteps(),
+    getPageHeader("courses"),
   ]);
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-16">
-      <SectionHeading
-        eyebrow="What we teach"
-        title="운영 교육 과정"
-        description="원티드랩이 어떤 교육을 제공할 수 있는지 교육 영역과 교육 방식을 통해 보여줍니다."
-      />
+      <SectionHeading eyebrow={header.eyebrow} title={header.title} description={header.description} />
 
       {/* 5-1 교육 영역 */}
       <section className="mt-14">

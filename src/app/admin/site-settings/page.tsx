@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
 import type { HomeHighlight } from "@/lib/types";
@@ -52,6 +52,28 @@ export default function SiteSettingsPage() {
       const next = [...f.home_highlights];
       next[idx] = { ...next[idx], ...patch };
       return { ...f, home_highlights: next };
+    });
+  }
+
+  function addHighlight() {
+    setForm((f) => {
+      if (!f) return f;
+      const newItem: HomeHighlight = {
+        key: `item-${Math.random().toString(36).slice(2, 8)}`,
+        href: "",
+        title: "",
+        eyebrow: "",
+        description: "",
+      };
+      return { ...f, home_highlights: [...f.home_highlights, newItem] };
+    });
+  }
+
+  function removeHighlight(idx: number) {
+    if (!confirm("이 메뉴 항목을 삭제할까요? 헤더 메뉴와 홈 화면 카드에서 함께 사라집니다.")) return;
+    setForm((f) => {
+      if (!f) return f;
+      return { ...f, home_highlights: f.home_highlights.filter((_, i) => i !== idx) };
     });
   }
 
@@ -162,16 +184,37 @@ export default function SiteSettingsPage() {
       </section>
 
       <section className="mt-6 rounded-xl border border-neutral-200 bg-white p-5">
-        <h2 className="font-semibold text-neutral-800">헤더 메뉴 · 홈 4개 핵심 영역 카드</h2>
-        <p className="mt-1 text-sm text-neutral-500">
-          여기서 제목을 바꾸면 상단 헤더 메뉴와 홈 화면 카드에 동시에 반영됩니다.
-        </p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="font-semibold text-neutral-800">헤더 메뉴 · 홈 핵심 영역 카드</h2>
+            <p className="mt-1 text-sm text-neutral-500">
+              여기서 항목을 추가·삭제·수정하면 상단 헤더 메뉴와 홈 화면 카드에 동시에 반영됩니다. 새 탭(커스텀
+              페이지)을 추가했다면 그 페이지의 공개 주소(/pages/...)를 링크 주소에 입력해주세요.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={addHighlight}
+            className="inline-flex shrink-0 items-center gap-1 rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
+          >
+            <Plus size={13} />
+            항목 추가
+          </button>
+        </div>
         <div className="mt-4 space-y-5">
           {form.home_highlights.map((h, idx) => (
             <div key={h.key} className="rounded-lg border border-neutral-100 bg-neutral-50 p-3.5">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
-                {h.href}
-              </p>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">항목 {idx + 1}</p>
+                <button
+                  type="button"
+                  onClick={() => removeHighlight(idx)}
+                  className="rounded p-1 text-red-400 hover:bg-red-50"
+                  aria-label="삭제"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
               <div className="space-y-2">
                 <input
                   type="text"
@@ -179,6 +222,13 @@ export default function SiteSettingsPage() {
                   placeholder="메뉴/카드 제목"
                   onChange={(e) => updateHighlight(idx, { title: e.target.value })}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+                />
+                <input
+                  type="text"
+                  value={h.href}
+                  placeholder="링크 주소 (예: /courses 또는 /pages/faq)"
+                  onChange={(e) => updateHighlight(idx, { href: e.target.value })}
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm font-mono focus:border-brand focus:outline-none"
                 />
                 <input
                   type="text"
@@ -197,6 +247,11 @@ export default function SiteSettingsPage() {
               </div>
             </div>
           ))}
+          {form.home_highlights.length === 0 && (
+            <p className="text-sm text-neutral-400">
+              항목이 없으면 헤더 메뉴와 홈 화면 카드도 비어 보입니다. &quot;항목 추가&quot;로 만들어보세요.
+            </p>
+          )}
         </div>
       </section>
 

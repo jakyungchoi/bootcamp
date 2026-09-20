@@ -3,26 +3,28 @@ import { CheckCircle2 } from "lucide-react";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Card, ImagePlaceholder } from "@/components/ui/card";
 import { Icon } from "@/components/icon-map";
-import { getCompanyCaseStudies, getCompanyFlowSteps, getCompanyParticipationTypes } from "@/lib/data";
+import {
+  getCompanyCaseStudies,
+  getCompanyFlowSteps,
+  getCompanyParticipationTypes,
+  getPageHeader,
+} from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "참여 기업 연계 | 원티드랩 부트캠프 교육사업",
 };
 
 export default async function PartnersPage() {
-  const [types, steps, cases] = await Promise.all([
+  const [types, steps, cases, header] = await Promise.all([
     getCompanyParticipationTypes(),
     getCompanyFlowSteps(),
     getCompanyCaseStudies(),
+    getPageHeader("partners"),
   ]);
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-16">
-      <SectionHeading
-        eyebrow="How we connect to industry"
-        title="참여 기업 연계"
-        description="기업이 단순히 교육을 후원하는 것이 아니라, 교육 과정에 직접 참여할 수 있다는 점을 보여줍니다."
-      />
+      <SectionHeading eyebrow={header.eyebrow} title={header.title} description={header.description} />
 
       {/* 8-1 기업 참여 방식 */}
       <section className="mt-14">

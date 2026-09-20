@@ -5,6 +5,7 @@ import { Icon } from "@/components/icon-map";
 import {
   getCollaborationTools,
   getLearnerManagementItems,
+  getPageHeader,
   getQualityManagementItems,
   getSupportPlanTracks,
 } from "@/lib/data";
@@ -14,23 +15,20 @@ export const metadata: Metadata = {
 };
 
 export default async function EducationManagementPage() {
-  const [learnerManagementItems, supportPlanTracks, qualityManagementItems, collaborationTools] =
+  const [learnerManagementItems, supportPlanTracks, qualityManagementItems, collaborationTools, header] =
     await Promise.all([
       getLearnerManagementItems(),
       getSupportPlanTracks(),
       getQualityManagementItems(),
       getCollaborationTools(),
+      getPageHeader("education-management"),
     ]);
   // "구분"은 관리자 페이지에서 자유롭게 입력하는 값이라, 실제로 등록된 값만 나온 순서대로 카드를 만든다.
   const qualityGroups = Array.from(new Set(qualityManagementItems.map((q) => q.group)));
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-16">
-      <SectionHeading
-        eyebrow="How we operate"
-        title="교육 관리"
-        description="교육생 관리, 학습부진자 관리, 강사 관리, 만족도 관리 등 교육을 어떻게 운영하고 품질을 관리하는지 보여줍니다."
-      />
+      <SectionHeading eyebrow={header.eyebrow} title={header.title} description={header.description} />
 
       {/* 6-1 학습자 관리 */}
       <section className="mt-14">

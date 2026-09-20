@@ -14,6 +14,8 @@ import type {
   CultureProgram,
   CurriculumFlowStep,
   LearnerManagementItem,
+  PageHeader,
+  PageHeaderKey,
   QualityManagementItem,
   SiteSettings,
   SupportPlanTrack,
@@ -207,6 +209,35 @@ export const collaborationTools: CollaborationTool[] = [
 
 export const cultureIntro =
   "원티드랩에서 교육을 받으면 무엇이 다른가를 보여주는 페이지입니다. 단순 교육 콘텐츠가 아니라 교육생의 성장과 커뮤니티 경험을 전달합니다.";
+
+// 4개 주요 페이지 맨 위 영문 소제목 · 제목 · 설명 (관리자 페이지 "페이지 상단 문구"에서 수정)
+export const pageHeaders: Record<PageHeaderKey, PageHeader> = {
+  courses: {
+    page_key: "courses",
+    eyebrow: "What we teach",
+    title: "운영 교육 과정",
+    description: "원티드랩이 어떤 교육을 제공할 수 있는지 교육 영역과 교육 방식을 통해 보여줍니다.",
+  },
+  "education-management": {
+    page_key: "education-management",
+    eyebrow: "How we operate",
+    title: "교육 관리",
+    description:
+      "교육생 관리, 학습부진자 관리, 강사 관리, 만족도 관리 등 교육을 어떻게 운영하고 품질을 관리하는지 보여줍니다.",
+  },
+  culture: {
+    page_key: "culture",
+    eyebrow: "What makes us different",
+    title: "교육 문화",
+    description: cultureIntro,
+  },
+  partners: {
+    page_key: "partners",
+    eyebrow: "How we connect to industry",
+    title: "참여 기업 연계",
+    description: "기업이 단순히 교육을 후원하는 것이 아니라, 교육 과정에 직접 참여할 수 있다는 점을 보여줍니다.",
+  },
+};
 
 export const culturePrograms: CultureProgram[] = [
   {

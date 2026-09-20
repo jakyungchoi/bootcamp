@@ -12,7 +12,10 @@ import type {
   CourseCategory,
   CultureProgram,
   CurriculumFlowStep,
+  CustomPage,
   LearnerManagementItem,
+  PageHeader,
+  PageHeaderKey,
   QualityManagementItem,
   SiteSettings,
   SupportPlanTrack,
@@ -27,6 +30,7 @@ import {
   culturePrograms,
   curriculumFlowSteps,
   learnerManagementItems,
+  pageHeaders,
   qualityManagementItems,
   siteSettings,
   supportPlanTracks,
@@ -176,4 +180,30 @@ export async function getCollaborationTools(): Promise<CollaborationTool[]> {
     if (!error && data) return data as CollaborationTool[];
   }
   return [...collaborationTools].sort((a, b) => a.order - b.order);
+}
+
+// 4개 주요 페이지 맨 위 영문 소제목 · 제목 · 설명
+export async function getPageHeader(pageKey: PageHeaderKey): Promise<PageHeader> {
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from("page_headers")
+      .select("*")
+      .eq("page_key", pageKey)
+      .maybeSingle();
+    if (!error && data) return data as PageHeader;
+  }
+  return pageHeaders[pageKey];
+}
+
+// 관리자가 추가한 커스텀 페이지를 slug 로 조회 (공개된 것만). 없으면 null.
+export async function getCustomPageBySlug(slug: string): Promise<CustomPage | null> {
+  if (!isSupabaseConfigured || !supabase) return null;
+  const { data, error } = await supabase
+    .from("custom_pages")
+    .select("*")
+    .eq("slug", slug)
+    .eq("is_published", true)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data as CustomPage;
 }

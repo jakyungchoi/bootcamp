@@ -2,29 +2,25 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { LogOut } from "lucide-react";
 import { AdminAuthProvider, useAdminAuth } from "@/components/admin/auth-context";
-
-const MENU = [
-  { href: "/admin", label: "대시보드" },
-  { href: "/admin/site-settings", label: "사이트 전역 설정" },
-  { href: "/admin/categories", label: "교육 영역 카테고리" },
-  { href: "/admin/courses", label: "대표 교육 과정" },
-  { href: "/admin/curriculum", label: "커리큘럼 구성 단계" },
-  { href: "/admin/culture", label: "교육 문화 프로그램" },
-  { href: "/admin/learner-management", label: "학습자 관리 카드" },
-  { href: "/admin/support-plans", label: "학습부진자 지도 계획" },
-  { href: "/admin/quality-management", label: "교육 품질 관리" },
-  { href: "/admin/collaboration-tools", label: "협업 도구" },
-  { href: "/admin/participation-types", label: "기업 참여 방식" },
-  { href: "/admin/company-flow", label: "이런 협업이 가능해요" },
-  { href: "/admin/case-studies", label: "협업 사례" },
-];
+import { getMergedAdminMenu, type MergedMenuItem } from "@/lib/admin-menu";
 
 function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { loading, session, isAdmin, supabaseConfigured, signOut } = useAdminAuth();
+  const [menu, setMenu] = useState<MergedMenuItem[]>([]);
+
+  useEffect(() => {
+    async function loadMenu() {
+      if (!isAdmin) return;
+      const items = await getMergedAdminMenu();
+      setMenu(items);
+    }
+    loadMenu();
+  }, [isAdmin]);
 
   if (pathname === "/admin/login") return <>{children}</>;
 
@@ -74,19 +70,29 @@ function AdminShell({ children }: { children: React.ReactNode }) {
           관리자 페이지
         </p>
         <nav className="mt-3 space-y-0.5">
-          {MENU.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`block rounded-lg px-2.5 py-2 text-sm font-medium ${
-                pathname === item.href
-                  ? "bg-brand/10 text-brand"
-                  : "text-neutral-600 hover:bg-neutral-100"
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
+          <Link
+            href="/admin"
+            className={`block rounded-lg px-2.5 py-2 text-sm font-medium ${
+              pathname === "/admin" ? "bg-brand/10 text-brand" : "text-neutral-600 hover:bg-neutral-100"
+            }`}
+          >
+            대시보드
+          </Link>
+          {menu
+            .filter((item) => item.isVisible)
+            .map((item) => (
+              <Link
+                key={item.key}
+                href={item.href}
+                className={`block rounded-lg px-2.5 py-2 text-sm font-medium ${
+                  pathname === item.href
+                    ? "bg-brand/10 text-brand"
+                    : "text-neutral-600 hover:bg-neutral-100"
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
         </nav>
         <button
           type="button"

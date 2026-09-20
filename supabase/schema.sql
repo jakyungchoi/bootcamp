@@ -382,3 +382,83 @@ update quality_management_items set "group" = '강사 관리' where "group" = 'i
 
 -- 홈 화면 히어로 상단의 영문 소제목 (예: "WANTED LAB EDUCATION")도 관리자 페이지에서 수정 가능하도록 추가
 alter table site_settings add column if not exists home_hero_eyebrow text not null default 'Wanted Lab Education';
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 2
+-- 1) 4개 주요 페이지(운영 교육 과정 / 교육 관리 / 교육 문화 / 참여 기업 연계) 맨 위
+--    영문 소제목 · 제목 · 설명 문구를 관리자 페이지에서 수정할 수 있도록 함
+-- 2) 관리자 대시보드 탭(메뉴) 이름/순서/표시 여부를 관리자 페이지에서 바꿀 수 있도록 함
+-- 3) 관리자가 완전히 새로운 탭(=페이지)을 직접 추가할 수 있도록 "커스텀 페이지" 기능 추가
+-- ══════════════════════════════════════════════════════════════════
+
+-- 1) 페이지 상단 문구
+create table if not exists page_headers (
+  page_key text primary key, -- 'courses' | 'education-management' | 'culture' | 'partners'
+  eyebrow text not null default '',
+  title text not null default '',
+  description text not null default ''
+);
+
+alter table page_headers enable row level security;
+
+drop policy if exists "public read all" on page_headers;
+create policy "public read all" on page_headers for select using (true);
+
+drop policy if exists "admin write" on page_headers;
+create policy "admin write" on page_headers for all
+  using (auth.uid() in (select id from admin_users))
+  with check (auth.uid() in (select id from admin_users));
+
+insert into page_headers (page_key, eyebrow, title, description)
+select * from (values
+  ('courses', 'What we teach', '운영 교육 과정',
+    '원티드랩이 어떤 교육을 제공할 수 있는지 교육 영역과 교육 방식을 통해 보여줍니다.'),
+  ('education-management', 'How we operate', '교육 관리',
+    '교육생 관리, 학습부진자 관리, 강사 관리, 만족도 관리 등 교육을 어떻게 운영하고 품질을 관리하는지 보여줍니다.'),
+  ('culture', 'What makes us different', '교육 문화',
+    '원티드랩에서 교육을 받으면 무엇이 다른가를 보여주는 페이지입니다. 단순 교육 콘텐츠가 아니라 교육생의 성장과 커뮤니티 경험을 전달합니다.'),
+  ('partners', 'How we connect to industry', '참여 기업 연계',
+    '기업이 단순히 교육을 후원하는 것이 아니라, 교육 과정에 직접 참여할 수 있다는 점을 보여줍니다.')
+) as v(page_key, eyebrow, title, description)
+where not exists (select 1 from page_headers where page_headers.page_key = v.page_key);
+
+-- 2) 관리자 대시보드 탭(기존 12개 고정 메뉴) 이름/순서/표시 여부 재정의
+--    각 컬럼은 관리자가 실제로 바꾼 값만 채워지고, 비어있으면(=이 테이블에 행이 없으면)
+--    코드에 정해진 기본값(라벨/순서)을 그대로 사용한다.
+create table if not exists admin_menu_overrides (
+  key text primary key,
+  label text,
+  "order" int,
+  is_visible boolean
+);
+
+alter table admin_menu_overrides enable row level security;
+
+drop policy if exists "admin manage" on admin_menu_overrides;
+create policy "admin manage" on admin_menu_overrides for all
+  using (auth.uid() in (select id from admin_users))
+  with check (auth.uid() in (select id from admin_users));
+
+-- 3) 관리자가 자유롭게 추가/삭제하는 커스텀 페이지 (=완전히 새로운 탭)
+--    관리자 대시보드에 탭으로 표시되고, /pages/[slug] 주소로 공개된다.
+create table if not exists custom_pages (
+  id uuid primary key default gen_random_uuid(),
+  slug text unique not null,
+  title text not null,
+  eyebrow text not null default '',
+  description text not null default '',
+  sections jsonb not null default '[]', -- [{ "heading": "...", "body": "..." }, ...]
+  "order" int not null default 0,
+  is_published boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+alter table custom_pages enable row level security;
+
+drop policy if exists "public read published" on custom_pages;
+create policy "public read published" on custom_pages for select using (is_published = true);
+
+drop policy if exists "admin manage" on custom_pages;
+create policy "admin manage" on custom_pages for all
+  using (auth.uid() in (select id from admin_users))
+  with check (auth.uid() in (select id from admin_users));

@@ -1,23 +1,18 @@
 import type { Metadata } from "next";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Card, ImagePlaceholder } from "@/components/ui/card";
-import { cultureIntro } from "@/lib/content";
-import { getCulturePrograms } from "@/lib/data";
+import { getCulturePrograms, getPageHeader } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "교육 문화 | 원티드랩 부트캠프 교육사업",
 };
 
 export default async function CulturePage() {
-  const programs = await getCulturePrograms();
+  const [programs, header] = await Promise.all([getCulturePrograms(), getPageHeader("culture")]);
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-16">
-      <SectionHeading
-        eyebrow="What makes us different"
-        title="교육 문화"
-        description={cultureIntro}
-      />
+      <SectionHeading eyebrow={header.eyebrow} title={header.title} description={header.description} />
 
       <section className="mt-14 space-y-6">
         {programs.map((program, i) => (

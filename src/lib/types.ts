@@ -117,3 +117,39 @@ export type SiteSettings = {
   home_highlights: HomeHighlight[];
 };
 
+// 4개 주요 페이지(운영 교육 과정 / 교육 관리 / 교육 문화 / 참여 기업 연계) 맨 위 문구
+export type PageHeaderKey = "courses" | "education-management" | "culture" | "partners";
+
+export type PageHeader = {
+  page_key: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+};
+
+// 관리자 대시보드 탭(기존 고정 메뉴) 이름/순서/표시 여부 재정의
+export type AdminMenuOverride = {
+  key: string;
+  label: string | null;
+  order: number | null;
+  is_visible: boolean | null;
+};
+
+// 관리자가 자유롭게 추가하는 커스텀 페이지(=새 탭). /pages/[slug] 로 공개된다.
+export type CustomPageSection = {
+  heading: string;
+  body: string;
+};
+
+export type CustomPage = {
+  id: string;
+  slug: string;
+  title: string;
+  eyebrow: string;
+  description: string;
+  sections: CustomPageSection[];
+  order: number;
+  is_published: boolean;
+  created_at: string;
+};
+
