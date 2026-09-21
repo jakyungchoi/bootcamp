@@ -5,12 +5,12 @@
 import { usePathname } from "next/navigation";
 import { Navbar } from "./navbar";
 import { Footer } from "./footer";
-import type { HomeHighlight } from "@/lib/types";
+import type { NavItem } from "@/lib/types";
 
 type PublicChromeProps = {
   siteName: string;
   logoUrl: string | null;
-  navItems: HomeHighlight[];
+  navItems: NavItem[];
   footerDescription: string;
   children: React.ReactNode;
 };

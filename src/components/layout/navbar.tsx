@@ -4,12 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import type { HomeHighlight } from "@/lib/types";
+import type { NavItem } from "@/lib/types";
 
 type NavbarProps = {
   siteName: string;
   logoUrl: string | null;
-  navItems: HomeHighlight[];
+  navItems: NavItem[];
 };
 
 export function Navbar({ siteName, logoUrl, navItems }: NavbarProps) {

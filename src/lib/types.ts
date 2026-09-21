@@ -96,13 +96,20 @@ export type CompanyCaseStudy = {
   is_published: boolean;
 };
 
-// 헤더 메뉴 라벨과 홈 화면 4개 핵심 영역 카드가 함께 사용하는 항목
+// 홈 화면 4개 핵심 영역 카드. 헤더 메뉴와는 별개로 관리한다.
 export type HomeHighlight = {
   key: string;
   href: string;
   title: string;
   eyebrow: string;
   description: string;
+};
+
+// 헤더 상단 내비게이션 메뉴 항목. 홈 화면 카드(HomeHighlight)와 개수/구성이 달라도 된다.
+export type NavItem = {
+  key: string;
+  href: string;
+  title: string;
 };
 
 // 사이트 전역 설정 (로고, 사이트명, 홈 히어로 등). DB에는 항상 한 행만 존재한다.
@@ -115,6 +122,7 @@ export type SiteSettings = {
   home_hero_subtitle: string;
   home_hero_image_url: string | null;
   home_highlights: HomeHighlight[];
+  nav_items: NavItem[];
 };
 
 // 4개 주요 페이지(운영 교육 과정 / 교육 관리 / 교육 문화 / 참여 기업 연계) 맨 위 문구

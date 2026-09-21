@@ -462,3 +462,34 @@ drop policy if exists "admin manage" on custom_pages;
 create policy "admin manage" on custom_pages for all
   using (auth.uid() in (select id from admin_users))
   with check (auth.uid() in (select id from admin_users));
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 3
+-- 헤더 상단 메뉴를 홈 화면 4개 핵심 영역 카드(home_highlights)와 분리한다.
+-- 지금까지는 하나의 값을 헤더 메뉴/홈 카드가 함께 썼는데, 항목 개수나 구성이 서로 달라도
+-- 되도록 완전히 별개의 값으로 만든다. (기존 home_highlights 는 그대로 홈 화면 카드용으로 남는다.)
+-- [{ "key": "courses", "href": "/courses", "title": "..." }, ...]
+alter table site_settings add column if not exists nav_items jsonb not null default '[
+    {"key":"courses","href":"/courses","title":"운영 교육 과정"},
+    {"key":"management","href":"/education-management","title":"교육 관리"},
+    {"key":"culture","href":"/culture","title":"교육 문화"},
+    {"key":"partners","href":"/partners","title":"참여 기업 연계"}
+  ]';
+
+-- 기존에 이미 site_settings 행이 있던 사이트는, 위 기본값 대신 지금까지 쓰던
+-- home_highlights 의 key/href/title 을 그대로 헤더 메뉴 초기값으로 옮겨준다.
+-- (한 번만 옮기면 되므로, nav_items 를 아직 한 번도 따로 저장한 적 없는 경우에만 적용)
+update site_settings
+set nav_items = (
+  select coalesce(jsonb_agg(jsonb_build_object('key', h->>'key', 'href', h->>'href', 'title', h->>'title')), '[]'::jsonb)
+  from jsonb_array_elements(home_highlights) as h
+)
+where id = 1
+  and home_highlights is not null
+  and jsonb_array_length(home_highlights) > 0
+  and nav_items = '[
+    {"key":"courses","href":"/courses","title":"운영 교육 과정"},
+    {"key":"management","href":"/education-management","title":"교육 관리"},
+    {"key":"culture","href":"/culture","title":"교육 문화"},
+    {"key":"partners","href":"/partners","title":"참여 기업 연계"}
+  ]'::jsonb;

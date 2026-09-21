@@ -120,6 +120,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         home_hero_subtitle: data.home_hero_subtitle,
         home_hero_image_url: data.home_hero_image_url,
         home_highlights: data.home_highlights ?? siteSettings.home_highlights,
+        nav_items: data.nav_items ?? siteSettings.nav_items,
       };
     }
   }

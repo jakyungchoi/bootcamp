@@ -21,7 +21,7 @@ import type {
   SupportPlanTrack,
 } from "./types";
 
-// 사이트 전역 설정의 기본값. 헤더 메뉴 라벨은 home_highlights 의 title 을 그대로 사용한다.
+// 사이트 전역 설정의 기본값. 헤더 메뉴(nav_items)와 홈 화면 카드(home_highlights)는 서로 별개다.
 export const siteSettings: SiteSettings = {
   site_name: "원티드랩 교육사업",
   logo_url: null,
@@ -61,6 +61,12 @@ export const siteSettings: SiteSettings = {
       eyebrow: "How we connect to industry",
       description: "기업의 현업 경험을 교육 과정에 연결합니다.",
     },
+  ],
+  nav_items: [
+    { key: "courses", href: "/courses", title: "운영 교육 과정" },
+    { key: "management", href: "/education-management", title: "교육 관리" },
+    { key: "culture", href: "/culture", title: "교육 문화" },
+    { key: "partners", href: "/partners", title: "참여 기업 연계" },
   ],
 };
 

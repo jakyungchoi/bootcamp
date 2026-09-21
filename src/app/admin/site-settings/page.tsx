@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
-import type { HomeHighlight } from "@/lib/types";
+import type { HomeHighlight, NavItem } from "@/lib/types";
 
 type SettingsForm = {
   site_name: string;
@@ -15,6 +15,7 @@ type SettingsForm = {
   home_hero_subtitle: string;
   home_hero_image_url: string | null;
   home_highlights: HomeHighlight[];
+  nav_items: NavItem[];
 };
 
 export default function SiteSettingsPage() {
@@ -39,6 +40,7 @@ export default function SiteSettingsPage() {
           home_hero_subtitle: data.home_hero_subtitle,
           home_hero_image_url: data.home_hero_image_url,
           home_highlights: data.home_highlights,
+          nav_items: data.nav_items,
         });
       }
       setLoading(false);
@@ -70,10 +72,39 @@ export default function SiteSettingsPage() {
   }
 
   function removeHighlight(idx: number) {
-    if (!confirm("이 메뉴 항목을 삭제할까요? 헤더 메뉴와 홈 화면 카드에서 함께 사라집니다.")) return;
+    if (!confirm("이 홈 화면 카드를 삭제할까요?")) return;
     setForm((f) => {
       if (!f) return f;
       return { ...f, home_highlights: f.home_highlights.filter((_, i) => i !== idx) };
+    });
+  }
+
+  function updateNavItem(idx: number, patch: Partial<NavItem>) {
+    setForm((f) => {
+      if (!f) return f;
+      const next = [...f.nav_items];
+      next[idx] = { ...next[idx], ...patch };
+      return { ...f, nav_items: next };
+    });
+  }
+
+  function addNavItem() {
+    setForm((f) => {
+      if (!f) return f;
+      const newItem: NavItem = {
+        key: `nav-${Math.random().toString(36).slice(2, 8)}`,
+        href: "",
+        title: "",
+      };
+      return { ...f, nav_items: [...f.nav_items, newItem] };
+    });
+  }
+
+  function removeNavItem(idx: number) {
+    if (!confirm("이 헤더 메뉴 항목을 삭제할까요?")) return;
+    setForm((f) => {
+      if (!f) return f;
+      return { ...f, nav_items: f.nav_items.filter((_, i) => i !== idx) };
     });
   }
 
@@ -186,10 +217,68 @@ export default function SiteSettingsPage() {
       <section className="mt-6 rounded-xl border border-neutral-200 bg-white p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="font-semibold text-neutral-800">헤더 메뉴 · 홈 핵심 영역 카드</h2>
+            <h2 className="font-semibold text-neutral-800">헤더 메뉴</h2>
             <p className="mt-1 text-sm text-neutral-500">
-              여기서 항목을 추가·삭제·수정하면 상단 헤더 메뉴와 홈 화면 카드에 동시에 반영됩니다. 새 탭(커스텀
-              페이지)을 추가했다면 그 페이지의 공개 주소(/pages/...)를 링크 주소에 입력해주세요.
+              화면 맨 위 상단 내비게이션에 표시되는 메뉴입니다. 아래 홈 화면 카드와는 별개로, 개수나 이름이
+              달라도 됩니다. 새 탭(커스텀 페이지)을 추가했다면 그 페이지의 공개 주소(/pages/...)를 링크
+              주소에 입력해주세요.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={addNavItem}
+            className="inline-flex shrink-0 items-center gap-1 rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
+          >
+            <Plus size={13} />
+            메뉴 추가
+          </button>
+        </div>
+        <div className="mt-4 space-y-3">
+          {form.nav_items.map((item, idx) => (
+            <div key={item.key} className="rounded-lg border border-neutral-100 bg-neutral-50 p-3.5">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">메뉴 {idx + 1}</p>
+                <button
+                  type="button"
+                  onClick={() => removeNavItem(idx)}
+                  className="rounded p-1 text-red-400 hover:bg-red-50"
+                  aria-label="삭제"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={item.title}
+                  placeholder="메뉴 이름"
+                  onChange={(e) => updateNavItem(idx, { title: e.target.value })}
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+                />
+                <input
+                  type="text"
+                  value={item.href}
+                  placeholder="링크 주소 (예: /courses 또는 /pages/faq)"
+                  onChange={(e) => updateNavItem(idx, { href: e.target.value })}
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm font-mono focus:border-brand focus:outline-none"
+                />
+              </div>
+            </div>
+          ))}
+          {form.nav_items.length === 0 && (
+            <p className="text-sm text-neutral-400">
+              메뉴가 없으면 헤더 메뉴도 비어 보입니다. &quot;메뉴 추가&quot;로 만들어보세요.
+            </p>
+          )}
+        </div>
+      </section>
+
+      <section className="mt-6 rounded-xl border border-neutral-200 bg-white p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="font-semibold text-neutral-800">홈 화면 핵심 영역 카드</h2>
+            <p className="mt-1 text-sm text-neutral-500">
+              홈 화면에 표시되는 카드입니다. 위 헤더 메뉴와는 별개로, 개수나 이름이 달라도 됩니다.
             </p>
           </div>
           <button
@@ -198,7 +287,7 @@ export default function SiteSettingsPage() {
             className="inline-flex shrink-0 items-center gap-1 rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
           >
             <Plus size={13} />
-            항목 추가
+            카드 추가
           </button>
         </div>
         <div className="mt-4 space-y-5">
@@ -219,7 +308,7 @@ export default function SiteSettingsPage() {
                 <input
                   type="text"
                   value={h.title}
-                  placeholder="메뉴/카드 제목"
+                  placeholder="카드 제목"
                   onChange={(e) => updateHighlight(idx, { title: e.target.value })}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
                 />
@@ -249,7 +338,7 @@ export default function SiteSettingsPage() {
           ))}
           {form.home_highlights.length === 0 && (
             <p className="text-sm text-neutral-400">
-              항목이 없으면 헤더 메뉴와 홈 화면 카드도 비어 보입니다. &quot;항목 추가&quot;로 만들어보세요.
+              카드가 없으면 홈 화면 영역도 비어 보입니다. &quot;카드 추가&quot;로 만들어보세요.
             </p>
           )}
         </div>

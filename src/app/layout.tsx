@@ -25,7 +25,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <PublicChrome
           siteName={settings.site_name}
           logoUrl={settings.logo_url}
-          navItems={settings.home_highlights}
+          navItems={settings.nav_items}
           footerDescription={settings.footer_description}
         >
           {children}
