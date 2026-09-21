@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   title: "참여 기업 연계 | 원티드랩 부트캠프 교육사업",
 };
 
+// 관리자 페이지에서 저장한 내용이 재배포 없이 바로 보이도록 매 요청마다 새로 데이터를 가져온다.
+export const dynamic = "force-dynamic";
+
 export default async function PartnersPage() {
   const [types, steps, cases, header] = await Promise.all([
     getCompanyParticipationTypes(),

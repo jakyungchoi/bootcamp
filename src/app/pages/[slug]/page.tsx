@@ -3,6 +3,9 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { Card } from "@/components/ui/card";
 import { getCustomPageBySlug } from "@/lib/data";
 
+// 관리자 페이지에서 저장한 내용이 재배포 없이 바로 보이도록 매 요청마다 새로 데이터를 가져온다.
+export const dynamic = "force-dynamic";
+
 export default async function CustomPublicPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const page = await getCustomPageBySlug(slug);

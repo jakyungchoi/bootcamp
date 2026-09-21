@@ -4,6 +4,9 @@ import { ArrowRight } from "lucide-react";
 import { getSiteSettings } from "@/lib/data";
 import { ImagePlaceholder } from "@/components/ui/card";
 
+// 관리자 페이지에서 저장한 내용이 재배포 없이 바로 보이도록 매 요청마다 새로 데이터를 가져온다.
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const settings = await getSiteSettings();
 

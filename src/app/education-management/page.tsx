@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   title: "교육 관리 | 원티드랩 부트캠프 교육사업",
 };
 
+// 관리자 페이지에서 저장한 내용이 재배포 없이 바로 보이도록 매 요청마다 새로 데이터를 가져온다.
+export const dynamic = "force-dynamic";
+
 export default async function EducationManagementPage() {
   const [learnerManagementItems, supportPlanTracks, qualityManagementItems, collaborationTools, header] =
     await Promise.all([

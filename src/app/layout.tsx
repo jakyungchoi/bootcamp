@@ -12,6 +12,10 @@ export const metadata: Metadata = {
     "교육을 넘어, 실제 커리어로 연결되는 교육 — 원티드랩 부트캠프 교육사업 소개 페이지",
 };
 
+// 관리자 페이지에서 저장하면 재배포 없이 바로 반영되어야 하므로, 빌드 시점에 한 번만
+// 데이터를 가져와 고정된 화면을 만들지 않고 매 요청마다 Supabase에서 새로 가져온다.
+export const dynamic = "force-dynamic";
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const settings = await getSiteSettings();
 
