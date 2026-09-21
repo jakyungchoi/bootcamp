@@ -45,24 +45,36 @@ export default function AdminDashboardPage() {
     if (next === null || !supabase) return;
     const label = next.trim();
     if (!label) return;
-    if (item.isCustom) {
-      await supabase.from("custom_pages").update({ title: label }).eq("id", customKeyToId(item.key));
-    } else {
-      await supabase.from("admin_menu_overrides").upsert({ key: item.key, label });
+    const { error: err } = item.isCustom
+      ? await supabase.from("custom_pages").update({ title: label }).eq("id", customKeyToId(item.key))
+      : await supabase.from("admin_menu_overrides").upsert({ key: item.key, label });
+    if (err) {
+      setError(err.message);
+      return;
     }
     reload();
   }
 
   async function handleToggleVisible(item: MergedMenuItem) {
     if (!supabase || item.isCustom) return;
-    await supabase.from("admin_menu_overrides").upsert({ key: item.key, is_visible: !item.isVisible });
+    const { error: err } = await supabase
+      .from("admin_menu_overrides")
+      .upsert({ key: item.key, is_visible: !item.isVisible });
+    if (err) {
+      setError(err.message);
+      return;
+    }
     reload();
   }
 
   async function handleDeleteCustom(item: MergedMenuItem) {
     if (!supabase || !item.isCustom) return;
     if (!confirm(`"${item.label}" 탭을 삭제할까요? 페이지 내용도 함께 삭제되며 되돌릴 수 없습니다.`)) return;
-    await supabase.from("custom_pages").delete().eq("id", customKeyToId(item.key));
+    const { error: err } = await supabase.from("custom_pages").delete().eq("id", customKeyToId(item.key));
+    if (err) {
+      setError(err.message);
+      return;
+    }
     reload();
   }
 
@@ -76,13 +88,17 @@ export default function AdminDashboardPage() {
 
     async function setOrder(it: MergedMenuItem, order: number) {
       if (it.isCustom) {
-        await client.from("custom_pages").update({ order }).eq("id", customKeyToId(it.key));
-      } else {
-        await client.from("admin_menu_overrides").upsert({ key: it.key, order });
+        return client.from("custom_pages").update({ order }).eq("id", customKeyToId(it.key));
       }
+      return client.from("admin_menu_overrides").upsert({ key: it.key, order });
     }
 
-    await Promise.all([setOrder(item, target.order), setOrder(target, item.order)]);
+    const results = await Promise.all([setOrder(item, target.order), setOrder(target, item.order)]);
+    const failed = results.find((r) => r.error);
+    if (failed?.error) {
+      setError(failed.error.message);
+      return;
+    }
     reload();
   }
 
