@@ -105,6 +105,12 @@ export function ResourceCrud({
     setSaving(true);
     setError(null);
     const payload: Record<string, unknown> = { ...formValues };
+    // string-list 필드는 입력 중엔 빈 줄도 그대로 두었으니, 저장 직전에 앞뒤 공백과 빈 줄을 정리한다.
+    for (const f of fields) {
+      if (f.type === "string-list" && Array.isArray(payload[f.key])) {
+        payload[f.key] = (payload[f.key] as string[]).map((s) => s.trim()).filter(Boolean);
+      }
+    }
     if (editing && editing.id) {
       const { error: err } = await supabase.from(table).update(payload).eq("id", editing.id);
       if (err) {
@@ -312,9 +318,12 @@ export function ResourceCrud({
                       placeholder={f.placeholder ?? "한 줄에 하나씩 입력하세요"}
                       rows={4}
                       onChange={(e) =>
+                        // 입력하는 도중에 바로 trim/빈 줄 제거를 하면, 줄바꿈을 누른 직후의
+                        // "끝에 빈 줄 하나"가 곧바로 사라져서 줄바꿈 자체가 안 되는 것처럼 보인다.
+                        // 그래서 입력 중에는 줄바꿈을 그대로 두고, 저장할 때(handleSave)만 정리한다.
                         setFormValues((v) => ({
                           ...v,
-                          [f.key]: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean),
+                          [f.key]: e.target.value.split("\n"),
                         }))
                       }
                       className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
