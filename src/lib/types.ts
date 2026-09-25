@@ -10,14 +10,32 @@ export type CourseCategory = {
   is_published: boolean;
 };
 
+// 과정 기간 분류 (단기 과정 / 중장기 과정 등). 교육 영역 카테고리(CourseCategory)와는 별개의 분류축이다.
+export type CourseDurationType = {
+  id: string;
+  name: string;
+  slug: string;
+  order: number;
+  is_published: boolean;
+};
+
+// 과정 카드를 클릭했을 때 뜨는 팝업에서 좌우로 넘겨볼 수 있는 프로젝트 상세 항목
+export type CourseProject = {
+  title: string;
+  description: string;
+  image_url: string | null;
+};
+
 export type Course = {
   id: string;
   category_id: string; // CourseCategory.id
+  duration_type_id: string | null; // CourseDurationType.id (선택 사항)
   title: string;
   subtitle: string;
   description: string;
   highlights: string[]; // 주요 교육 내용
-  project: string; // 프로젝트 설명
+  project: string; // 프로젝트 설명 (카드에 표시되는 한 줄 요약)
+  projects: CourseProject[]; // 클릭 시 팝업으로 좌우로 넘겨볼 수 있는 프로젝트 상세 목록
   image_url: string | null;
   detail_page_enabled: boolean;
   order: number;
@@ -49,6 +67,45 @@ export type SupportPlanTrack = {
   track_name: string; // "1과정", "2과정", "3과정"
   items: string[];
   order: number;
+};
+
+// 교육 관리 페이지 맨 위 "숫자로 검증된 실제 결과" 카드 행 (예: "99건" / "1·2기 누적 산출")
+export type ManagementMetric = {
+  id: string;
+  value: string;
+  label: string;
+  order: number;
+  is_published: boolean;
+};
+
+// 위 숫자 카드 아래의 어두운 강조 타일. "stat"은 큰 숫자+설명, "list"는 제목+목록(예: Reference) 형태다.
+export type ManagementHighlight = {
+  id: string;
+  type: "stat" | "list";
+  value: string; // type=stat 일 때 큰 숫자/퍼센트
+  description: string; // type=stat 일 때 설명
+  title: string; // type=list 일 때 제목 (예: Reference)
+  items: string[]; // type=list 일 때 목록 항목
+  order: number;
+  is_published: boolean;
+};
+
+// 개월차별 관리 카드에서, 클릭했을 때 좌우로 넘겨보는 사진 한 장
+export type ManagementMonthPhoto = {
+  image_url: string | null;
+  caption: string;
+};
+
+// 교육 관리 페이지 "개월차별 관리" 카드. 학습부진자 지도 계획(SupportPlanTrack)과는 별개의 새 섹션이다.
+export type ManagementMonth = {
+  id: string;
+  month_label: string; // "1개월차" 등
+  title: string;
+  description: string;
+  tags: string[];
+  photos: ManagementMonthPhoto[];
+  order: number;
+  is_published: boolean;
 };
 
 export type QualityManagementItem = {
@@ -123,6 +180,7 @@ export type SiteSettings = {
   home_hero_image_url: string | null;
   home_highlights: HomeHighlight[];
   nav_items: NavItem[];
+  partners_form_url: string; // 참여 기업 연계 페이지 "기업 참여 방식"에 표시할 신청 폼(구글 폼 등) 링크
 };
 
 // 4개 주요 페이지(운영 교육 과정 / 교육 관리 / 교육 문화 / 참여 기업 연계) 맨 위 문구

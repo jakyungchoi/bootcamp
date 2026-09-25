@@ -11,9 +11,13 @@ import type {
   CompanyParticipationType,
   Course,
   CourseCategory,
+  CourseDurationType,
   CultureProgram,
   CurriculumFlowStep,
   LearnerManagementItem,
+  ManagementHighlight,
+  ManagementMetric,
+  ManagementMonth,
   PageHeader,
   PageHeaderKey,
   QualityManagementItem,
@@ -68,7 +72,14 @@ export const siteSettings: SiteSettings = {
     { key: "culture", href: "/culture", title: "교육 문화" },
     { key: "partners", href: "/partners", title: "참여 기업 연계" },
   ],
+  partners_form_url: "",
 };
+
+// 과정 기간 분류 (단기 과정 / 중장기 과정). 교육 영역 카테고리와는 별개로 관리한다.
+export const courseDurationTypes: CourseDurationType[] = [
+  { id: "dur-short", name: "단기 과정", slug: "short-term", order: 1, is_published: true },
+  { id: "dur-long", name: "중장기 과정", slug: "long-term", order: 2, is_published: true },
+];
 
 export const courseCategories: CourseCategory[] = [
   {
@@ -111,11 +122,13 @@ export const courses: Course[] = [
   {
     id: "course-ai-agent",
     category_id: "cat-ai",
+    duration_type_id: null,
     title: "AI Agent 개발 트랙",
     subtitle: "생성형 AI · 업무 자동화 · AX",
     description: "생성형 AI와 AI Agent를 활용해 실무 문제를 자동화하는 역량을 기른다.",
     highlights: ["생성형 AI 기초", "AI Agent 설계", "업무 자동화 실습", "AX 프로젝트"],
     project: "사내 업무 자동화 AI Agent 구축 프로젝트",
+    projects: [],
     image_url: null,
     detail_page_enabled: true,
     order: 1,
@@ -124,11 +137,13 @@ export const courses: Course[] = [
   {
     id: "course-backend",
     category_id: "cat-dev",
+    duration_type_id: null,
     title: "Backend 개발 트랙",
     subtitle: "실무형 백엔드 개발자 양성",
     description: "서버, 데이터베이스, API 설계까지 실무 백엔드 개발 역량을 기른다.",
     highlights: ["서버/DB 기초", "API 설계", "배포 및 운영", "팀 프로젝트"],
     project: "실서비스 수준의 백엔드 시스템 구축",
+    projects: [],
     image_url: null,
     detail_page_enabled: true,
     order: 2,
@@ -137,11 +152,13 @@ export const courses: Course[] = [
   {
     id: "course-frontend",
     category_id: "cat-dev",
+    duration_type_id: null,
     title: "Frontend 개발 트랙",
     subtitle: "실무형 프론트엔드 개발자 양성",
     description: "UI 구현부터 상태 관리, 성능 최적화까지 다룬다.",
     highlights: ["웹 표준/접근성", "컴포넌트 설계", "상태 관리", "팀 프로젝트"],
     project: "실서비스 수준의 웹 애플리케이션 구축",
+    projects: [],
     image_url: null,
     detail_page_enabled: true,
     order: 3,
@@ -150,11 +167,13 @@ export const courses: Course[] = [
   {
     id: "course-game",
     category_id: "cat-dev",
+    duration_type_id: null,
     title: "Game Development (C++ / Unreal Engine)",
     subtitle: "게임 개발 실무 트랙",
     description: "C++와 Unreal Engine을 활용한 게임 개발 실무 역량을 기른다.",
     highlights: ["C++ 기초", "Unreal Engine", "게임 시스템 설계", "팀 프로젝트"],
     project: "팀 단위 미니 게임 제작",
+    projects: [],
     image_url: null,
     detail_page_enabled: true,
     order: 4,
@@ -163,11 +182,13 @@ export const courses: Course[] = [
   {
     id: "course-career",
     category_id: "cat-career",
+    duration_type_id: null,
     title: "커리어 부스팅 트랙",
     subtitle: "취업 역량 · 포트폴리오 · 면접",
     description: "프로젝트를 포트폴리오로 완성하고 실전 취업 역량을 기른다.",
     highlights: ["포트폴리오 제작", "모의 면접", "현업 피드백", "커리어 연계"],
     project: "개인 포트폴리오 프로젝트",
+    projects: [],
     image_url: null,
     detail_page_enabled: true,
     order: 5,
@@ -193,6 +214,13 @@ export const supportPlanTracks: SupportPlanTrack[] = [
   },
   { id: "sp-track3", track_name: "3과정", items: ["학습부진자 지원"], order: 4 },
 ];
+
+// 교육 관리 페이지 상단 "숫자로 검증된 실제 결과" — 관리자 페이지에서 실제 값으로 채워 넣을 때까지는 비워둔다.
+export const managementMetrics: ManagementMetric[] = [];
+export const managementHighlights: ManagementHighlight[] = [];
+
+// 교육 관리 페이지 "개월차별 관리" — 관리자 페이지에서 실제 값으로 채워 넣을 때까지는 비워둔다.
+export const managementMonths: ManagementMonth[] = [];
 
 export const qualityManagementItems: QualityManagementItem[] = [
   { id: "qm-1", group: "만족도 관리", title: "교육 만족도", description: "과정 전반에 대한 만족도를 조사합니다.", order: 1 },

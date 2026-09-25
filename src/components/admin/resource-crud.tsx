@@ -9,7 +9,15 @@ import { ArrowDown, ArrowUp, Loader2, Pencil, Plus, Trash2 } from "lucide-react"
 import { supabase } from "@/lib/supabase/client";
 import { ImageUploadField } from "./image-upload-field";
 
-export type FieldType = "text" | "textarea" | "number" | "boolean" | "select" | "image" | "string-list";
+export type FieldType =
+  | "text"
+  | "textarea"
+  | "number"
+  | "boolean"
+  | "select"
+  | "image"
+  | "string-list"
+  | "object-list";
 
 export type FieldConfig = {
   key: string;
@@ -19,6 +27,9 @@ export type FieldConfig = {
   placeholder?: string;
   required?: boolean;
   helpText?: string;
+  // object-list 타입일 때 사용: 항목 하나(객체 하나)가 어떤 필드들로 이루어지는지 정의한다.
+  // (text / textarea / image 만 지원 — 항목 안에 또 목록을 넣는 중첩은 지원하지 않는다)
+  subFields?: FieldConfig[];
 };
 
 export type ResourceCrudProps = {
@@ -38,7 +49,7 @@ function emptyFormValues(fields: FieldConfig[]): Record<string, unknown> {
   const values: Record<string, unknown> = {};
   for (const f of fields) {
     if (f.type === "boolean") values[f.key] = true;
-    else if (f.type === "string-list") values[f.key] = [];
+    else if (f.type === "string-list" || f.type === "object-list") values[f.key] = [];
     else if (f.type === "number") values[f.key] = 0;
     else values[f.key] = "";
   }
@@ -92,7 +103,7 @@ export function ResourceCrud({
   function openEdit(row: Row) {
     const values: Record<string, unknown> = {};
     for (const f of fields) {
-      values[f.key] = row[f.key] ?? (f.type === "string-list" ? [] : "");
+      values[f.key] = row[f.key] ?? (f.type === "string-list" || f.type === "object-list" ? [] : "");
     }
     if (orderable) values.order = row.order ?? 0;
     if (publishable) values.is_published = row.is_published ?? true;
@@ -105,10 +116,28 @@ export function ResourceCrud({
     setSaving(true);
     setError(null);
     const payload: Record<string, unknown> = { ...formValues };
-    // string-list 필드는 입력 중엔 빈 줄도 그대로 두었으니, 저장 직전에 앞뒤 공백과 빈 줄을 정리한다.
     for (const f of fields) {
+      // string-list 필드는 입력 중엔 빈 줄도 그대로 두었으니, 저장 직전에 앞뒤 공백과 빈 줄을 정리한다.
       if (f.type === "string-list" && Array.isArray(payload[f.key])) {
         payload[f.key] = (payload[f.key] as string[]).map((s) => s.trim()).filter(Boolean);
+      }
+      // object-list 필드는 완전히 비어있는 항목(모든 값이 비어있는 항목)만 저장 시 정리한다.
+      if (f.type === "object-list" && Array.isArray(payload[f.key])) {
+        payload[f.key] = (payload[f.key] as Record<string, unknown>[])
+          .map((item) => {
+            const cleaned: Record<string, unknown> = {};
+            for (const sf of f.subFields ?? []) {
+              const v = item[sf.key];
+              cleaned[sf.key] = typeof v === "string" ? v.trim() : (v ?? (sf.type === "image" ? null : ""));
+            }
+            return cleaned;
+          })
+          .filter((item) => Object.values(item).some((v) => v !== "" && v !== null));
+      }
+      // select 필드는 선택하지 않으면 빈 문자열인데, DB 컬럼이 uuid 등이면 빈 문자열은 저장할 수 없다.
+      // (필수 항목이 아닌 select는 "선택 안 함"을 null로 저장한다)
+      if (f.type === "select" && payload[f.key] === "") {
+        payload[f.key] = null;
       }
     }
     if (editing && editing.id) {
@@ -161,6 +190,42 @@ export function ResourceCrud({
     const { error: err2 } = await supabase.from(table).update({ order: a }).eq("id", target.id);
     if (err1 || err2) setError((err1 ?? err2)?.message ?? "순서 변경에 실패했습니다.");
     else load();
+  }
+
+  // object-list 필드(예: 과정 프로젝트 상세, 개월차 사진) 편집용 헬퍼
+  function addObjectListItem(fieldKey: string, subFields: FieldConfig[]) {
+    const empty: Record<string, unknown> = {};
+    for (const sf of subFields) empty[sf.key] = sf.type === "image" ? null : "";
+    setFormValues((v) => ({
+      ...v,
+      [fieldKey]: [...((v[fieldKey] as Record<string, unknown>[]) ?? []), empty],
+    }));
+  }
+
+  function updateObjectListItem(fieldKey: string, idx: number, subKey: string, value: unknown) {
+    setFormValues((v) => {
+      const list = [...((v[fieldKey] as Record<string, unknown>[]) ?? [])];
+      list[idx] = { ...list[idx], [subKey]: value };
+      return { ...v, [fieldKey]: list };
+    });
+  }
+
+  function removeObjectListItem(fieldKey: string, idx: number) {
+    setFormValues((v) => {
+      const list = [...((v[fieldKey] as Record<string, unknown>[]) ?? [])];
+      list.splice(idx, 1);
+      return { ...v, [fieldKey]: list };
+    });
+  }
+
+  function moveObjectListItem(fieldKey: string, idx: number, direction: -1 | 1) {
+    setFormValues((v) => {
+      const list = [...((v[fieldKey] as Record<string, unknown>[]) ?? [])];
+      const targetIdx = idx + direction;
+      if (targetIdx < 0 || targetIdx >= list.length) return v;
+      [list[idx], list[targetIdx]] = [list[targetIdx], list[idx]];
+      return { ...v, [fieldKey]: list };
+    });
   }
 
   const primaryField = titleField ?? fields[0]?.key;
@@ -225,7 +290,9 @@ export function ResourceCrud({
                     )}
                   </td>
                   <td className="px-4 py-3 align-top font-medium text-neutral-800">
-                    {String(row[primaryField] ?? "")}
+                    {String(
+                      row[primaryField] || row.title || row.name || row.label || row.value || ""
+                    )}
                   </td>
                   <td className="px-4 py-3 align-top">
                     {publishable && (
@@ -352,6 +419,87 @@ export function ResourceCrud({
                       />
                       사용함
                     </label>
+                  )}
+                  {f.type === "object-list" && (
+                    <div className="space-y-3">
+                      {((formValues[f.key] as Record<string, unknown>[]) ?? []).map((item, idx, arr) => (
+                        <div key={idx} className="rounded-lg border border-neutral-200 bg-neutral-50 p-3">
+                          <div className="mb-2 flex items-center justify-between gap-2">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
+                              항목 {idx + 1}
+                            </p>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => moveObjectListItem(f.key, idx, -1)}
+                                disabled={idx === 0}
+                                className="rounded p-1 text-neutral-400 hover:bg-neutral-200 disabled:opacity-30"
+                                aria-label="위로"
+                              >
+                                <ArrowUp size={13} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => moveObjectListItem(f.key, idx, 1)}
+                                disabled={idx === arr.length - 1}
+                                className="rounded p-1 text-neutral-400 hover:bg-neutral-200 disabled:opacity-30"
+                                aria-label="아래로"
+                              >
+                                <ArrowDown size={13} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeObjectListItem(f.key, idx)}
+                                className="rounded p-1 text-red-400 hover:bg-red-50"
+                                aria-label="삭제"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            {(f.subFields ?? []).map((sf) => (
+                              <div key={sf.key}>
+                                <label className="mb-1 block text-xs font-medium text-neutral-500">
+                                  {sf.label}
+                                </label>
+                                {sf.type === "image" ? (
+                                  <ImageUploadField
+                                    value={(item[sf.key] as string | null) ?? null}
+                                    onChange={(url) => updateObjectListItem(f.key, idx, sf.key, url)}
+                                    folder={imageFolder ?? table}
+                                  />
+                                ) : sf.type === "textarea" ? (
+                                  <textarea
+                                    value={String(item[sf.key] ?? "")}
+                                    placeholder={sf.placeholder}
+                                    rows={2}
+                                    onChange={(e) => updateObjectListItem(f.key, idx, sf.key, e.target.value)}
+                                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+                                  />
+                                ) : (
+                                  <input
+                                    type="text"
+                                    value={String(item[sf.key] ?? "")}
+                                    placeholder={sf.placeholder}
+                                    onChange={(e) => updateObjectListItem(f.key, idx, sf.key, e.target.value)}
+                                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+                                  />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => addObjectListItem(f.key, f.subFields ?? [])}
+                        className="inline-flex items-center gap-1 rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
+                      >
+                        <Plus size={13} />
+                        항목 추가
+                      </button>
+                    </div>
                   )}
                   {f.type === "image" && (
                     <ImageUploadField

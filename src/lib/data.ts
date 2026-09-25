@@ -10,10 +10,14 @@ import type {
   CompanyParticipationType,
   Course,
   CourseCategory,
+  CourseDurationType,
   CultureProgram,
   CurriculumFlowStep,
   CustomPage,
   LearnerManagementItem,
+  ManagementHighlight,
+  ManagementMetric,
+  ManagementMonth,
   PageHeader,
   PageHeaderKey,
   QualityManagementItem,
@@ -26,10 +30,14 @@ import {
   companyFlowSteps,
   companyParticipationTypes,
   courseCategories,
+  courseDurationTypes,
   courses,
   culturePrograms,
   curriculumFlowSteps,
   learnerManagementItems,
+  managementHighlights,
+  managementMetrics,
+  managementMonths,
   pageHeaders,
   qualityManagementItems,
   siteSettings,
@@ -46,6 +54,19 @@ export async function getCourseCategories(): Promise<CourseCategory[]> {
     if (!error && data) return data as CourseCategory[];
   }
   return courseCategories.filter((c) => c.is_published).sort((a, b) => a.order - b.order);
+}
+
+// 과정 기간 분류 (단기 과정 / 중장기 과정 등). 교육 영역 카테고리와는 별개의 분류축이다.
+export async function getCourseDurationTypes(): Promise<CourseDurationType[]> {
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from("course_duration_types")
+      .select("*")
+      .eq("is_published", true)
+      .order("order", { ascending: true });
+    if (!error && data) return data as CourseDurationType[];
+  }
+  return courseDurationTypes.filter((d) => d.is_published).sort((a, b) => a.order - b.order);
 }
 
 export async function getCourses(): Promise<Course[]> {
@@ -121,6 +142,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         home_hero_image_url: data.home_hero_image_url,
         home_highlights: data.home_highlights ?? siteSettings.home_highlights,
         nav_items: data.nav_items ?? siteSettings.nav_items,
+        partners_form_url: data.partners_form_url ?? siteSettings.partners_form_url,
       };
     }
   }
@@ -159,6 +181,45 @@ export async function getSupportPlanTracks(): Promise<SupportPlanTrack[]> {
     if (!error && data) return data as SupportPlanTrack[];
   }
   return [...supportPlanTracks].sort((a, b) => a.order - b.order);
+}
+
+// 교육 관리 페이지 상단 "숫자로 검증된 실제 결과" 카드 행
+export async function getManagementMetrics(): Promise<ManagementMetric[]> {
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from("management_metrics")
+      .select("*")
+      .eq("is_published", true)
+      .order("order", { ascending: true });
+    if (!error && data) return data as ManagementMetric[];
+  }
+  return managementMetrics.filter((m) => m.is_published).sort((a, b) => a.order - b.order);
+}
+
+// 위 숫자 카드 아래의 어두운 강조 타일 (퍼센트 강조 또는 Reference 목록)
+export async function getManagementHighlights(): Promise<ManagementHighlight[]> {
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from("management_highlights")
+      .select("*")
+      .eq("is_published", true)
+      .order("order", { ascending: true });
+    if (!error && data) return data as ManagementHighlight[];
+  }
+  return managementHighlights.filter((h) => h.is_published).sort((a, b) => a.order - b.order);
+}
+
+// 교육 관리 페이지 "개월차별 관리" 카드 (사진은 클릭 시 좌우로 넘겨보는 팝업으로 표시)
+export async function getManagementMonths(): Promise<ManagementMonth[]> {
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from("management_months")
+      .select("*")
+      .eq("is_published", true)
+      .order("order", { ascending: true });
+    if (!error && data) return data as ManagementMonth[];
+  }
+  return managementMonths.filter((m) => m.is_published).sort((a, b) => a.order - b.order);
 }
 
 export async function getQualityManagementItems(): Promise<QualityManagementItem[]> {

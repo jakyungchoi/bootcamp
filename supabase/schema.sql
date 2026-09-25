@@ -493,3 +493,95 @@ where id = 1
     {"key":"culture","href":"/culture","title":"교육 문화"},
     {"key":"partners","href":"/partners","title":"참여 기업 연계"}
   ]'::jsonb;
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 4
+-- 1) 운영 교육 과정 — 과정 기간 분류(단기/중장기) + 과정별 프로젝트 상세(팝업, 좌우 캐러셀)
+-- 2) 교육 관리 — 상단 숫자 지표 카드 + 개월차별 관리(사진 포함, 좌우 캐러셀)
+-- 3) 참여 기업 연계 — 기업 참여 방식에 붙일 신청 폼(구글 폼 등) 링크
+
+create table if not exists course_duration_types (
+  id uuid primary key default gen_random_uuid(),
+  name text not null default '',
+  slug text not null default '',
+  "order" int not null default 0,
+  is_published boolean not null default true
+);
+alter table course_duration_types enable row level security;
+drop policy if exists "public read published" on course_duration_types;
+create policy "public read published" on course_duration_types for select using (is_published = true);
+drop policy if exists "admin write" on course_duration_types;
+create policy "admin write" on course_duration_types for all
+  using (auth.uid() in (select id from admin_users))
+  with check (auth.uid() in (select id from admin_users));
+
+insert into course_duration_types (name, slug, "order", is_published)
+select v.name, v.slug, v.ord, true
+from (values
+  ('단기 과정', 'short-term', 1),
+  ('중장기 과정', 'long-term', 2)
+) as v(name, slug, ord)
+where not exists (select 1 from course_duration_types where course_duration_types.slug = v.slug);
+
+-- courses: 과정 기간 분류(선택 사항) + 프로젝트 상세 목록(팝업용, 좌우로 넘겨봄)
+-- [{ "title": "...", "description": "...", "image_url": "..." }, ...]
+alter table courses add column if not exists duration_type_id uuid references course_duration_types(id) on delete set null;
+alter table courses add column if not exists projects jsonb not null default '[]';
+
+-- 교육 관리 페이지 상단 "숫자로 검증된 실제 결과" 카드 행 (예: "99건" / "1·2기 누적 산출")
+create table if not exists management_metrics (
+  id uuid primary key default gen_random_uuid(),
+  value text not null default '',
+  label text not null default '',
+  "order" int not null default 0,
+  is_published boolean not null default true
+);
+alter table management_metrics enable row level security;
+drop policy if exists "public read published" on management_metrics;
+create policy "public read published" on management_metrics for select using (is_published = true);
+drop policy if exists "admin write" on management_metrics;
+create policy "admin write" on management_metrics for all
+  using (auth.uid() in (select id from admin_users))
+  with check (auth.uid() in (select id from admin_users));
+
+-- 위 숫자 카드 아래의 어두운 강조 타일. type='stat'(큰 숫자+설명) 또는 type='list'(제목+목록, 예: Reference)
+create table if not exists management_highlights (
+  id uuid primary key default gen_random_uuid(),
+  type text not null default 'stat',
+  value text not null default '',
+  description text not null default '',
+  title text not null default '',
+  items jsonb not null default '[]',
+  "order" int not null default 0,
+  is_published boolean not null default true
+);
+alter table management_highlights enable row level security;
+drop policy if exists "public read published" on management_highlights;
+create policy "public read published" on management_highlights for select using (is_published = true);
+drop policy if exists "admin write" on management_highlights;
+create policy "admin write" on management_highlights for all
+  using (auth.uid() in (select id from admin_users))
+  with check (auth.uid() in (select id from admin_users));
+
+-- 교육 관리 페이지 "개월차별 관리" 카드. 학습부진자 지도 계획(support_plan_tracks)과는 별개의 새 섹션.
+-- photos: [{ "image_url": "...", "caption": "..." }, ...] — 클릭 시 좌우로 넘겨보는 팝업으로 표시
+create table if not exists management_months (
+  id uuid primary key default gen_random_uuid(),
+  month_label text not null default '',
+  title text not null default '',
+  description text not null default '',
+  tags jsonb not null default '[]',
+  photos jsonb not null default '[]',
+  "order" int not null default 0,
+  is_published boolean not null default true
+);
+alter table management_months enable row level security;
+drop policy if exists "public read published" on management_months;
+create policy "public read published" on management_months for select using (is_published = true);
+drop policy if exists "admin write" on management_months;
+create policy "admin write" on management_months for all
+  using (auth.uid() in (select id from admin_users))
+  with check (auth.uid() in (select id from admin_users));
+
+-- 참여 기업 연계 페이지 "기업 참여 방식"에 붙일 신청 폼(구글 폼 등) 링크
+alter table site_settings add column if not exists partners_form_url text not null default '';

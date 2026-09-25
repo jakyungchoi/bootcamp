@@ -16,6 +16,7 @@ type SettingsForm = {
   home_hero_image_url: string | null;
   home_highlights: HomeHighlight[];
   nav_items: NavItem[];
+  partners_form_url: string;
 };
 
 export default function SiteSettingsPage() {
@@ -41,6 +42,7 @@ export default function SiteSettingsPage() {
           home_hero_image_url: data.home_hero_image_url,
           home_highlights: data.home_highlights,
           nav_items: data.nav_items,
+          partners_form_url: data.partners_form_url ?? "",
         });
       }
       setLoading(false);
@@ -211,6 +213,26 @@ export default function SiteSettingsPage() {
               folder="site"
             />
           </div>
+        </div>
+      </section>
+
+      <section className="mt-6 rounded-xl border border-neutral-200 bg-white p-5">
+        <h2 className="font-semibold text-neutral-800">참여 기업 연계</h2>
+        <div className="mt-4">
+          <label className="mb-1 block text-sm font-medium text-neutral-700">
+            신청 폼 링크 (구글 폼 등)
+          </label>
+          <input
+            type="text"
+            value={form.partners_form_url}
+            placeholder="예: https://forms.gle/..."
+            onChange={(e) => setForm({ ...form, partners_form_url: e.target.value })}
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm font-mono focus:border-brand focus:outline-none"
+          />
+          <p className="mt-1 text-xs text-neutral-400">
+            입력하면 참여 기업 연계 페이지의 &quot;기업 참여 방식&quot; 위에 &quot;참여 신청하기&quot; 버튼이
+            표시됩니다. 비워두면 버튼이 표시되지 않습니다.
+          </p>
         </div>
       </section>
 
