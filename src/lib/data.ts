@@ -257,6 +257,20 @@ export async function getPageHeader(pageKey: PageHeaderKey): Promise<PageHeader>
   return pageHeaders[pageKey];
 }
 
+// 관리자 대시보드에서 "숨기기" 처리한 기존 메뉴의 key 목록.
+// 공개 페이지들은 이 값을 참고해서, 숨긴 메뉴에 해당하는 섹션 전체를 화면에서 감추고
+// 남은 섹션의 번호(01, 02, ...)를 자동으로 다시 매긴다.
+export async function getHiddenAdminKeys(): Promise<Set<string>> {
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from("admin_menu_overrides")
+      .select("key, is_visible")
+      .eq("is_visible", false);
+    if (!error && data) return new Set(data.map((d) => d.key as string));
+  }
+  return new Set();
+}
+
 // 관리자가 추가한 커스텀 페이지를 slug 로 조회 (공개된 것만). 없으면 null.
 export async function getCustomPageBySlug(slug: string): Promise<CustomPage | null> {
   if (!isSupabaseConfigured || !supabase) return null;

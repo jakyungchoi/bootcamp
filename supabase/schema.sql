@@ -585,3 +585,12 @@ create policy "admin write" on management_months for all
 
 -- 참여 기업 연계 페이지 "기업 참여 방식"에 붙일 신청 폼(구글 폼 등) 링크
 alter table site_settings add column if not exists partners_form_url text not null default '';
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 5
+-- admin_menu_overrides 는 지금까지 관리자만 읽을 수 있었는데(공개 정책이 없었음),
+-- 관리자 대시보드에서 메뉴를 "숨기기" 하면 공개 페이지에서도 해당 섹션 전체가 사라지고
+-- 남은 섹션 번호가 자동으로 다시 매겨지도록 하려면 공개 페이지에서도 이 값을 읽을 수 있어야 한다.
+-- (숨김 여부만 공개되며 민감한 정보는 아니다)
+drop policy if exists "public read all" on admin_menu_overrides;
+create policy "public read all" on admin_menu_overrides for select using (true);
