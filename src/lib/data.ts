@@ -271,6 +271,23 @@ export async function getHiddenAdminKeys(): Promise<Set<string>> {
   return new Set();
 }
 
+// 관리자 대시보드에서 이름(레이블)을 바꾼 기존 메뉴 목록 (key -> 새 이름).
+// 공개 페이지의 섹션 제목도 관리자 대시보드에서 바꾼 이름을 그대로 따라가도록 이 값을 사용한다.
+export async function getAdminMenuLabels(): Promise<Map<string, string>> {
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase.from("admin_menu_overrides").select("key, label");
+    if (!error && data) {
+      const map = new Map<string, string>();
+      for (const row of data as { key: string; label: string | null }[]) {
+        const label = row.label?.trim();
+        if (label) map.set(row.key, label);
+      }
+      return map;
+    }
+  }
+  return new Map();
+}
+
 // 관리자가 추가한 커스텀 페이지를 slug 로 조회 (공개된 것만). 없으면 null.
 export async function getCustomPageBySlug(slug: string): Promise<CustomPage | null> {
   if (!isSupabaseConfigured || !supabase) return null;

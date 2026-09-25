@@ -4,6 +4,7 @@ import { FlowSteps } from "@/components/ui/flow-steps";
 import { Card } from "@/components/ui/card";
 import { CourseCard } from "@/components/courses/course-card";
 import {
+  getAdminMenuLabels,
   getCourseCategories,
   getCourseDurationTypes,
   getCourses,
@@ -26,14 +27,20 @@ function pad(n: number) {
 }
 
 export default async function CoursesPage() {
-  const [categories, durationTypes, courses, flowSteps, header, hiddenKeys] = await Promise.all([
+  const [categories, durationTypes, courses, flowSteps, header, hiddenKeys, labels] = await Promise.all([
     getCourseCategories(),
     getCourseDurationTypes(),
     getCourses(),
     getCurriculumFlowSteps(),
     getPageHeader("courses"),
     getHiddenAdminKeys(),
+    getAdminMenuLabels(),
   ]);
+
+  // 관리자 대시보드에서 이름을 바꾼 메뉴는 공개 화면의 섹션 제목도 그 이름을 따라간다.
+  const labelCategories = labels.get("categories") ?? "교육 영역";
+  const labelCurriculum = labels.get("curriculum") ?? "커리큘럼 구성";
+  const labelCourses = labels.get("courses") ?? "대표 교육 과정";
 
   // 과정 기간 분류(단기/중장기 등)로 먼저 묶고, 어떤 분류에도 속하지 않은 과정은 마지막에 따로 모아 보여준다.
   const coursesByDurationType = durationTypes.map((d) => ({
@@ -62,7 +69,9 @@ export default async function CoursesPage() {
       {/* 5-1 교육 영역 */}
       {showCategories && (
         <section className="mt-14">
-          <h3 className="text-sm font-semibold text-neutral-400">{pad(numCategories)}. 교육 영역</h3>
+          <h3 className="text-sm font-semibold text-neutral-400">
+            {pad(numCategories)}. {labelCategories}
+          </h3>
           <div className="mt-4 grid gap-5 sm:grid-cols-3">
             {categories.map((category) => (
               <Card key={category.id}>
@@ -84,7 +93,9 @@ export default async function CoursesPage() {
       {/* 5-2 커리큘럼 구성 */}
       {showCurriculum && (
         <section className="mt-16">
-          <h3 className="text-sm font-semibold text-neutral-400">{pad(numCurriculum)}. 커리큘럼 구성</h3>
+          <h3 className="text-sm font-semibold text-neutral-400">
+            {pad(numCurriculum)}. {labelCurriculum}
+          </h3>
           <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
             교육의 전체 흐름을 단계별로 보여줍니다.
           </p>
@@ -97,7 +108,9 @@ export default async function CoursesPage() {
       {/* 5-3 대표 교육 과정 — 과정 기간 분류(단기/중장기 등)로 묶어서 보여준다 */}
       {showCourses && (
         <section className="mt-16">
-          <h3 className="text-sm font-semibold text-neutral-400">{pad(numCourses)}. 대표 교육 과정</h3>
+          <h3 className="text-sm font-semibold text-neutral-400">
+            {pad(numCourses)}. {labelCourses}
+          </h3>
           <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
             과정을 클릭하면 실제 프로젝트 내용을 좌우로 넘겨보며 확인할 수 있습니다.
           </p>

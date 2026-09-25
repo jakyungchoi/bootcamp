@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/icon-map";
 import { MonthCard } from "@/components/education/month-card";
 import {
+  getAdminMenuLabels,
   getCollaborationTools,
   getHiddenAdminKeys,
   getLearnerManagementItems,
@@ -38,6 +39,7 @@ export default async function EducationManagementPage() {
     highlights,
     months,
     hiddenKeys,
+    labels,
   ] = await Promise.all([
     getLearnerManagementItems(),
     getSupportPlanTracks(),
@@ -48,9 +50,16 @@ export default async function EducationManagementPage() {
     getManagementHighlights(),
     getManagementMonths(),
     getHiddenAdminKeys(),
+    getAdminMenuLabels(),
   ]);
   // "구분"은 관리자 페이지에서 자유롭게 입력하는 값이라, 실제로 등록된 값만 나온 순서대로 카드를 만든다.
   const qualityGroups = Array.from(new Set(qualityManagementItems.map((q) => q.group)));
+
+  // 관리자 대시보드에서 이름을 바꾼 메뉴는 공개 화면의 섹션 제목도 그 이름을 따라간다.
+  const labelLearnerManagement = labels.get("learner-management") ?? "학습자 관리";
+  const labelSupportPlans = labels.get("support-plans") ?? "학습부진자 지도 계획";
+  const labelMonths = labels.get("management-months") ?? "개월차별 관리";
+  const labelQuality = labels.get("quality-management") ?? "교육 품질 관리";
 
   // 관리자 대시보드에서 "숨기기" 한 메뉴에 해당하는 섹션은 공개 화면에서도 통째로 감추고,
   // 남은 섹션의 번호를 앞에서부터 다시 매긴다.
@@ -122,7 +131,9 @@ export default async function EducationManagementPage() {
       {/* 6-1 학습자 관리 */}
       {showLearnerManagement && (
         <section className="mt-14">
-          <h3 className="text-sm font-semibold text-neutral-400">{pad(numLearnerManagement)}. 학습자 관리</h3>
+          <h3 className="text-sm font-semibold text-neutral-400">
+            {pad(numLearnerManagement)}. {labelLearnerManagement}
+          </h3>
           <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {learnerManagementItems.map((item) => (
               <Card key={item.id}>
@@ -140,7 +151,9 @@ export default async function EducationManagementPage() {
       {/* 6-2 학습부진자 지도 계획 */}
       {showSupportPlans && (
         <section className="mt-16">
-          <h3 className="text-sm font-semibold text-neutral-400">{pad(numSupportPlans)}. 학습부진자 지도 계획</h3>
+          <h3 className="text-sm font-semibold text-neutral-400">
+            {pad(numSupportPlans)}. {labelSupportPlans}
+          </h3>
           <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
             학습에 어려움을 겪는 교육생을 위한 지원 방식입니다.
           </p>
@@ -165,7 +178,9 @@ export default async function EducationManagementPage() {
       {/* 6-3 개월차별 관리 */}
       {showMonths && (
         <section className="mt-16">
-          <h3 className="text-sm font-semibold text-neutral-400">{pad(numMonths)}. 개월차별 관리</h3>
+          <h3 className="text-sm font-semibold text-neutral-400">
+            {pad(numMonths)}. {labelMonths}
+          </h3>
           <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
             개월차별로 어떻게 관리하고 있는지 보여줍니다. 카드를 클릭하면 사진을 좌우로 넘겨볼 수 있습니다.
           </p>
@@ -188,7 +203,9 @@ export default async function EducationManagementPage() {
       {/* 6-4 교육 품질 관리 */}
       {showQualitySection && (
         <section className="mt-16">
-          <h3 className="text-sm font-semibold text-neutral-400">{pad(numQuality)}. 교육 품질 관리</h3>
+          <h3 className="text-sm font-semibold text-neutral-400">
+            {pad(numQuality)}. {labelQuality}
+          </h3>
           {showQualityGroups && (
             <div className="mt-4 grid gap-5 md:grid-cols-2">
               {qualityGroups.map((group) => (

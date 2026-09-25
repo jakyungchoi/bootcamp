@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/icon-map";
 import { CaseStudySlider } from "@/components/partners/case-study-slider";
 import {
+  getAdminMenuLabels,
   getCompanyCaseStudies,
   getCompanyFlowSteps,
   getCompanyParticipationTypes,
@@ -26,14 +27,20 @@ function pad(n: number) {
 }
 
 export default async function PartnersPage() {
-  const [types, steps, cases, header, settings, hiddenKeys] = await Promise.all([
+  const [types, steps, cases, header, settings, hiddenKeys, labels] = await Promise.all([
     getCompanyParticipationTypes(),
     getCompanyFlowSteps(),
     getCompanyCaseStudies(),
     getPageHeader("partners"),
     getSiteSettings(),
     getHiddenAdminKeys(),
+    getAdminMenuLabels(),
   ]);
+
+  // 관리자 대시보드에서 이름을 바꾼 메뉴는 공개 화면의 섹션 제목도 그 이름을 따라간다.
+  const labelCaseStudies = labels.get("case-studies") ?? "협업 사례";
+  const labelCompanyFlow = labels.get("company-flow") ?? "이런 협업이 가능해요";
+  const labelParticipationTypes = labels.get("participation-types") ?? "기업 참여 방식";
 
   // 관리자 대시보드에서 "숨기기" 한 메뉴에 해당하는 섹션은 공개 화면에서도 통째로 감추고,
   // 남은 섹션의 번호를 앞에서부터 다시 매긴다.
@@ -53,7 +60,9 @@ export default async function PartnersPage() {
       {/* 8-1 협업 사례 (슬라이드) */}
       {showCaseStudies && (
         <section className="mt-14">
-          <h3 className="text-sm font-semibold text-neutral-400">{pad(numCaseStudies)}. 협업 사례</h3>
+          <h3 className="text-sm font-semibold text-neutral-400">
+            {pad(numCaseStudies)}. {labelCaseStudies}
+          </h3>
           {cases.length === 0 ? (
             <Card className="mt-4">
               <p className="text-sm text-neutral-500 dark:text-neutral-400">
@@ -71,7 +80,9 @@ export default async function PartnersPage() {
       {/* 8-2 가능한 협업 활동 */}
       {showCompanyFlow && (
         <section className="mt-16">
-          <h3 className="text-sm font-semibold text-neutral-400">{pad(numCompanyFlow)}. 이런 협업이 가능해요</h3>
+          <h3 className="text-sm font-semibold text-neutral-400">
+            {pad(numCompanyFlow)}. {labelCompanyFlow}
+          </h3>
           <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
             기업과 함께 진행할 수 있는 활동입니다.
           </p>
@@ -94,7 +105,7 @@ export default async function PartnersPage() {
         <section className="mt-16">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <h3 className="text-sm font-semibold text-neutral-400">
-              {pad(numParticipationTypes)}. 기업 참여 방식
+              {pad(numParticipationTypes)}. {labelParticipationTypes}
             </h3>
             {settings.partners_form_url && (
               <a
