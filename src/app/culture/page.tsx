@@ -18,7 +18,7 @@ export default async function CulturePage() {
     <div className="mx-auto max-w-6xl px-5 py-16">
       <SectionHeading eyebrow={header.eyebrow} title={header.title} description={header.description} />
 
-      <section className="mt-14 space-y-6">
+      <section id="admin-section-culture" className="mt-14 scroll-mt-24 space-y-6">
         {programs.map((program, i) => (
           <Card key={program.id} className="grid gap-6 md:grid-cols-[1.1fr_1fr] md:items-center">
             <div className={i % 2 === 1 ? "md:order-2" : ""}>

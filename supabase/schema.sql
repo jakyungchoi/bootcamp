@@ -659,3 +659,18 @@ alter table site_settings add column if not exists partners_required_fields json
 -- 관리자 대시보드의 해당 메뉴(company-flow) 화면에서 바로 수정할 수 있도록 한다.
 alter table site_settings add column if not exists company_flow_description text not null default
   '기업과 함께 진행할 수 있는 활동입니다.';
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 11
+-- 위 확장 10과 같은 이유로, "협업 사례" / "기업 참여 방식" 섹션도 제목 바로 아래 한 줄 설명을
+-- 관리자 화면에서 수정할 수 있도록 컬럼을 추가한다. 또한 참여 신청 팝업 폼의 각 입력 항목에
+-- 실제로 표시되는 이름(라벨) 문구도 관리자 화면에서 자유롭게 바꿀 수 있도록 컬럼을 추가한다
+-- (예: "남기실 말씀 (선택 작성)" 같은 고정 문구를 "남기실 말씀"으로 바꾸는 등).
+alter table site_settings add column if not exists case_studies_description text not null default
+  '원티드랩 부트캠프와 함께한 기업들의 협업 사례입니다.';
+
+alter table site_settings add column if not exists participation_types_description text not null default
+  '다양한 방식으로 부트캠프 교육에 참여할 수 있습니다.';
+
+alter table site_settings add column if not exists partners_field_labels jsonb not null default
+  '{"companyName": "기업명", "contactName": "담당자명", "department": "부서", "position": "직급 / 직책", "email": "이메일", "phone": "연락처", "participationTypes": "참여 희망 방식", "meetingMethod": "만남 방식", "request": "문의 / 요청 내용", "message": "남기실 말씀"}';

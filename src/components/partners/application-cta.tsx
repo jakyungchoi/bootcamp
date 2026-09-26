@@ -6,7 +6,7 @@
 
 import { useState } from "react";
 import { ApplicationFormModal } from "@/components/partners/application-form-modal";
-import type { PartnersRequiredFields } from "@/lib/types";
+import type { PartnersFieldLabels, PartnersRequiredFields } from "@/lib/types";
 
 type ApplicationCtaProps = {
   participationOptions: string[];
@@ -14,6 +14,7 @@ type ApplicationCtaProps = {
   privacyNotice: string;
   submitNotice: string;
   requiredFields: PartnersRequiredFields;
+  fieldLabels: PartnersFieldLabels;
 };
 
 export function ApplicationCta({
@@ -22,6 +23,7 @@ export function ApplicationCta({
   privacyNotice,
   submitNotice,
   requiredFields,
+  fieldLabels,
 }: ApplicationCtaProps) {
   const [open, setOpen] = useState(false);
 
@@ -41,6 +43,7 @@ export function ApplicationCta({
           privacyNotice={privacyNotice}
           submitNotice={submitNotice}
           requiredFields={requiredFields}
+          fieldLabels={fieldLabels}
           onClose={() => setOpen(false)}
         />
       )}

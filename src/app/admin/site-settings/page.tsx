@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
-import type { HomeHighlight, NavItem, PartnersRequiredFields } from "@/lib/types";
+import { AdminContentLayout } from "@/components/admin/admin-content-layout";
+import type { HomeHighlight, NavItem, PartnersFieldLabels, PartnersRequiredFields } from "@/lib/types";
 
 type SettingsForm = {
   site_name: string;
@@ -20,6 +21,7 @@ type SettingsForm = {
   partners_privacy_notice: string;
   partners_submit_notice: string;
   partners_required_fields: PartnersRequiredFields;
+  partners_field_labels: PartnersFieldLabels;
 };
 
 // 신청 폼 필드가 DB에 아직 없을 때(과거 데이터)를 위한 기본값. supabase/schema.sql의 기본값과 맞춘다.
@@ -36,18 +38,31 @@ const DEFAULT_REQUIRED_FIELDS: PartnersRequiredFields = {
   message: false,
 };
 
-// 신청 폼에 실제로 보이는 순서 그대로 나열한다 (관리자 화면의 체크박스 순서와도 맞춘다).
-const REQUIRED_FIELD_ITEMS: { key: keyof PartnersRequiredFields; label: string }[] = [
-  { key: "companyName", label: "기업명" },
-  { key: "contactName", label: "담당자명" },
-  { key: "department", label: "부서" },
-  { key: "position", label: "직급 / 직책" },
-  { key: "email", label: "이메일" },
-  { key: "phone", label: "연락처" },
-  { key: "participationTypes", label: "참여 희망 방식" },
-  { key: "meetingMethod", label: "만남 방식" },
-  { key: "request", label: "문의 / 요청 내용" },
-  { key: "message", label: "남기실 말씀" },
+const DEFAULT_FIELD_LABELS: PartnersFieldLabels = {
+  companyName: "기업명",
+  contactName: "담당자명",
+  department: "부서",
+  position: "직급 / 직책",
+  email: "이메일",
+  phone: "연락처",
+  participationTypes: "참여 희망 방식",
+  meetingMethod: "만남 방식",
+  request: "문의 / 요청 내용",
+  message: "남기실 말씀",
+};
+
+// 신청 폼에 실제로 보이는 순서 그대로 나열한다 (관리자 화면의 순서와도 맞춘다).
+const REQUIRED_FIELD_ITEMS: { key: keyof PartnersRequiredFields }[] = [
+  { key: "companyName" },
+  { key: "contactName" },
+  { key: "department" },
+  { key: "position" },
+  { key: "email" },
+  { key: "phone" },
+  { key: "participationTypes" },
+  { key: "meetingMethod" },
+  { key: "request" },
+  { key: "message" },
 ];
 
 export default function SiteSettingsPage() {
@@ -56,6 +71,7 @@ export default function SiteSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [previewRefreshToken, setPreviewRefreshToken] = useState(0);
 
   useEffect(() => {
     async function load() {
@@ -77,6 +93,7 @@ export default function SiteSettingsPage() {
           partners_privacy_notice: data.partners_privacy_notice ?? "",
           partners_submit_notice: data.partners_submit_notice ?? "",
           partners_required_fields: { ...DEFAULT_REQUIRED_FIELDS, ...(data.partners_required_fields ?? {}) },
+          partners_field_labels: { ...DEFAULT_FIELD_LABELS, ...(data.partners_field_labels ?? {}) },
         });
       }
       setLoading(false);
@@ -120,6 +137,12 @@ export default function SiteSettingsPage() {
       f
         ? { ...f, partners_required_fields: { ...f.partners_required_fields, [key]: !f.partners_required_fields[key] } }
         : f,
+    );
+  }
+
+  function updateFieldLabel(key: keyof PartnersFieldLabels, value: string) {
+    setForm((f) =>
+      f ? { ...f, partners_field_labels: { ...f.partners_field_labels, [key]: value } } : f,
     );
   }
 
@@ -181,6 +204,7 @@ export default function SiteSettingsPage() {
     if (err) setError(err.message);
     else {
       setSaved(true);
+      setPreviewRefreshToken((n) => n + 1);
       setTimeout(() => setSaved(false), 2000);
     }
   }
@@ -193,6 +217,16 @@ export default function SiteSettingsPage() {
   }
 
   return (
+    <AdminContentLayout
+      refreshToken={previewRefreshToken}
+      previewOptions={[
+        { label: "홈", path: "/" },
+        { label: "운영 교육 과정", path: "/courses" },
+        { label: "교육 관리", path: "/education-management" },
+        { label: "교육 문화", path: "/culture" },
+        { label: "참여 기업 연계 (참여 신청 폼)", path: "/partners#admin-section-participation-types" },
+      ]}
+    >
     <div className="max-w-2xl">
       <h1 className="text-xl font-bold text-neutral-900">사이트 전역 설정</h1>
       <p className="mt-1 text-sm text-neutral-500">
@@ -290,23 +324,34 @@ export default function SiteSettingsPage() {
 
         <div className="mt-4 space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-neutral-700">필수 입력 항목</label>
+            <label className="mb-1 block text-sm font-medium text-neutral-700">
+              입력 항목 이름 · 필수 여부
+            </label>
             <p className="mb-2 text-xs text-neutral-400">
-              체크한 항목은 폼에 별표(*)가 붙고, 비워둔 채로는 제출할 수 없습니다. 체크를 풀면 방문자가
-              입력하지 않고 넘어갈 수 있는 선택 항목이 됩니다. (&quot;위 내용에 동의합니다&quot; 체크박스는
+              폼에 실제로 표시되는 항목 이름(라벨)을 자유롭게 바꿀 수 있습니다. 체크한 항목은 이름
+              뒤에 별표(*)가 붙고 비워둔 채로는 제출할 수 없으며, 체크를 풀면 방문자가 입력하지
+              않고 넘어갈 수 있는 선택 항목이 됩니다. (&quot;위 내용에 동의합니다&quot; 체크박스는
               항상 필수입니다)
             </p>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-lg border border-neutral-200 p-3 sm:grid-cols-3">
-              {REQUIRED_FIELD_ITEMS.map(({ key, label }) => (
-                <label key={key} className="flex items-center gap-2 text-sm text-neutral-700">
+            <div className="space-y-2 rounded-lg border border-neutral-200 p-3">
+              {REQUIRED_FIELD_ITEMS.map(({ key }) => (
+                <div key={key} className="flex items-center gap-3">
+                  <label className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-neutral-500">
+                    <input
+                      type="checkbox"
+                      checked={form.partners_required_fields[key]}
+                      onChange={() => toggleRequiredField(key)}
+                      className="h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
+                    />
+                    필수
+                  </label>
                   <input
-                    type="checkbox"
-                    checked={form.partners_required_fields[key]}
-                    onChange={() => toggleRequiredField(key)}
-                    className="h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
+                    type="text"
+                    value={form.partners_field_labels[key]}
+                    onChange={(e) => updateFieldLabel(key, e.target.value)}
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-sm focus:border-brand focus:outline-none"
                   />
-                  {label}
-                </label>
+                </div>
               ))}
             </div>
           </div>
@@ -530,5 +575,6 @@ export default function SiteSettingsPage() {
         {saved && <span className="text-sm text-emerald-600">저장되었습니다.</span>}
       </div>
     </div>
+    </AdminContentLayout>
   );
 }

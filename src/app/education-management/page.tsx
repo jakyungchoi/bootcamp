@@ -83,7 +83,7 @@ export default async function EducationManagementPage() {
 
       {/* 숫자로 검증된 실제 결과 (관리자 페이지 "교육 성과 지표"에서 등록) */}
       {showMetrics && (metrics.length > 0 || highlights.length > 0) && (
-        <section className="mt-14">
+        <section id="admin-section-management-metrics" className="mt-14 scroll-mt-24">
           {metrics.length > 0 && (
             <div className="grid grid-cols-2 divide-x divide-black/5 rounded-2xl border border-black/5 bg-white p-6 sm:grid-cols-4 dark:divide-white/10 dark:border-white/10 dark:bg-neutral-900">
               {metrics.map((m) => (
@@ -130,7 +130,7 @@ export default async function EducationManagementPage() {
 
       {/* 6-1 학습자 관리 */}
       {showLearnerManagement && (
-        <section className="mt-14">
+        <section id="admin-section-learner-management" className="mt-14 scroll-mt-24">
           <h3 className="text-sm font-semibold text-neutral-400">
             {pad(numLearnerManagement)}. {labelLearnerManagement}
           </h3>
@@ -150,7 +150,7 @@ export default async function EducationManagementPage() {
 
       {/* 6-2 학습부진자 지도 계획 */}
       {showSupportPlans && (
-        <section className="mt-16">
+        <section id="admin-section-support-plans" className="mt-16 scroll-mt-24">
           <h3 className="text-sm font-semibold text-neutral-400">
             {pad(numSupportPlans)}. {labelSupportPlans}
           </h3>
@@ -177,7 +177,7 @@ export default async function EducationManagementPage() {
 
       {/* 6-3 개월차별 관리 */}
       {showMonths && (
-        <section className="mt-16">
+        <section id="admin-section-management-months" className="mt-16 scroll-mt-24">
           <h3 className="text-sm font-semibold text-neutral-400">
             {pad(numMonths)}. {labelMonths}
           </h3>
@@ -202,7 +202,7 @@ export default async function EducationManagementPage() {
 
       {/* 6-4 교육 품질 관리 */}
       {showQualitySection && (
-        <section className="mt-16">
+        <section id="admin-section-quality-management" className="mt-16 scroll-mt-24">
           <h3 className="text-sm font-semibold text-neutral-400">
             {pad(numQuality)}. {labelQuality}
           </h3>

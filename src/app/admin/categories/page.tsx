@@ -1,13 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
 import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
+import { AdminContentLayout } from "@/components/admin/admin-content-layout";
 
 export default function CategoriesAdminPage() {
   const title = useAdminMenuLabel("categories", "교육 영역 카테고리");
+  const [refreshToken, setRefreshToken] = useState(0);
   return (
-    <div>
+    <AdminContentLayout
+      refreshToken={refreshToken}
+      previewOptions={[{ label: title, path: "/courses#admin-section-categories" }]}
+    >
       <PageHeaderNote />
       <ResourceCrud
         table="course_categories"
@@ -23,7 +29,8 @@ export default function CategoriesAdminPage() {
             helpText: "한 줄에 하나씩 입력하세요.",
           },
         ]}
+        onSaved={() => setRefreshToken((n) => n + 1)}
       />
-    </div>
+    </AdminContentLayout>
   );
 }

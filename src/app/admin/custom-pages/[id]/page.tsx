@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowUp, Loader2, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
+import { AdminContentLayout } from "@/components/admin/admin-content-layout";
 import type { CustomPage, CustomPageSection } from "@/lib/types";
 
 export default function CustomPageEditor({ params }: { params: Promise<{ id: string }> }) {
@@ -20,6 +21,7 @@ export default function CustomPageEditor({ params }: { params: Promise<{ id: str
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const [refreshToken, setRefreshToken] = useState(0);
 
   useEffect(() => {
     async function load() {
@@ -85,6 +87,7 @@ export default function CustomPageEditor({ params }: { params: Promise<{ id: str
     if (err) setError(err.message);
     else {
       setSaved(true);
+      setRefreshToken((n) => n + 1);
       setTimeout(() => setSaved(false), 2000);
     }
   }
@@ -115,6 +118,10 @@ export default function CustomPageEditor({ params }: { params: Promise<{ id: str
   }
 
   return (
+    <AdminContentLayout
+      refreshToken={refreshToken}
+      previewOptions={[{ label: page.title || "탭 미리보기", path: `/pages/${page.slug}` }]}
+    >
     <div className="max-w-2xl">
       <div className="flex items-center justify-between gap-3">
         <div>
@@ -279,5 +286,6 @@ export default function CustomPageEditor({ params }: { params: Promise<{ id: str
         </Link>
       </div>
     </div>
+    </AdminContentLayout>
   );
 }

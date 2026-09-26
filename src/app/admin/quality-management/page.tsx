@@ -1,13 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
 import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
+import { AdminContentLayout } from "@/components/admin/admin-content-layout";
 
 export default function QualityManagementAdminPage() {
   const title = useAdminMenuLabel("quality-management", "교육 품질 관리");
+  const [refreshToken, setRefreshToken] = useState(0);
   return (
-    <div>
+    <AdminContentLayout
+      refreshToken={refreshToken}
+      previewOptions={[{ label: title, path: "/education-management#admin-section-quality-management" }]}
+    >
       <PageHeaderNote />
       <ResourceCrud
         table="quality_management_items"
@@ -27,7 +33,8 @@ export default function QualityManagementAdminPage() {
           { key: "title", label: "항목 이름", type: "text", required: true },
           { key: "description", label: "설명", type: "textarea" },
         ]}
+        onSaved={() => setRefreshToken((n) => n + 1)}
       />
-    </div>
+    </AdminContentLayout>
   );
 }

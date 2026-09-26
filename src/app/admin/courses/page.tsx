@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase/client";
 import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
 import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
+import { AdminContentLayout } from "@/components/admin/admin-content-layout";
 
 export default function CoursesAdminPage() {
   const title = useAdminMenuLabel("courses", "대표 교육 과정");
@@ -14,6 +15,7 @@ export default function CoursesAdminPage() {
   const [durationTypeOptions, setDurationTypeOptions] = useState<{ value: string; label: string }[] | null>(
     null
   );
+  const [refreshToken, setRefreshToken] = useState(0);
 
   useEffect(() => {
     async function load() {
@@ -33,7 +35,10 @@ export default function CoursesAdminPage() {
   }
 
   return (
-    <div>
+    <AdminContentLayout
+      refreshToken={refreshToken}
+      previewOptions={[{ label: title, path: "/courses#admin-section-courses" }]}
+    >
       <PageHeaderNote />
       <ResourceCrud
         table="courses"
@@ -67,7 +72,8 @@ export default function CoursesAdminPage() {
             ],
           },
         ]}
+        onSaved={() => setRefreshToken((n) => n + 1)}
       />
-    </div>
+    </AdminContentLayout>
   );
 }

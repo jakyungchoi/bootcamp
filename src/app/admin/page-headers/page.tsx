@@ -7,13 +7,14 @@ import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { pageHeaders as defaultPageHeaders } from "@/lib/content";
+import { AdminContentLayout } from "@/components/admin/admin-content-layout";
 import type { PageHeader, PageHeaderKey } from "@/lib/types";
 
-const PAGES: { key: PageHeaderKey; label: string }[] = [
-  { key: "courses", label: "운영 교육 과정 (/courses)" },
-  { key: "education-management", label: "교육 관리 (/education-management)" },
-  { key: "culture", label: "교육 문화 (/culture)" },
-  { key: "partners", label: "참여 기업 연계 (/partners)" },
+const PAGES: { key: PageHeaderKey; label: string; path: string }[] = [
+  { key: "courses", label: "운영 교육 과정 (/courses)", path: "/courses" },
+  { key: "education-management", label: "교육 관리 (/education-management)", path: "/education-management" },
+  { key: "culture", label: "교육 문화 (/culture)", path: "/culture" },
+  { key: "partners", label: "참여 기업 연계 (/partners)", path: "/partners" },
 ];
 
 type FormState = Record<PageHeaderKey, PageHeader>;
@@ -24,6 +25,7 @@ export default function PageHeadersAdminPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [refreshToken, setRefreshToken] = useState(0);
 
   useEffect(() => {
     async function load() {
@@ -69,6 +71,7 @@ export default function PageHeadersAdminPage() {
     if (err) setError(err.message);
     else {
       setSaved(true);
+      setRefreshToken((n) => n + 1);
       setTimeout(() => setSaved(false), 2000);
     }
   }
@@ -85,6 +88,10 @@ export default function PageHeadersAdminPage() {
   }
 
   return (
+    <AdminContentLayout
+      refreshToken={refreshToken}
+      previewOptions={PAGES.map(({ label, path }) => ({ label, path }))}
+    >
     <div className="max-w-2xl">
       <h1 className="text-xl font-bold text-neutral-900">페이지 상단 문구</h1>
       <p className="mt-1 text-sm text-neutral-500">
@@ -145,5 +152,6 @@ export default function PageHeadersAdminPage() {
         {saved && <span className="text-sm text-emerald-600">저장되었습니다.</span>}
       </div>
     </div>
+    </AdminContentLayout>
   );
 }

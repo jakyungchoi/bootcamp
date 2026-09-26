@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
 import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
+import { AdminContentLayout } from "@/components/admin/admin-content-layout";
+import { SectionCaptionEditor } from "@/components/admin/section-caption-editor";
 
 const ICON_OPTIONS = [
   "Lightbulb",
@@ -20,9 +23,18 @@ const ICON_OPTIONS = [
 
 export default function ParticipationTypesAdminPage() {
   const title = useAdminMenuLabel("participation-types", "기업 참여 방식");
+  const [refreshToken, setRefreshToken] = useState(0);
   return (
-    <div>
+    <AdminContentLayout
+      refreshToken={refreshToken}
+      previewOptions={[{ label: title, path: "/partners#admin-section-participation-types" }]}
+    >
       <PageHeaderNote />
+      <SectionCaptionEditor
+        column="participation_types_description"
+        title={title}
+        onSaved={() => setRefreshToken((n) => n + 1)}
+      />
       <ResourceCrud
         table="company_participation_types"
         title={title}
@@ -33,7 +45,8 @@ export default function ParticipationTypesAdminPage() {
           { key: "description", label: "설명 (내부 기록용, 공개 화면 미노출)", type: "textarea" },
           { key: "icon", label: "아이콘 (내부 기록용, 공개 화면 미노출)", type: "select", options: ICON_OPTIONS },
         ]}
+        onSaved={() => setRefreshToken((n) => n + 1)}
       />
-    </div>
+    </AdminContentLayout>
   );
 }

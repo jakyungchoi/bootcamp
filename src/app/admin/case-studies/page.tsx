@@ -1,14 +1,26 @@
 "use client";
 
+import { useState } from "react";
 import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
 import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
+import { AdminContentLayout } from "@/components/admin/admin-content-layout";
+import { SectionCaptionEditor } from "@/components/admin/section-caption-editor";
 
 export default function CaseStudiesAdminPage() {
   const title = useAdminMenuLabel("case-studies", "협업 사례");
+  const [refreshToken, setRefreshToken] = useState(0);
   return (
-    <div>
+    <AdminContentLayout
+      refreshToken={refreshToken}
+      previewOptions={[{ label: title, path: "/partners#admin-section-case-studies" }]}
+    >
       <PageHeaderNote />
+      <SectionCaptionEditor
+        column="case_studies_description"
+        title={title}
+        onSaved={() => setRefreshToken((n) => n + 1)}
+      />
       <ResourceCrud
         table="company_case_studies"
         title={title}
@@ -20,7 +32,8 @@ export default function CaseStudiesAdminPage() {
           { key: "title", label: "제목 (내부 기록용, 공개 화면 미노출)", type: "text", required: true },
           { key: "description", label: "설명 (내부 기록용, 공개 화면 미노출)", type: "textarea" },
         ]}
+        onSaved={() => setRefreshToken((n) => n + 1)}
       />
-    </div>
+    </AdminContentLayout>
   );
 }

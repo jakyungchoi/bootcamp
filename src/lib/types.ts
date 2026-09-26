@@ -193,8 +193,14 @@ export type SiteSettings = {
   partners_submit_notice: string;
   // 참여 신청 팝업 폼의 각 항목을 필수로 받을지 선택 입력으로 둘지 (관리자 대시보드에서 켜고 끌 수 있다)
   partners_required_fields: PartnersRequiredFields;
+  // 참여 신청 팝업 폼의 각 항목에 실제로 표시되는 이름(라벨) 문구 (관리자 대시보드에서 자유롭게 수정 가능)
+  partners_field_labels: PartnersFieldLabels;
   // 참여 기업 연계 페이지 "이런 협업이 가능해요" 섹션 제목 바로 아래에 표시되는 한 줄 설명
   company_flow_description: string;
+  // 참여 기업 연계 페이지 "협업 사례" 섹션 제목 바로 아래에 표시되는 한 줄 설명
+  case_studies_description: string;
+  // 참여 기업 연계 페이지 "기업 참여 방식" 섹션 제목 바로 아래에 표시되는 한 줄 설명
+  participation_types_description: string;
 };
 
 // 참여 신청 팝업 폼의 입력 항목 키. ApplicationFormModal / API 라우트가 이 키를 그대로 쓴다.
@@ -211,6 +217,7 @@ export type PartnersFormFieldKey =
   | "message";
 
 export type PartnersRequiredFields = Record<PartnersFormFieldKey, boolean>;
+export type PartnersFieldLabels = Record<PartnersFormFieldKey, string>;
 
 // 4개 주요 페이지(운영 교육 과정 / 교육 관리 / 교육 문화 / 참여 기업 연계) 맨 위 문구
 export type PageHeaderKey = "courses" | "education-management" | "culture" | "partners";

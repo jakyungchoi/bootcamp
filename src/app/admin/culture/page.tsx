@@ -1,13 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
 import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
+import { AdminContentLayout } from "@/components/admin/admin-content-layout";
 
 export default function CultureAdminPage() {
   const title = useAdminMenuLabel("culture", "교육 문화 프로그램");
+  const [refreshToken, setRefreshToken] = useState(0);
   return (
-    <div>
+    <AdminContentLayout
+      refreshToken={refreshToken}
+      previewOptions={[{ label: title, path: "/culture#admin-section-culture" }]}
+    >
       <PageHeaderNote />
       <ResourceCrud
         table="culture_programs"
@@ -29,7 +35,8 @@ export default function CultureAdminPage() {
             subFields: [{ key: "image_url", label: "사진", type: "image" }],
           },
         ]}
+        onSaved={() => setRefreshToken((n) => n + 1)}
       />
-    </div>
+    </AdminContentLayout>
   );
 }

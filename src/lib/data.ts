@@ -149,7 +149,14 @@ export async function getSiteSettings(): Promise<SiteSettings> {
           ...siteSettings.partners_required_fields,
           ...(data.partners_required_fields ?? {}),
         },
+        partners_field_labels: {
+          ...siteSettings.partners_field_labels,
+          ...(data.partners_field_labels ?? {}),
+        },
         company_flow_description: data.company_flow_description ?? siteSettings.company_flow_description,
+        case_studies_description: data.case_studies_description ?? siteSettings.case_studies_description,
+        participation_types_description:
+          data.participation_types_description ?? siteSettings.participation_types_description,
       };
     }
   }

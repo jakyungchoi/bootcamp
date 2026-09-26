@@ -91,7 +91,21 @@ export const siteSettings: SiteSettings = {
     request: true,
     message: false,
   },
+  partners_field_labels: {
+    companyName: "기업명",
+    contactName: "담당자명",
+    department: "부서",
+    position: "직급 / 직책",
+    email: "이메일",
+    phone: "연락처",
+    participationTypes: "참여 희망 방식",
+    meetingMethod: "만남 방식",
+    request: "문의 / 요청 내용",
+    message: "남기실 말씀",
+  },
   company_flow_description: "기업과 함께 진행할 수 있는 활동입니다.",
+  case_studies_description: "원티드랩 부트캠프와 함께한 기업들의 협업 사례입니다.",
+  participation_types_description: "다양한 방식으로 부트캠프 교육에 참여할 수 있습니다.",
 };
 
 // 과정 기간 분류 (단기 과정 / 중장기 과정). 교육 영역 카테고리와는 별개로 관리한다.

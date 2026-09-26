@@ -63,10 +63,13 @@ export default async function PartnersPage() {
 
       {/* 8-1 협업 사례 (슬라이드) */}
       {showCaseStudies && (
-        <section className="mt-14">
+        <section id="admin-section-case-studies" className="mt-14 scroll-mt-24">
           <h3 className="text-sm font-semibold text-neutral-400">
             {pad(numCaseStudies)}. {labelCaseStudies}
           </h3>
+          <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
+            {settings.case_studies_description}
+          </p>
           {cases.length === 0 ? (
             <Card className="mt-4">
               <p className="text-sm text-neutral-500 dark:text-neutral-400">
@@ -83,7 +86,7 @@ export default async function PartnersPage() {
 
       {/* 8-2 가능한 협업 활동 */}
       {showCompanyFlow && (
-        <section className="mt-16">
+        <section id="admin-section-company-flow" className="mt-16 scroll-mt-24">
           <h3 className="text-sm font-semibold text-neutral-400">
             {pad(numCompanyFlow)}. {labelCompanyFlow}
           </h3>
@@ -106,11 +109,16 @@ export default async function PartnersPage() {
 
       {/* 8-3 기업 참여 방식 */}
       {showParticipationTypes && (
-        <section className="mt-16">
+        <section id="admin-section-participation-types" className="mt-16 scroll-mt-24">
           <div className="flex flex-wrap items-end justify-between gap-3">
-            <h3 className="text-sm font-semibold text-neutral-400">
-              {pad(numParticipationTypes)}. {labelParticipationTypes}
-            </h3>
+            <div>
+              <h3 className="text-sm font-semibold text-neutral-400">
+                {pad(numParticipationTypes)}. {labelParticipationTypes}
+              </h3>
+              <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
+                {settings.participation_types_description}
+              </p>
+            </div>
             {sheetsConfigured && (
               <ApplicationCta
                 participationOptions={types.map((type) => type.title)}
@@ -118,6 +126,7 @@ export default async function PartnersPage() {
                 privacyNotice={settings.partners_privacy_notice}
                 submitNotice={settings.partners_submit_notice}
                 requiredFields={settings.partners_required_fields}
+                fieldLabels={settings.partners_field_labels}
               />
             )}
           </div>

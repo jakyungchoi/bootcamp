@@ -41,6 +41,9 @@ export type ResourceCrudProps = {
   publishable?: boolean; // "is_published" 토글을 보여줄지 (기본 true)
   titleField?: string; // 목록에서 대표로 보여줄 필드 (기본: 첫 번째 필드)
   imageFolder?: string; // 이미지 업로드 시 사용할 스토리지 폴더명 (기본: table 이름)
+  // 저장/삭제/순서변경/공개전환이 성공할 때마다 호출된다. 옆에 실시간 미리보기를 붙인 화면에서
+  // 이 콜백으로 미리보기를 새로고침한다. (최초 목록을 불러올 때는 호출하지 않는다)
+  onSaved?: () => void;
 };
 
 type Row = Record<string, unknown> & { id: string; order?: number; is_published?: boolean };
@@ -65,6 +68,7 @@ export function ResourceCrud({
   publishable = true,
   titleField,
   imageFolder,
+  onSaved,
 }: ResourceCrudProps) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,6 +95,13 @@ export function ResourceCrud({
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [table]);
+
+  // 저장/삭제/순서변경/공개전환처럼 실제로 데이터가 바뀌는 조작이 성공했을 때만 호출한다.
+  // (최초 목록 조회는 데이터가 안 바뀌었으니 미리보기를 새로고침할 필요가 없다)
+  async function reloadAfterChange() {
+    await load();
+    onSaved?.();
+  }
 
   function openNew() {
     const values = emptyFormValues(fields);
@@ -157,7 +168,7 @@ export function ResourceCrud({
     }
     setSaving(false);
     setEditing(null);
-    load();
+    reloadAfterChange();
   }
 
   async function handleDelete(row: Row) {
@@ -165,7 +176,7 @@ export function ResourceCrud({
     if (!confirm("정말 삭제하시겠어요? 되돌릴 수 없습니다.")) return;
     const { error: err } = await supabase.from(table).delete().eq("id", row.id);
     if (err) setError(err.message);
-    else load();
+    else reloadAfterChange();
   }
 
   async function togglePublish(row: Row) {
@@ -175,7 +186,7 @@ export function ResourceCrud({
       .update({ is_published: !row.is_published })
       .eq("id", row.id);
     if (err) setError(err.message);
-    else load();
+    else reloadAfterChange();
   }
 
   async function move(row: Row, direction: -1 | 1) {
@@ -189,7 +200,7 @@ export function ResourceCrud({
     const { error: err1 } = await supabase.from(table).update({ order: b }).eq("id", row.id);
     const { error: err2 } = await supabase.from(table).update({ order: a }).eq("id", target.id);
     if (err1 || err2) setError((err1 ?? err2)?.message ?? "순서 변경에 실패했습니다.");
-    else load();
+    else reloadAfterChange();
   }
 
   // object-list 필드(예: 과정 프로젝트 상세, 개월차 사진) 편집용 헬퍼

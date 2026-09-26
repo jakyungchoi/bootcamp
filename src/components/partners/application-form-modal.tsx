@@ -6,7 +6,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { CheckCircle2, Loader2, X } from "lucide-react";
-import type { PartnersRequiredFields } from "@/lib/types";
+import type { PartnersFieldLabels, PartnersRequiredFields } from "@/lib/types";
 
 type ApplicationFormModalProps = {
   participationOptions: string[];
@@ -14,6 +14,7 @@ type ApplicationFormModalProps = {
   privacyNotice: string;
   submitNotice: string;
   requiredFields: PartnersRequiredFields;
+  fieldLabels: PartnersFieldLabels;
   onClose: () => void;
 };
 
@@ -72,6 +73,7 @@ export function ApplicationFormModal({
   privacyNotice,
   submitNotice,
   requiredFields,
+  fieldLabels,
   onClose,
 }: ApplicationFormModalProps) {
   const [form, setForm] = useState<FormState>(initialState);
@@ -173,7 +175,7 @@ export function ApplicationFormModal({
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5">
             <div>
-              <label className={labelClass}>기업명{requiredFields.companyName && " *"}</label>
+              <label className={labelClass}>{fieldLabels.companyName}{requiredFields.companyName && " *"}</label>
               <input
                 type="text"
                 required={requiredFields.companyName}
@@ -185,7 +187,7 @@ export function ApplicationFormModal({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelClass}>담당자명{requiredFields.contactName && " *"}</label>
+                <label className={labelClass}>{fieldLabels.contactName}{requiredFields.contactName && " *"}</label>
                 <input
                   type="text"
                   required={requiredFields.contactName}
@@ -195,7 +197,7 @@ export function ApplicationFormModal({
                 />
               </div>
               <div>
-                <label className={labelClass}>부서{requiredFields.department && " *"}</label>
+                <label className={labelClass}>{fieldLabels.department}{requiredFields.department && " *"}</label>
                 <input
                   type="text"
                   required={requiredFields.department}
@@ -207,7 +209,7 @@ export function ApplicationFormModal({
             </div>
 
             <div>
-              <label className={labelClass}>직급 / 직책{requiredFields.position && " *"}</label>
+              <label className={labelClass}>{fieldLabels.position}{requiredFields.position && " *"}</label>
               <input
                 type="text"
                 required={requiredFields.position}
@@ -219,7 +221,7 @@ export function ApplicationFormModal({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelClass}>이메일{requiredFields.email && " *"}</label>
+                <label className={labelClass}>{fieldLabels.email}{requiredFields.email && " *"}</label>
                 <input
                   type="email"
                   required={requiredFields.email}
@@ -229,7 +231,7 @@ export function ApplicationFormModal({
                 />
               </div>
               <div>
-                <label className={labelClass}>연락처{requiredFields.phone && " *"}</label>
+                <label className={labelClass}>{fieldLabels.phone}{requiredFields.phone && " *"}</label>
                 <input
                   type="tel"
                   required={requiredFields.phone}
@@ -243,7 +245,7 @@ export function ApplicationFormModal({
 
             <div>
               <label className={labelClass}>
-                참여 희망 방식{requiredFields.participationTypes && " *"} (복수 선택 가능)
+                {fieldLabels.participationTypes}{requiredFields.participationTypes && " *"} (복수 선택 가능)
               </label>
               <div className="space-y-1.5 rounded-lg border border-neutral-200 p-3 dark:border-white/10">
                 {participationOptions.map((title) => (
@@ -264,7 +266,7 @@ export function ApplicationFormModal({
             </div>
 
             <div>
-              <label className={labelClass}>만남 방식{requiredFields.meetingMethod && " *"}</label>
+              <label className={labelClass}>{fieldLabels.meetingMethod}{requiredFields.meetingMethod && " *"}</label>
               <div className="space-y-1.5 rounded-lg border border-neutral-200 p-3 dark:border-white/10">
                 {meetingOptions.map((option) => (
                   <label key={option} className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200">
@@ -286,7 +288,7 @@ export function ApplicationFormModal({
             </div>
 
             <div>
-              <label className={labelClass}>문의 / 요청 내용{requiredFields.request && " *"}</label>
+              <label className={labelClass}>{fieldLabels.request}{requiredFields.request && " *"}</label>
               <textarea
                 required={requiredFields.request}
                 rows={3}
@@ -297,9 +299,7 @@ export function ApplicationFormModal({
             </div>
 
             <div>
-              <label className={labelClass}>
-                남기실 말씀{requiredFields.message ? " *" : " (선택 작성)"}
-              </label>
+              <label className={labelClass}>{fieldLabels.message}{requiredFields.message && " *"}</label>
               <textarea
                 required={requiredFields.message}
                 rows={2}
