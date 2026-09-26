@@ -300,7 +300,10 @@ export default function SiteSettingsPage() {
           <div>
             <h2 className="font-semibold text-neutral-800">홈 화면 핵심 영역 카드</h2>
             <p className="mt-1 text-sm text-neutral-500">
-              홈 화면에 표시되는 카드입니다. 위 헤더 메뉴와는 별개로, 개수나 이름이 달라도 됩니다.
+              홈 화면에 표시되는 카드입니다. 위 헤더 메뉴와는 별개로, 개수나 이름이 달라도 됩니다. 아래
+              &quot;카드 설명&quot;은 홈 화면에서만 보이는 짧은 소개 문구이고, 그 페이지에 실제로
+              들어갔을 때 맨 위에 나오는 설명 문단은 이것과 별개로 &quot;페이지 상단 문구&quot; 메뉴에서
+              따로 관리합니다. 두 문구는 같을 필요가 없습니다.
             </p>
           </div>
           <button
