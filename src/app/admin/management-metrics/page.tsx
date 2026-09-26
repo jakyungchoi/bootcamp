@@ -1,6 +1,7 @@
 "use client";
 
 import { ResourceCrud } from "@/components/admin/resource-crud";
+import { PageHeaderNote } from "@/components/admin/page-header-note";
 
 const HIGHLIGHT_TYPE_OPTIONS = [
   { value: "stat", label: "숫자 강조 (예: 87.5%)" },
@@ -10,6 +11,7 @@ const HIGHLIGHT_TYPE_OPTIONS = [
 export default function ManagementMetricsAdminPage() {
   return (
     <div className="space-y-10">
+      <PageHeaderNote />
       <ResourceCrud
         table="management_metrics"
         title="교육 성과 지표 — 숫자 카드"

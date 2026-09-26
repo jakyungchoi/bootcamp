@@ -42,13 +42,18 @@ export type Course = {
   is_published: boolean;
 };
 
+// 교육 문화 프로그램 카드의 사진 한 장 (여러 장 등록 시 좌우 슬라이드로 표시된다)
+export type CultureProgramPhoto = {
+  image_url: string | null;
+};
+
 export type CultureProgram = {
   id: string;
   title: string; // 인간 포텐업, 지식줍줍 등
   subtitle: string;
   description: string;
   highlights: string[];
-  image_url: string | null;
+  photos: CultureProgramPhoto[];
   order: number;
   is_published: boolean;
 };

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { Card, ImagePlaceholder } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { ProgramPhotoSlider } from "@/components/culture/program-photo-slider";
 import { getCulturePrograms, getPageHeader } from "@/lib/data";
 
 export const metadata: Metadata = {
@@ -43,7 +44,7 @@ export default async function CulturePage() {
               </ul>
             </div>
             <div className={i % 2 === 1 ? "md:order-1" : ""}>
-              <ImagePlaceholder />
+              <ProgramPhotoSlider photos={program.photos} />
             </div>
           </Card>
         ))}

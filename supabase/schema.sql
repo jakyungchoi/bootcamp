@@ -594,3 +594,15 @@ alter table site_settings add column if not exists partners_form_url text not nu
 -- (숨김 여부만 공개되며 민감한 정보는 아니다)
 drop policy if exists "public read all" on admin_menu_overrides;
 create policy "public read all" on admin_menu_overrides for select using (true);
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 6
+-- 교육 문화 프로그램 카드의 사진을 한 장이 아니라 여러 장(좌우 슬라이드) 등록할 수 있도록 확장.
+-- 기존 image_url 컬럼은 그대로 두고(과거 데이터 보존), 새 photos 배열 컬럼을 추가한 뒤
+-- 기존에 등록되어 있던 대표 이미지가 있으면 그 값을 photos 배열의 첫 항목으로 한 번만 옮겨준다.
+alter table culture_programs add column if not exists photos jsonb not null default '[]';
+
+update culture_programs
+set photos = jsonb_build_array(jsonb_build_object('image_url', image_url))
+where image_url is not null
+  and photos = '[]'::jsonb;
