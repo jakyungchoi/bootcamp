@@ -5,6 +5,7 @@ import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
 import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 import { AdminContentLayout } from "@/components/admin/admin-content-layout";
+import { SectionCaptionEditor } from "@/components/admin/section-caption-editor";
 
 const HIGHLIGHT_TYPE_OPTIONS = [
   { value: "stat", label: "숫자 강조 (예: 87.5%)" },
@@ -21,6 +22,11 @@ export default function ManagementMetricsAdminPage() {
     >
       <div className="space-y-10">
         <PageHeaderNote />
+        <SectionCaptionEditor
+          column="management_metrics_description"
+          title={title}
+          onSaved={() => setRefreshToken((n) => n + 1)}
+        />
         <ResourceCrud
           table="management_metrics"
           title={`${title} — 숫자 카드`}

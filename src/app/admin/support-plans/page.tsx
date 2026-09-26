@@ -5,6 +5,7 @@ import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
 import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 import { AdminContentLayout } from "@/components/admin/admin-content-layout";
+import { SectionCaptionEditor } from "@/components/admin/section-caption-editor";
 
 export default function SupportPlansAdminPage() {
   const title = useAdminMenuLabel("support-plans", "학습부진자 지도 계획");
@@ -15,6 +16,11 @@ export default function SupportPlansAdminPage() {
       previewOptions={[{ label: title, path: "/education-management#admin-section-support-plans" }]}
     >
       <PageHeaderNote />
+      <SectionCaptionEditor
+        column="support_plans_description"
+        title={title}
+        onSaved={() => setRefreshToken((n) => n + 1)}
+      />
       <ResourceCrud
         table="support_plan_tracks"
         title={title}

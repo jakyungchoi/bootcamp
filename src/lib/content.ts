@@ -119,6 +119,29 @@ export const siteSettings: SiteSettings = {
   company_flow_description: "기업과 함께 진행할 수 있는 활동입니다.",
   case_studies_description: "원티드랩 부트캠프와 함께한 기업들의 협업 사례입니다.",
   participation_types_description: "다양한 방식으로 부트캠프 교육에 참여할 수 있습니다.",
+  management_metrics_description: "숫자로 증명된 부트캠프 운영 성과입니다.",
+  learner_management_description: "교육생 개개인의 학습 현황을 놓치지 않고 관리합니다.",
+  support_plans_description: "학습에 어려움을 겪는 교육생을 위한 지원 방식입니다.",
+  management_months_description:
+    "개월차별로 어떻게 관리하고 있는지 보여줍니다. 막대를 클릭하면 사진을 좌우로 넘겨볼 수 있습니다.",
+  management_months_total_months: 6,
+  quality_management_description: "만족도와 강사 품질을 체계적으로 관리합니다.",
+  training_facility_description: "배움에 집중할 수 있는 전용 교육 환경을 제공합니다.",
+  training_facility_photos: [],
+  training_facility_highlights: [
+    { id: "tf-1", title: "매일 다니기 편한 역세권 캠퍼스", description: "구로디지털단지역 도보 10분" },
+    { id: "tf-2", title: "교육을 위한 설계된 개인 몰입 공간", description: "개인 좌석과 개인 사물함 제공" },
+    {
+      id: "tf-3",
+      title: "동료와 함께 성장하는 협업 환경",
+      description: "널찍한 회의실과 공용 공간에서 서로 피드백하며 함께 성장",
+    },
+    {
+      id: "tf-4",
+      title: "수업 후에도 제공되는 자습 공간",
+      description: "공용 자습실에서 복습과 프로젝트를 원하는 만큼 진행",
+    },
+  ],
 };
 
 // 과정 기간 분류 (단기 과정 / 중장기 과정). 교육 영역 카테고리와는 별개로 관리한다.

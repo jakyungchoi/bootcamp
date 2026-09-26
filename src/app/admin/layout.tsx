@@ -22,6 +22,7 @@ const MENU_GROUPS: { label: string; keys: string[] }[] = [
       "support-plans",
       "management-months",
       "management-metrics",
+      "training-facility",
       "quality-management",
       "collaboration-tools",
     ],

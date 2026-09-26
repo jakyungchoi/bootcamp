@@ -162,6 +162,22 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         case_studies_description: data.case_studies_description ?? siteSettings.case_studies_description,
         participation_types_description:
           data.participation_types_description ?? siteSettings.participation_types_description,
+        management_metrics_description:
+          data.management_metrics_description ?? siteSettings.management_metrics_description,
+        learner_management_description:
+          data.learner_management_description ?? siteSettings.learner_management_description,
+        support_plans_description: data.support_plans_description ?? siteSettings.support_plans_description,
+        management_months_description:
+          data.management_months_description ?? siteSettings.management_months_description,
+        management_months_total_months:
+          data.management_months_total_months ?? siteSettings.management_months_total_months,
+        quality_management_description:
+          data.quality_management_description ?? siteSettings.quality_management_description,
+        training_facility_description:
+          data.training_facility_description ?? siteSettings.training_facility_description,
+        training_facility_photos: data.training_facility_photos ?? siteSettings.training_facility_photos,
+        training_facility_highlights:
+          data.training_facility_highlights ?? siteSettings.training_facility_highlights,
       };
     }
   }

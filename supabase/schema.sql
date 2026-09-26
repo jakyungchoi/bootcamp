@@ -686,3 +686,55 @@ alter table site_settings add column if not exists partners_field_visibility jso
   '{"companyName": true, "contactName": true, "department": true, "position": true, "email": true, "phone": true, "participationTypes": true, "meetingMethod": true, "request": true, "message": true}';
 
 alter table site_settings add column if not exists partners_custom_fields jsonb not null default '[]';
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 13
+-- 1) 교육 관리 페이지의 "학습자 관리", "학습부진자 지도 계획", "개월차별 관리", "교육 품질 관리",
+--    "교육 성과 지표" 섹션도 다른 섹션처럼 제목 바로 아래 한 줄 설명을 관리자 화면에서
+--    수정할 수 있도록 컬럼을 추가한다. (뒤 두 개는 기존에 코드에 고정된 문구가 있었던 것을
+--    그대로 기본값으로 옮겼다.)
+-- 2) 교육 관리 페이지에 새 섹션 "오프라인 교육장"을 추가한다. 전체 설명 + 사진 슬라이드
+--    (교육 문화 프로그램과 같은 방식) + 자유롭게 추가/삭제하는 특징 카드로 구성된다.
+alter table site_settings add column if not exists management_metrics_description text not null default
+  '숫자로 증명된 부트캠프 운영 성과입니다.';
+
+alter table site_settings add column if not exists learner_management_description text not null default
+  '교육생 개개인의 학습 현황을 놓치지 않고 관리합니다.';
+
+alter table site_settings add column if not exists support_plans_description text not null default
+  '학습에 어려움을 겪는 교육생을 위한 지원 방식입니다.';
+
+alter table site_settings add column if not exists management_months_description text not null default
+  '개월차별로 어떻게 관리하고 있는지 보여줍니다. 카드를 클릭하면 사진을 좌우로 넘겨볼 수 있습니다.';
+
+alter table site_settings add column if not exists quality_management_description text not null default
+  '만족도와 강사 품질을 체계적으로 관리합니다.';
+
+alter table site_settings add column if not exists training_facility_description text not null default
+  '배움에 집중할 수 있는 전용 교육 환경을 제공합니다.';
+
+-- [{ "image_url": "..." }, ...] — 좌우로 넘겨보는 슬라이드로 표시 (교육 문화 프로그램과 같은 컴포넌트)
+alter table site_settings add column if not exists training_facility_photos jsonb not null default '[]';
+
+-- [{ "id": "...", "title": "...", "description": "..." }, ...] — 사진 아래 특징 카드. 관리자가
+-- 자유롭게 추가/삭제/순서 변경할 수 있다. 처음에는 예시로 4개를 채워두었다.
+alter table site_settings add column if not exists training_facility_highlights jsonb not null default
+  '[
+    {"id":"tf-1","title":"매일 다니기 편한 역세권 캠퍼스","description":"구로디지털단지역 도보 10분"},
+    {"id":"tf-2","title":"교육을 위한 설계된 개인 몰입 공간","description":"개인 좌석과 개인 사물함 제공"},
+    {"id":"tf-3","title":"동료와 함께 성장하는 협업 환경","description":"널찍한 회의실과 공용 공간에서 서로 피드백하며 함께 성장"},
+    {"id":"tf-4","title":"수업 후에도 제공되는 자습 공간","description":"공용 자습실에서 복습과 프로젝트를 원하는 만큼 진행"}
+  ]';
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 14
+-- "개월차별 관리"를 카드 목록이 아니라 가로 막대(타임라인) 그래프 형태로 바꾼다. 기존
+-- month_label(자유 텍스트, 예: "1개월차") 대신 시작/종료 개월차를 숫자로 입력받아서, 막대
+-- 하나의 너비가 전체 교육 기간 대비 그 구간이 차지하는 비율이 되도록 한다. 막대를 클릭하면
+-- 기존과 동일하게 사진을 좌우로 넘겨보는 팝업이 뜬다. month_label 컬럼 자체는 과거 데이터
+-- 보존을 위해 지우지 않지만 더 이상 사용하지 않는다.
+alter table management_months add column if not exists month_start int not null default 1;
+alter table management_months add column if not exists month_end int not null default 1;
+
+-- 타임라인이 기준으로 삼는 전체 교육 기간(개월). 예: 가장 긴 과정이 6개월이면 6.
+alter table site_settings add column if not exists management_months_total_months int not null default 6;

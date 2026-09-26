@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/icon-map";
-import { MonthCard } from "@/components/education/month-card";
+import { MonthsTimeline } from "@/components/education/months-timeline";
+import { ProgramPhotoSlider } from "@/components/culture/program-photo-slider";
 import {
   getAdminMenuLabels,
   getCollaborationTools,
@@ -13,6 +14,7 @@ import {
   getManagementMonths,
   getPageHeader,
   getQualityManagementItems,
+  getSiteSettings,
   getSupportPlanTracks,
 } from "@/lib/data";
 
@@ -38,6 +40,7 @@ export default async function EducationManagementPage() {
     metrics,
     highlights,
     months,
+    settings,
     hiddenKeys,
     labels,
   ] = await Promise.all([
@@ -49,6 +52,7 @@ export default async function EducationManagementPage() {
     getManagementMetrics(),
     getManagementHighlights(),
     getManagementMonths(),
+    getSiteSettings(),
     getHiddenAdminKeys(),
     getAdminMenuLabels(),
   ]);
@@ -56,6 +60,8 @@ export default async function EducationManagementPage() {
   const qualityGroups = Array.from(new Set(qualityManagementItems.map((q) => q.group)));
 
   // 관리자 대시보드에서 이름을 바꾼 메뉴는 공개 화면의 섹션 제목도 그 이름을 따라간다.
+  const labelMetrics = labels.get("management-metrics") ?? "교육 성과 지표";
+  const labelFacility = labels.get("training-facility") ?? "오프라인 교육장";
   const labelLearnerManagement = labels.get("learner-management") ?? "학습자 관리";
   const labelSupportPlans = labels.get("support-plans") ?? "학습부진자 지도 계획";
   const labelMonths = labels.get("management-months") ?? "개월차별 관리";
@@ -63,7 +69,8 @@ export default async function EducationManagementPage() {
 
   // 관리자 대시보드에서 "숨기기" 한 메뉴에 해당하는 섹션은 공개 화면에서도 통째로 감추고,
   // 남은 섹션의 번호를 앞에서부터 다시 매긴다.
-  const showMetrics = !hiddenKeys.has("management-metrics");
+  const showMetrics = !hiddenKeys.has("management-metrics") && (metrics.length > 0 || highlights.length > 0);
+  const showFacility = !hiddenKeys.has("training-facility");
   const showLearnerManagement = !hiddenKeys.has("learner-management");
   const showSupportPlans = !hiddenKeys.has("support-plans");
   const showMonths = !hiddenKeys.has("management-months");
@@ -72,6 +79,8 @@ export default async function EducationManagementPage() {
   const showQualitySection = showQualityGroups || showCollaborationTools;
 
   let sectionNumber = 0;
+  const numMetrics = showMetrics ? ++sectionNumber : 0;
+  const numFacility = showFacility ? ++sectionNumber : 0;
   const numLearnerManagement = showLearnerManagement ? ++sectionNumber : 0;
   const numSupportPlans = showSupportPlans ? ++sectionNumber : 0;
   const numMonths = showMonths ? ++sectionNumber : 0;
@@ -82,14 +91,22 @@ export default async function EducationManagementPage() {
       <SectionHeading eyebrow={header.eyebrow} title={header.title} description={header.description} />
 
       {/* 숫자로 검증된 실제 결과 (관리자 페이지 "교육 성과 지표"에서 등록) */}
-      {showMetrics && (metrics.length > 0 || highlights.length > 0) && (
+      {showMetrics && (
         <section id="admin-section-management-metrics" className="mt-14 scroll-mt-24">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+            {pad(numMetrics)}. {labelMetrics}
+          </h3>
+          {settings.management_metrics_description && (
+            <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
+              {settings.management_metrics_description}
+            </p>
+          )}
           {metrics.length > 0 && (
-            <div className="grid grid-cols-2 divide-x divide-black/5 rounded-2xl border border-black/5 bg-white p-6 sm:grid-cols-4 dark:divide-white/10 dark:border-white/10 dark:bg-neutral-900">
+            <div className="mt-5 grid grid-cols-2 divide-x divide-brand/15 rounded-2xl border border-brand/15 bg-gradient-to-br from-brand/[0.06] via-white to-white p-6 shadow-sm sm:grid-cols-4 dark:divide-brand/20 dark:border-brand/20 dark:from-brand/10 dark:via-neutral-900 dark:to-neutral-900">
               {metrics.map((m) => (
                 <div key={m.id} className="px-3 text-center first:pl-0 last:pr-0">
-                  <p className="text-2xl font-bold text-neutral-900 sm:text-3xl dark:text-white">{m.value}</p>
-                  <p className="mt-1.5 text-xs text-neutral-400">{m.label}</p>
+                  <p className="text-3xl font-extrabold tracking-tight text-brand sm:text-4xl">{m.value}</p>
+                  <p className="mt-2 text-xs font-semibold text-neutral-500 dark:text-neutral-400">{m.label}</p>
                 </div>
               ))}
             </div>
@@ -98,7 +115,7 @@ export default async function EducationManagementPage() {
             <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {highlights.map((h, i) =>
                 h.type === "list" ? (
-                  <div key={h.id} className="rounded-2xl bg-neutral-950 p-6 text-white">
+                  <div key={h.id} className="rounded-2xl bg-neutral-950 p-6 text-white shadow-md">
                     <p className="text-lg font-bold">{h.title}</p>
                     <ul className="mt-3 space-y-1.5 text-sm text-neutral-300">
                       {h.items.map((item) => (
@@ -112,13 +129,13 @@ export default async function EducationManagementPage() {
                 ) : (
                   <div
                     key={h.id}
-                    className={`rounded-2xl p-6 text-white ${
+                    className={`rounded-2xl p-6 text-white shadow-md ${
                       i % 2 === 0
                         ? "bg-gradient-to-br from-brand to-neutral-900"
                         : "bg-gradient-to-br from-neutral-800 to-neutral-950"
                     }`}
                   >
-                    <p className="text-3xl font-bold">{h.value}</p>
+                    <p className="text-4xl font-bold">{h.value}</p>
                     <p className="mt-2 whitespace-pre-line text-justify text-sm leading-relaxed text-white/80">{h.description}</p>
                   </div>
                 )
@@ -128,12 +145,46 @@ export default async function EducationManagementPage() {
         </section>
       )}
 
-      {/* 6-1 학습자 관리 */}
+      {/* 6-1 오프라인 교육장 (관리자 페이지 "오프라인 교육장"에서 등록) */}
+      {showFacility && (
+        <section id="admin-section-training-facility" className="mt-16 scroll-mt-24">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+            {pad(numFacility)}. {labelFacility}
+          </h3>
+          {settings.training_facility_description && (
+            <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
+              {settings.training_facility_description}
+            </p>
+          )}
+          <div className="mt-5">
+            <ProgramPhotoSlider photos={settings.training_facility_photos} />
+          </div>
+          {settings.training_facility_highlights.length > 0 && (
+            <div className="mt-6 grid grid-cols-2 gap-y-6 divide-y divide-black/5 rounded-2xl border border-black/5 bg-white p-6 sm:grid-cols-4 sm:gap-y-0 sm:divide-y-0 sm:divide-x dark:divide-white/10 dark:border-white/10 dark:bg-neutral-900">
+              {settings.training_facility_highlights.map((h) => (
+                <div key={h.id} className="px-4 pt-5 first:pt-0 first:pl-0 last:pr-0 sm:pt-0">
+                  <p className="font-bold text-neutral-900 dark:text-white">{h.title}</p>
+                  <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+                    {h.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* 6-2 학습자 관리 */}
       {showLearnerManagement && (
-        <section id="admin-section-learner-management" className="mt-14 scroll-mt-24">
+        <section id="admin-section-learner-management" className="mt-16 scroll-mt-24">
           <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
             {pad(numLearnerManagement)}. {labelLearnerManagement}
           </h3>
+          {settings.learner_management_description && (
+            <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
+              {settings.learner_management_description}
+            </p>
+          )}
           <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {learnerManagementItems.map((item) => (
               <Card key={item.id}>
@@ -148,15 +199,17 @@ export default async function EducationManagementPage() {
         </section>
       )}
 
-      {/* 6-2 학습부진자 지도 계획 */}
+      {/* 6-3 학습부진자 지도 계획 */}
       {showSupportPlans && (
         <section id="admin-section-support-plans" className="mt-16 scroll-mt-24">
           <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
             {pad(numSupportPlans)}. {labelSupportPlans}
           </h3>
-          <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-            학습에 어려움을 겪는 교육생을 위한 지원 방식입니다.
-          </p>
+          {settings.support_plans_description && (
+            <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
+              {settings.support_plans_description}
+            </p>
+          )}
           <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {supportPlanTracks.map((track) => (
               <Card key={track.id}>
@@ -175,37 +228,42 @@ export default async function EducationManagementPage() {
         </section>
       )}
 
-      {/* 6-3 개월차별 관리 */}
+      {/* 6-4 개월차별 관리 */}
       {showMonths && (
         <section id="admin-section-management-months" className="mt-16 scroll-mt-24">
           <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
             {pad(numMonths)}. {labelMonths}
           </h3>
-          <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-            개월차별로 어떻게 관리하고 있는지 보여줍니다. 카드를 클릭하면 사진을 좌우로 넘겨볼 수 있습니다.
-          </p>
+          {settings.management_months_description && (
+            <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
+              {settings.management_months_description}
+            </p>
+          )}
           {months.length === 0 ? (
             <Card className="mt-4">
               <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                아직 등록된 개월차별 관리 카드가 없습니다.
+                아직 등록된 개월차별 관리 구간이 없습니다.
               </p>
             </Card>
           ) : (
-            <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {months.map((month) => (
-                <MonthCard key={month.id} month={month} />
-              ))}
+            <div className="mt-5">
+              <MonthsTimeline months={months} totalMonths={settings.management_months_total_months} />
             </div>
           )}
         </section>
       )}
 
-      {/* 6-4 교육 품질 관리 */}
+      {/* 6-5 교육 품질 관리 */}
       {showQualitySection && (
         <section id="admin-section-quality-management" className="mt-16 scroll-mt-24">
           <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
             {pad(numQuality)}. {labelQuality}
           </h3>
+          {settings.quality_management_description && (
+            <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
+              {settings.quality_management_description}
+            </p>
+          )}
           {showQualityGroups && (
             <div className="mt-4 grid gap-5 md:grid-cols-2">
               {qualityGroups.map((group) => (

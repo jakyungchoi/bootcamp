@@ -102,15 +102,30 @@ export type ManagementMonthPhoto = {
 };
 
 // 교육 관리 페이지 "개월차별 관리" 카드. 학습부진자 지도 계획(SupportPlanTrack)과는 별개의 새 섹션이다.
+// 공개 화면에서는 카드가 아니라 가로 타임라인(막대 그래프) 형태로 표시되며, month_start~month_end
+// 구간의 길이에 비례해 막대 너비가 정해진다. (예: month_start=1, month_end=2 → "1~2개월차")
 export type ManagementMonth = {
   id: string;
-  month_label: string; // "1개월차" 등
+  month_start: number; // 시작 개월차 (예: 1)
+  month_end: number; // 종료 개월차 (한 개월만 해당하면 month_start와 동일하게, 예: 1)
   title: string;
   description: string;
   tags: string[];
   photos: ManagementMonthPhoto[];
   order: number;
   is_published: boolean;
+};
+
+// 교육 관리 페이지 "오프라인 교육장" 섹션에 슬라이드로 표시되는 사진 한 장
+export type TrainingFacilityPhoto = {
+  image_url: string | null;
+};
+
+// "오프라인 교육장" 섹션 하단에 표시되는 짧은 특징 카드 (제목 + 한 줄 설명). 관리자가 자유롭게 추가/삭제 가능.
+export type TrainingFacilityHighlight = {
+  id: string;
+  title: string;
+  description: string;
 };
 
 export type QualityManagementItem = {
@@ -205,6 +220,25 @@ export type SiteSettings = {
   case_studies_description: string;
   // 참여 기업 연계 페이지 "기업 참여 방식" 섹션 제목 바로 아래에 표시되는 한 줄 설명
   participation_types_description: string;
+  // 교육 관리 페이지 "교육 성과 지표" 섹션 제목 바로 아래에 표시되는 한 줄 설명
+  management_metrics_description: string;
+  // 교육 관리 페이지 "학습자 관리" 섹션 제목 바로 아래에 표시되는 한 줄 설명
+  learner_management_description: string;
+  // 교육 관리 페이지 "학습부진자 지도 계획" 섹션 제목 바로 아래에 표시되는 한 줄 설명
+  support_plans_description: string;
+  // 교육 관리 페이지 "개월차별 관리" 섹션 제목 바로 아래에 표시되는 한 줄 설명
+  management_months_description: string;
+  // "개월차별 관리" 타임라인이 기준으로 삼는 전체 교육 기간(개월). 예: 6개월 과정이 가장 길면 6.
+  // 각 카드의 막대 너비는 이 전체 기간 대비 (month_end - month_start + 1)의 비율로 정해진다.
+  management_months_total_months: number;
+  // 교육 관리 페이지 "교육 품질 관리" 섹션 제목 바로 아래에 표시되는 한 줄 설명
+  quality_management_description: string;
+  // 교육 관리 페이지 "오프라인 교육장" 섹션 전체 설명 (사진 슬라이드 위에 표시)
+  training_facility_description: string;
+  // "오프라인 교육장" 섹션에 슬라이드로 표시되는 사진 목록
+  training_facility_photos: TrainingFacilityPhoto[];
+  // "오프라인 교육장" 섹션 하단에 표시되는 특징 카드 목록 (관리자가 자유롭게 추가/삭제 가능)
+  training_facility_highlights: TrainingFacilityHighlight[];
 };
 
 // 참여 신청 팝업 폼의 입력 항목 키. ApplicationFormModal / API 라우트가 이 키를 그대로 쓴다.

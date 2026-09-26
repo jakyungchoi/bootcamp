@@ -5,6 +5,7 @@ import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
 import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 import { AdminContentLayout } from "@/components/admin/admin-content-layout";
+import { SectionCaptionEditor } from "@/components/admin/section-caption-editor";
 
 export default function QualityManagementAdminPage() {
   const title = useAdminMenuLabel("quality-management", "교육 품질 관리");
@@ -15,6 +16,11 @@ export default function QualityManagementAdminPage() {
       previewOptions={[{ label: title, path: "/education-management#admin-section-quality-management" }]}
     >
       <PageHeaderNote />
+      <SectionCaptionEditor
+        column="quality_management_description"
+        title={title}
+        onSaved={() => setRefreshToken((n) => n + 1)}
+      />
       <ResourceCrud
         table="quality_management_items"
         title={title}

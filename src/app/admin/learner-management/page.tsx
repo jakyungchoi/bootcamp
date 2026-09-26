@@ -5,6 +5,7 @@ import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
 import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 import { AdminContentLayout } from "@/components/admin/admin-content-layout";
+import { SectionCaptionEditor } from "@/components/admin/section-caption-editor";
 
 const ICON_OPTIONS = [
   "CalendarCheck",
@@ -29,6 +30,11 @@ export default function LearnerManagementAdminPage() {
       previewOptions={[{ label: title, path: "/education-management#admin-section-learner-management" }]}
     >
       <PageHeaderNote />
+      <SectionCaptionEditor
+        column="learner_management_description"
+        title={title}
+        onSaved={() => setRefreshToken((n) => n + 1)}
+      />
       <ResourceCrud
         table="learner_management_items"
         title={title}

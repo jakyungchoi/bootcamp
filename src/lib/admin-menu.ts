@@ -37,11 +37,12 @@ export const BUILTIN_MENU: BuiltinMenuItem[] = [
   { key: "support-plans", href: "/admin/support-plans", label: "학습부진자 지도 계획", desc: "과정별 지원 방식", order: 9 },
   { key: "management-months", href: "/admin/management-months", label: "개월차별 관리", desc: "개월차 카드 + 클릭 시 사진 팝업", order: 10 },
   { key: "management-metrics", href: "/admin/management-metrics", label: "교육 성과 지표", desc: "상단 숫자 카드 + 강조 타일", order: 11 },
-  { key: "quality-management", href: "/admin/quality-management", label: "교육 품질 관리", desc: "구분(카드)을 자유롭게 추가/삭제 가능", order: 12 },
-  { key: "collaboration-tools", href: "/admin/collaboration-tools", label: "협업 도구", desc: "Notion, Slack 등", order: 13 },
-  { key: "participation-types", href: "/admin/participation-types", label: "기업 참여 방식", desc: "참여 기업 연계 페이지 카드", order: 14 },
-  { key: "company-flow", href: "/admin/company-flow", label: "이런 협업이 가능해요", desc: "기업과 함께할 수 있는 활동 목록", order: 15 },
-  { key: "case-studies", href: "/admin/case-studies", label: "협업 사례", desc: "실제 기업 협업 사례 (슬라이드로 표시)", order: 16 },
+  { key: "training-facility", href: "/admin/training-facility", label: "오프라인 교육장", desc: "교육 환경 설명 + 사진 슬라이드 + 특징 카드", order: 12 },
+  { key: "quality-management", href: "/admin/quality-management", label: "교육 품질 관리", desc: "구분(카드)을 자유롭게 추가/삭제 가능", order: 13 },
+  { key: "collaboration-tools", href: "/admin/collaboration-tools", label: "협업 도구", desc: "Notion, Slack 등", order: 14 },
+  { key: "participation-types", href: "/admin/participation-types", label: "기업 참여 방식", desc: "참여 기업 연계 페이지 카드", order: 15 },
+  { key: "company-flow", href: "/admin/company-flow", label: "이런 협업이 가능해요", desc: "기업과 함께할 수 있는 활동 목록", order: 16 },
+  { key: "case-studies", href: "/admin/case-studies", label: "협업 사례", desc: "실제 기업 협업 사례 (슬라이드로 표시)", order: 17 },
 ];
 
 export function customKeyToId(key: string): string {
