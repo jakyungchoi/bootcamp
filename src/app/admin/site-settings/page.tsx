@@ -5,7 +5,7 @@ import { Loader2, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { AdminContentLayout } from "@/components/admin/admin-content-layout";
-import type { HomeHighlight, NavItem, PartnersFieldLabels, PartnersRequiredFields } from "@/lib/types";
+import type { HomeHighlight, NavItem } from "@/lib/types";
 
 type SettingsForm = {
   site_name: string;
@@ -17,53 +17,7 @@ type SettingsForm = {
   home_hero_image_url: string | null;
   home_highlights: HomeHighlight[];
   nav_items: NavItem[];
-  partners_meeting_options: string[];
-  partners_privacy_notice: string;
-  partners_submit_notice: string;
-  partners_required_fields: PartnersRequiredFields;
-  partners_field_labels: PartnersFieldLabels;
 };
-
-// 신청 폼 필드가 DB에 아직 없을 때(과거 데이터)를 위한 기본값. supabase/schema.sql의 기본값과 맞춘다.
-const DEFAULT_REQUIRED_FIELDS: PartnersRequiredFields = {
-  companyName: true,
-  contactName: true,
-  department: false,
-  position: false,
-  email: true,
-  phone: true,
-  participationTypes: true,
-  meetingMethod: true,
-  request: true,
-  message: false,
-};
-
-const DEFAULT_FIELD_LABELS: PartnersFieldLabels = {
-  companyName: "기업명",
-  contactName: "담당자명",
-  department: "부서",
-  position: "직급 / 직책",
-  email: "이메일",
-  phone: "연락처",
-  participationTypes: "참여 희망 방식",
-  meetingMethod: "만남 방식",
-  request: "문의 / 요청 내용",
-  message: "남기실 말씀",
-};
-
-// 신청 폼에 실제로 보이는 순서 그대로 나열한다 (관리자 화면의 순서와도 맞춘다).
-const REQUIRED_FIELD_ITEMS: { key: keyof PartnersRequiredFields }[] = [
-  { key: "companyName" },
-  { key: "contactName" },
-  { key: "department" },
-  { key: "position" },
-  { key: "email" },
-  { key: "phone" },
-  { key: "participationTypes" },
-  { key: "meetingMethod" },
-  { key: "request" },
-  { key: "message" },
-];
 
 export default function SiteSettingsPage() {
   const [form, setForm] = useState<SettingsForm | null>(null);
@@ -89,11 +43,6 @@ export default function SiteSettingsPage() {
           home_hero_image_url: data.home_hero_image_url,
           home_highlights: data.home_highlights,
           nav_items: data.nav_items,
-          partners_meeting_options: data.partners_meeting_options ?? [],
-          partners_privacy_notice: data.partners_privacy_notice ?? "",
-          partners_submit_notice: data.partners_submit_notice ?? "",
-          partners_required_fields: { ...DEFAULT_REQUIRED_FIELDS, ...(data.partners_required_fields ?? {}) },
-          partners_field_labels: { ...DEFAULT_FIELD_LABELS, ...(data.partners_field_labels ?? {}) },
         });
       }
       setLoading(false);
@@ -130,39 +79,6 @@ export default function SiteSettingsPage() {
       if (!f) return f;
       return { ...f, home_highlights: f.home_highlights.filter((_, i) => i !== idx) };
     });
-  }
-
-  function toggleRequiredField(key: keyof PartnersRequiredFields) {
-    setForm((f) =>
-      f
-        ? { ...f, partners_required_fields: { ...f.partners_required_fields, [key]: !f.partners_required_fields[key] } }
-        : f,
-    );
-  }
-
-  function updateFieldLabel(key: keyof PartnersFieldLabels, value: string) {
-    setForm((f) =>
-      f ? { ...f, partners_field_labels: { ...f.partners_field_labels, [key]: value } } : f,
-    );
-  }
-
-  function updateMeetingOption(idx: number, value: string) {
-    setForm((f) => {
-      if (!f) return f;
-      const next = [...f.partners_meeting_options];
-      next[idx] = value;
-      return { ...f, partners_meeting_options: next };
-    });
-  }
-
-  function addMeetingOption() {
-    setForm((f) => (f ? { ...f, partners_meeting_options: [...f.partners_meeting_options, ""] } : f));
-  }
-
-  function removeMeetingOption(idx: number) {
-    setForm((f) =>
-      f ? { ...f, partners_meeting_options: f.partners_meeting_options.filter((_, i) => i !== idx) } : f,
-    );
   }
 
   function updateNavItem(idx: number, patch: Partial<NavItem>) {
@@ -224,13 +140,14 @@ export default function SiteSettingsPage() {
         { label: "운영 교육 과정", path: "/courses" },
         { label: "교육 관리", path: "/education-management" },
         { label: "교육 문화", path: "/culture" },
-        { label: "참여 기업 연계 (참여 신청 폼)", path: "/partners#admin-section-participation-types" },
+        { label: "참여 기업 연계", path: "/partners" },
       ]}
     >
     <div className="max-w-2xl">
       <h1 className="text-xl font-bold text-neutral-900">사이트 전역 설정</h1>
       <p className="mt-1 text-sm text-neutral-500">
-        로고, 사이트 이름, 헤더 메뉴 문구, 홈 화면 히어로 문구를 관리합니다.
+        로고, 사이트 이름, 헤더 메뉴 문구, 홈 화면 히어로 문구를 관리합니다. 참여 신청 팝업 폼
+        설정은 &quot;함께 하는 방법&quot; 메뉴로 옮겨졌습니다.
       </p>
 
       <section className="mt-6 rounded-xl border border-neutral-200 bg-white p-5">
@@ -307,122 +224,6 @@ export default function SiteSettingsPage() {
               onChange={(url) => setForm({ ...form, home_hero_image_url: url })}
               folder="site"
             />
-          </div>
-        </div>
-      </section>
-
-      <section className="mt-6 rounded-xl border border-neutral-200 bg-white p-5">
-        <h2 className="font-semibold text-neutral-800">참여 기업 연계 — 참여 신청 팝업 폼</h2>
-        <p className="mt-1 text-sm text-neutral-500">
-          참여 기업 연계 페이지의 &quot;참여 신청하기&quot; 버튼을 누르면 뜨는 팝업 폼의 내용입니다. 폼에
-          입력된 내용은 구글 시트에 자동으로 기록되며, 그 연동 주소는 보안을 위해 이 화면이 아니라
-          배포 환경 변수로 별도 설정합니다 — 자세한 설정 방법은 README의 &quot;참여 신청 폼 → 구글 시트
-          연동 설정&quot; 항목을 참고하거나 개발 담당자에게 요청해주세요. 연동이 설정되어 있지 않으면
-          공개 화면에 버튼 자체가 표시되지 않습니다. 폼의 &quot;참여 희망 방식&quot; 체크박스 목록은 위
-          &quot;기업 참여 방식&quot; 관리 화면의 항목을 그대로 사용합니다.
-        </p>
-
-        <div className="mt-4 space-y-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-neutral-700">
-              입력 항목 이름 · 필수 여부
-            </label>
-            <p className="mb-2 text-xs text-neutral-400">
-              폼에 실제로 표시되는 항목 이름(라벨)을 자유롭게 바꿀 수 있습니다. 체크한 항목은 이름
-              뒤에 별표(*)가 붙고 비워둔 채로는 제출할 수 없으며, 체크를 풀면 방문자가 입력하지
-              않고 넘어갈 수 있는 선택 항목이 됩니다. (&quot;위 내용에 동의합니다&quot; 체크박스는
-              항상 필수입니다)
-            </p>
-            <div className="space-y-2 rounded-lg border border-neutral-200 p-3">
-              {REQUIRED_FIELD_ITEMS.map(({ key }) => (
-                <div key={key} className="flex items-center gap-3">
-                  <label className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-neutral-500">
-                    <input
-                      type="checkbox"
-                      checked={form.partners_required_fields[key]}
-                      onChange={() => toggleRequiredField(key)}
-                      className="h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
-                    />
-                    필수
-                  </label>
-                  <input
-                    type="text"
-                    value={form.partners_field_labels[key]}
-                    onChange={(e) => updateFieldLabel(key, e.target.value)}
-                    className="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-sm focus:border-brand focus:outline-none"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div className="mb-1 flex items-center justify-between">
-              <label className="block text-sm font-medium text-neutral-700">만남 방식 선택지</label>
-              <button
-                type="button"
-                onClick={addMeetingOption}
-                className="inline-flex items-center gap-1 rounded-full border border-neutral-200 px-2.5 py-1 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
-              >
-                <Plus size={12} />
-                선택지 추가
-              </button>
-            </div>
-            <div className="space-y-2">
-              {form.partners_meeting_options.map((option, idx) => (
-                <div key={idx} className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={option}
-                    placeholder="예: 30분 온라인 미팅"
-                    onChange={(e) => updateMeetingOption(idx, e.target.value)}
-                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeMeetingOption(idx)}
-                    className="shrink-0 rounded p-1.5 text-red-400 hover:bg-red-50"
-                    aria-label="삭제"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ))}
-              {form.partners_meeting_options.length === 0 && (
-                <p className="text-sm text-neutral-400">
-                  선택지가 없으면 폼에서 만남 방식을 고를 수 없습니다. &quot;선택지 추가&quot;로
-                  만들어보세요.
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-neutral-700">
-              개인정보 수집·이용 동의 문구
-            </label>
-            <textarea
-              value={form.partners_privacy_notice}
-              rows={5}
-              onChange={(e) => setForm({ ...form, partners_privacy_notice: e.target.value })}
-              className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
-            />
-            <p className="mt-1 text-xs text-neutral-400">
-              폼 하단에 그대로 표시되는 문구입니다. 줄바꿈은 입력한 그대로 반영됩니다.
-            </p>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-neutral-700">제출 완료 안내 문구</label>
-            <input
-              type="text"
-              value={form.partners_submit_notice}
-              onChange={(e) => setForm({ ...form, partners_submit_notice: e.target.value })}
-              className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
-            />
-            <p className="mt-1 text-xs text-neutral-400">
-              방문객이 제출하기를 누른 직후에 보여지는 안내 문구입니다.
-            </p>
           </div>
         </div>
       </section>

@@ -131,7 +131,7 @@ export default async function EducationManagementPage() {
       {/* 6-1 학습자 관리 */}
       {showLearnerManagement && (
         <section id="admin-section-learner-management" className="mt-14 scroll-mt-24">
-          <h3 className="text-sm font-semibold text-neutral-400">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
             {pad(numLearnerManagement)}. {labelLearnerManagement}
           </h3>
           <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -151,7 +151,7 @@ export default async function EducationManagementPage() {
       {/* 6-2 학습부진자 지도 계획 */}
       {showSupportPlans && (
         <section id="admin-section-support-plans" className="mt-16 scroll-mt-24">
-          <h3 className="text-sm font-semibold text-neutral-400">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
             {pad(numSupportPlans)}. {labelSupportPlans}
           </h3>
           <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
@@ -178,7 +178,7 @@ export default async function EducationManagementPage() {
       {/* 6-3 개월차별 관리 */}
       {showMonths && (
         <section id="admin-section-management-months" className="mt-16 scroll-mt-24">
-          <h3 className="text-sm font-semibold text-neutral-400">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
             {pad(numMonths)}. {labelMonths}
           </h3>
           <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
@@ -203,7 +203,7 @@ export default async function EducationManagementPage() {
       {/* 6-4 교육 품질 관리 */}
       {showQualitySection && (
         <section id="admin-section-quality-management" className="mt-16 scroll-mt-24">
-          <h3 className="text-sm font-semibold text-neutral-400">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
             {pad(numQuality)}. {labelQuality}
           </h3>
           {showQualityGroups && (

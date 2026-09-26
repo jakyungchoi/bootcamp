@@ -6,6 +6,7 @@ import { PageHeaderNote } from "@/components/admin/page-header-note";
 import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 import { AdminContentLayout } from "@/components/admin/admin-content-layout";
 import { SectionCaptionEditor } from "@/components/admin/section-caption-editor";
+import { PartnersFormSettingsEditor } from "@/components/admin/partners-form-settings-editor";
 
 const ICON_OPTIONS = [
   "Lightbulb",
@@ -35,6 +36,7 @@ export default function ParticipationTypesAdminPage() {
         title={title}
         onSaved={() => setRefreshToken((n) => n + 1)}
       />
+      <PartnersFormSettingsEditor onSaved={() => setRefreshToken((n) => n + 1)} />
       <ResourceCrud
         table="company_participation_types"
         title={title}

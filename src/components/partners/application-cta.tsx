@@ -6,7 +6,12 @@
 
 import { useState } from "react";
 import { ApplicationFormModal } from "@/components/partners/application-form-modal";
-import type { PartnersFieldLabels, PartnersRequiredFields } from "@/lib/types";
+import type {
+  PartnersCustomField,
+  PartnersFieldLabels,
+  PartnersFieldVisibility,
+  PartnersRequiredFields,
+} from "@/lib/types";
 
 type ApplicationCtaProps = {
   participationOptions: string[];
@@ -15,6 +20,8 @@ type ApplicationCtaProps = {
   submitNotice: string;
   requiredFields: PartnersRequiredFields;
   fieldLabels: PartnersFieldLabels;
+  fieldVisibility: PartnersFieldVisibility;
+  customFields: PartnersCustomField[];
 };
 
 export function ApplicationCta({
@@ -24,6 +31,8 @@ export function ApplicationCta({
   submitNotice,
   requiredFields,
   fieldLabels,
+  fieldVisibility,
+  customFields,
 }: ApplicationCtaProps) {
   const [open, setOpen] = useState(false);
 
@@ -44,6 +53,8 @@ export function ApplicationCta({
           submitNotice={submitNotice}
           requiredFields={requiredFields}
           fieldLabels={fieldLabels}
+          fieldVisibility={fieldVisibility}
+          customFields={customFields}
           onClose={() => setOpen(false)}
         />
       )}

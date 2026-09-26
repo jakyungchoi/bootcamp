@@ -195,6 +195,10 @@ export type SiteSettings = {
   partners_required_fields: PartnersRequiredFields;
   // 참여 신청 팝업 폼의 각 항목에 실제로 표시되는 이름(라벨) 문구 (관리자 대시보드에서 자유롭게 수정 가능)
   partners_field_labels: PartnersFieldLabels;
+  // 참여 신청 팝업 폼의 기본 제공 항목을 폼에서 완전히 숨길지 여부 (끄면 "삭제"한 것처럼 폼에 아예 안 보인다)
+  partners_field_visibility: PartnersFieldVisibility;
+  // 관리자가 자유롭게 추가한 참여 신청 팝업 폼의 추가 항목 (단순 한 줄 입력)
+  partners_custom_fields: PartnersCustomField[];
   // 참여 기업 연계 페이지 "이런 협업이 가능해요" 섹션 제목 바로 아래에 표시되는 한 줄 설명
   company_flow_description: string;
   // 참여 기업 연계 페이지 "협업 사례" 섹션 제목 바로 아래에 표시되는 한 줄 설명
@@ -218,6 +222,17 @@ export type PartnersFormFieldKey =
 
 export type PartnersRequiredFields = Record<PartnersFormFieldKey, boolean>;
 export type PartnersFieldLabels = Record<PartnersFormFieldKey, string>;
+export type PartnersFieldVisibility = Record<PartnersFormFieldKey, boolean>;
+
+// 참여 신청 팝업 폼에 관리자가 자유롭게 추가하는 항목. 한 줄 텍스트 입력 하나로 고정되어 있고,
+// 값은 구글 시트에 기존 10개 항목 뒤에 이 목록 순서 그대로 추가 열로 기록된다. (그래서 항목을
+// 추가/삭제/순서 변경하면 구글 시트의 머리글 행도 같은 순서로 맞춰줘야 한다 — 관리자 화면과
+// README에 안내되어 있다)
+export type PartnersCustomField = {
+  id: string;
+  label: string;
+  required: boolean;
+};
 
 // 4개 주요 페이지(운영 교육 과정 / 교육 관리 / 교육 문화 / 참여 기업 연계) 맨 위 문구
 export type PageHeaderKey = "courses" | "education-management" | "culture" | "partners";

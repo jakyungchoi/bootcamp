@@ -6,7 +6,12 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { CheckCircle2, Loader2, X } from "lucide-react";
-import type { PartnersFieldLabels, PartnersRequiredFields } from "@/lib/types";
+import type {
+  PartnersCustomField,
+  PartnersFieldLabels,
+  PartnersFieldVisibility,
+  PartnersRequiredFields,
+} from "@/lib/types";
 
 type ApplicationFormModalProps = {
   participationOptions: string[];
@@ -15,6 +20,8 @@ type ApplicationFormModalProps = {
   submitNotice: string;
   requiredFields: PartnersRequiredFields;
   fieldLabels: PartnersFieldLabels;
+  fieldVisibility: PartnersFieldVisibility;
+  customFields: PartnersCustomField[];
   onClose: () => void;
 };
 
@@ -74,9 +81,12 @@ export function ApplicationFormModal({
   submitNotice,
   requiredFields,
   fieldLabels,
+  fieldVisibility,
+  customFields,
   onClose,
 }: ApplicationFormModalProps) {
   const [form, setForm] = useState<FormState>(initialState);
+  const [customValues, setCustomValues] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,17 +100,23 @@ export function ApplicationFormModal({
     }));
   }
 
+  // 숨긴(표시 꺼진) 항목은 애초에 폼에 보이지 않으니 필수 여부와 상관없이 제출을 막지 않는다.
+  function isRequired(key: keyof PartnersRequiredFields) {
+    return fieldVisibility[key] && requiredFields[key];
+  }
+
   const canSubmit =
-    (!requiredFields.companyName || form.companyName.trim() !== "") &&
-    (!requiredFields.contactName || form.contactName.trim() !== "") &&
-    (!requiredFields.department || form.department.trim() !== "") &&
-    (!requiredFields.position || form.position.trim() !== "") &&
-    (!requiredFields.email || form.email.trim() !== "") &&
-    (!requiredFields.phone || form.phone.trim() !== "") &&
-    (!requiredFields.participationTypes || form.participationTypes.length > 0) &&
-    (!requiredFields.meetingMethod || form.meetingMethod !== "") &&
-    (!requiredFields.request || form.request.trim() !== "") &&
-    (!requiredFields.message || form.message.trim() !== "") &&
+    (!isRequired("companyName") || form.companyName.trim() !== "") &&
+    (!isRequired("contactName") || form.contactName.trim() !== "") &&
+    (!isRequired("department") || form.department.trim() !== "") &&
+    (!isRequired("position") || form.position.trim() !== "") &&
+    (!isRequired("email") || form.email.trim() !== "") &&
+    (!isRequired("phone") || form.phone.trim() !== "") &&
+    (!isRequired("participationTypes") || form.participationTypes.length > 0) &&
+    (!isRequired("meetingMethod") || form.meetingMethod !== "") &&
+    (!isRequired("request") || form.request.trim() !== "") &&
+    (!isRequired("message") || form.message.trim() !== "") &&
+    customFields.every((f) => !f.required || (customValues[f.id] ?? "").trim() !== "") &&
     form.agree &&
     !submitting;
 
@@ -124,6 +140,11 @@ export function ApplicationFormModal({
           meetingMethod: form.meetingMethod,
           request: form.request,
           message: form.message,
+          customFields: customFields.map((f) => ({
+            id: f.id,
+            label: f.label,
+            value: customValues[f.id] ?? "",
+          })),
         }),
       });
       const data = (await res.json().catch(() => null)) as { ok: boolean; error?: string } | null;
@@ -174,140 +195,177 @@ export function ApplicationFormModal({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5">
-            <div>
-              <label className={labelClass}>{fieldLabels.companyName}{requiredFields.companyName && " *"}</label>
-              <input
-                type="text"
-                required={requiredFields.companyName}
-                value={form.companyName}
-                onChange={(e) => setForm({ ...form, companyName: e.target.value })}
-                className={inputClass}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
+            {fieldVisibility.companyName && (
               <div>
-                <label className={labelClass}>{fieldLabels.contactName}{requiredFields.contactName && " *"}</label>
+                <label className={labelClass}>{fieldLabels.companyName}{requiredFields.companyName && " *"}</label>
                 <input
                   type="text"
-                  required={requiredFields.contactName}
-                  value={form.contactName}
-                  onChange={(e) => setForm({ ...form, contactName: e.target.value })}
+                  required={requiredFields.companyName}
+                  value={form.companyName}
+                  onChange={(e) => setForm({ ...form, companyName: e.target.value })}
                   className={inputClass}
                 />
               </div>
+            )}
+
+            {(fieldVisibility.contactName || fieldVisibility.department) && (
+              <div className="grid grid-cols-2 gap-3">
+                {fieldVisibility.contactName && (
+                  <div>
+                    <label className={labelClass}>{fieldLabels.contactName}{requiredFields.contactName && " *"}</label>
+                    <input
+                      type="text"
+                      required={requiredFields.contactName}
+                      value={form.contactName}
+                      onChange={(e) => setForm({ ...form, contactName: e.target.value })}
+                      className={inputClass}
+                    />
+                  </div>
+                )}
+                {fieldVisibility.department && (
+                  <div>
+                    <label className={labelClass}>{fieldLabels.department}{requiredFields.department && " *"}</label>
+                    <input
+                      type="text"
+                      required={requiredFields.department}
+                      value={form.department}
+                      onChange={(e) => setForm({ ...form, department: e.target.value })}
+                      className={inputClass}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {fieldVisibility.position && (
               <div>
-                <label className={labelClass}>{fieldLabels.department}{requiredFields.department && " *"}</label>
+                <label className={labelClass}>{fieldLabels.position}{requiredFields.position && " *"}</label>
                 <input
                   type="text"
-                  required={requiredFields.department}
-                  value={form.department}
-                  onChange={(e) => setForm({ ...form, department: e.target.value })}
+                  required={requiredFields.position}
+                  value={form.position}
+                  onChange={(e) => setForm({ ...form, position: e.target.value })}
                   className={inputClass}
                 />
               </div>
-            </div>
+            )}
 
-            <div>
-              <label className={labelClass}>{fieldLabels.position}{requiredFields.position && " *"}</label>
-              <input
-                type="text"
-                required={requiredFields.position}
-                value={form.position}
-                onChange={(e) => setForm({ ...form, position: e.target.value })}
-                className={inputClass}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className={labelClass}>{fieldLabels.email}{requiredFields.email && " *"}</label>
-                <input
-                  type="email"
-                  required={requiredFields.email}
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className={labelClass}>{fieldLabels.phone}{requiredFields.phone && " *"}</label>
-                <input
-                  type="tel"
-                  required={requiredFields.phone}
-                  placeholder="010-0000-0000"
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: formatPhoneNumber(e.target.value) })}
-                  className={inputClass}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                {fieldLabels.participationTypes}{requiredFields.participationTypes && " *"} (복수 선택 가능)
-              </label>
-              <div className="space-y-1.5 rounded-lg border border-neutral-200 p-3 dark:border-white/10">
-                {participationOptions.map((title) => (
-                  <label key={title} className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200">
+            {(fieldVisibility.email || fieldVisibility.phone) && (
+              <div className="grid grid-cols-2 gap-3">
+                {fieldVisibility.email && (
+                  <div>
+                    <label className={labelClass}>{fieldLabels.email}{requiredFields.email && " *"}</label>
                     <input
-                      type="checkbox"
-                      checked={form.participationTypes.includes(title)}
-                      onChange={() => toggleParticipationType(title)}
-                      className="h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
+                      type="email"
+                      required={requiredFields.email}
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      className={inputClass}
                     />
-                    {title}
-                  </label>
-                ))}
-                {participationOptions.length === 0 && (
-                  <p className="text-sm text-neutral-400">등록된 참여 방식이 없습니다.</p>
+                  </div>
+                )}
+                {fieldVisibility.phone && (
+                  <div>
+                    <label className={labelClass}>{fieldLabels.phone}{requiredFields.phone && " *"}</label>
+                    <input
+                      type="tel"
+                      required={requiredFields.phone}
+                      placeholder="010-0000-0000"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: formatPhoneNumber(e.target.value) })}
+                      className={inputClass}
+                    />
+                  </div>
                 )}
               </div>
-            </div>
+            )}
 
-            <div>
-              <label className={labelClass}>{fieldLabels.meetingMethod}{requiredFields.meetingMethod && " *"}</label>
-              <div className="space-y-1.5 rounded-lg border border-neutral-200 p-3 dark:border-white/10">
-                {meetingOptions.map((option) => (
-                  <label key={option} className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200">
-                    <input
-                      type="radio"
-                      name="meetingMethod"
-                      required={requiredFields.meetingMethod}
-                      checked={form.meetingMethod === option}
-                      onChange={() => setForm({ ...form, meetingMethod: option })}
-                      className="h-4 w-4 border-neutral-300 text-brand focus:ring-brand"
-                    />
-                    {option}
-                  </label>
-                ))}
-                {meetingOptions.length === 0 && (
-                  <p className="text-sm text-neutral-400">등록된 만남 방식이 없습니다.</p>
-                )}
+            {fieldVisibility.participationTypes && (
+              <div>
+                <label className={labelClass}>
+                  {fieldLabels.participationTypes}{requiredFields.participationTypes && " *"} (복수 선택 가능)
+                </label>
+                <div className="space-y-1.5 rounded-lg border border-neutral-200 p-3 dark:border-white/10">
+                  {participationOptions.map((title) => (
+                    <label key={title} className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200">
+                      <input
+                        type="checkbox"
+                        checked={form.participationTypes.includes(title)}
+                        onChange={() => toggleParticipationType(title)}
+                        className="h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
+                      />
+                      {title}
+                    </label>
+                  ))}
+                  {participationOptions.length === 0 && (
+                    <p className="text-sm text-neutral-400">등록된 참여 방식이 없습니다.</p>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
-            <div>
-              <label className={labelClass}>{fieldLabels.request}{requiredFields.request && " *"}</label>
-              <textarea
-                required={requiredFields.request}
-                rows={3}
-                value={form.request}
-                onChange={(e) => setForm({ ...form, request: e.target.value })}
-                className={inputClass}
-              />
-            </div>
+            {fieldVisibility.meetingMethod && (
+              <div>
+                <label className={labelClass}>{fieldLabels.meetingMethod}{requiredFields.meetingMethod && " *"}</label>
+                <div className="space-y-1.5 rounded-lg border border-neutral-200 p-3 dark:border-white/10">
+                  {meetingOptions.map((option) => (
+                    <label key={option} className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200">
+                      <input
+                        type="radio"
+                        name="meetingMethod"
+                        required={requiredFields.meetingMethod}
+                        checked={form.meetingMethod === option}
+                        onChange={() => setForm({ ...form, meetingMethod: option })}
+                        className="h-4 w-4 border-neutral-300 text-brand focus:ring-brand"
+                      />
+                      {option}
+                    </label>
+                  ))}
+                  {meetingOptions.length === 0 && (
+                    <p className="text-sm text-neutral-400">등록된 만남 방식이 없습니다.</p>
+                  )}
+                </div>
+              </div>
+            )}
 
-            <div>
-              <label className={labelClass}>{fieldLabels.message}{requiredFields.message && " *"}</label>
-              <textarea
-                required={requiredFields.message}
-                rows={2}
-                value={form.message}
-                onChange={(e) => setForm({ ...form, message: e.target.value })}
-                className={inputClass}
-              />
-            </div>
+            {fieldVisibility.request && (
+              <div>
+                <label className={labelClass}>{fieldLabels.request}{requiredFields.request && " *"}</label>
+                <textarea
+                  required={requiredFields.request}
+                  rows={3}
+                  value={form.request}
+                  onChange={(e) => setForm({ ...form, request: e.target.value })}
+                  className={inputClass}
+                />
+              </div>
+            )}
+
+            {fieldVisibility.message && (
+              <div>
+                <label className={labelClass}>{fieldLabels.message}{requiredFields.message && " *"}</label>
+                <textarea
+                  required={requiredFields.message}
+                  rows={2}
+                  value={form.message}
+                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  className={inputClass}
+                />
+              </div>
+            )}
+
+            {customFields.map((field) => (
+              <div key={field.id}>
+                <label className={labelClass}>{field.label}{field.required && " *"}</label>
+                <input
+                  type="text"
+                  required={field.required}
+                  value={customValues[field.id] ?? ""}
+                  onChange={(e) => setCustomValues((v) => ({ ...v, [field.id]: e.target.value }))}
+                  className={inputClass}
+                />
+              </div>
+            ))}
 
             <div>
               <label className={labelClass}>개인정보 수집·이용 동의</label>

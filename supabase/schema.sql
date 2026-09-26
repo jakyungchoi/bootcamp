@@ -674,3 +674,15 @@ alter table site_settings add column if not exists participation_types_descripti
 
 alter table site_settings add column if not exists partners_field_labels jsonb not null default
   '{"companyName": "기업명", "contactName": "담당자명", "department": "부서", "position": "직급 / 직책", "email": "이메일", "phone": "연락처", "participationTypes": "참여 희망 방식", "meetingMethod": "만남 방식", "request": "문의 / 요청 내용", "message": "남기실 말씀"}';
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 12
+-- 참여 신청 팝업 폼의 항목을 관리자가 직접 추가/삭제할 수 있도록 한다.
+-- - partners_field_visibility: 기본 제공 10개 항목을 폼에서 완전히 숨길지(=사실상 삭제) 여부.
+-- - partners_custom_fields: 관리자가 자유롭게 추가하는 한 줄 입력 항목 목록. 값은 구글 시트에
+--   기존 10개 항목 뒤에 이 목록 순서 그대로 추가 열로 기록되므로, 항목을 추가/삭제/순서
+--   변경하면 구글 시트의 머리글 행도 같은 순서로 맞춰줘야 한다 (README 참고).
+alter table site_settings add column if not exists partners_field_visibility jsonb not null default
+  '{"companyName": true, "contactName": true, "department": true, "position": true, "email": true, "phone": true, "participationTypes": true, "meetingMethod": true, "request": true, "message": true}';
+
+alter table site_settings add column if not exists partners_custom_fields jsonb not null default '[]';

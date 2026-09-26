@@ -64,7 +64,7 @@ export default async function PartnersPage() {
       {/* 8-1 협업 사례 (슬라이드) */}
       {showCaseStudies && (
         <section id="admin-section-case-studies" className="mt-14 scroll-mt-24">
-          <h3 className="text-sm font-semibold text-neutral-400">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
             {pad(numCaseStudies)}. {labelCaseStudies}
           </h3>
           <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
@@ -87,7 +87,7 @@ export default async function PartnersPage() {
       {/* 8-2 가능한 협업 활동 */}
       {showCompanyFlow && (
         <section id="admin-section-company-flow" className="mt-16 scroll-mt-24">
-          <h3 className="text-sm font-semibold text-neutral-400">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
             {pad(numCompanyFlow)}. {labelCompanyFlow}
           </h3>
           <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
@@ -112,7 +112,7 @@ export default async function PartnersPage() {
         <section id="admin-section-participation-types" className="mt-16 scroll-mt-24">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-neutral-400">
+              <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
                 {pad(numParticipationTypes)}. {labelParticipationTypes}
               </h3>
               <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
@@ -127,6 +127,8 @@ export default async function PartnersPage() {
                 submitNotice={settings.partners_submit_notice}
                 requiredFields={settings.partners_required_fields}
                 fieldLabels={settings.partners_field_labels}
+                fieldVisibility={settings.partners_field_visibility}
+                customFields={settings.partners_custom_fields}
               />
             )}
           </div>

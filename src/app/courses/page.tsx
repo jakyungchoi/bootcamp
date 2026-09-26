@@ -69,7 +69,7 @@ export default async function CoursesPage() {
       {/* 5-1 교육 영역 */}
       {showCategories && (
         <section id="admin-section-categories" className="mt-14 scroll-mt-24">
-          <h3 className="text-sm font-semibold text-neutral-400">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
             {pad(numCategories)}. {labelCategories}
           </h3>
           <div className="mt-4 grid gap-5 sm:grid-cols-3">
@@ -93,7 +93,7 @@ export default async function CoursesPage() {
       {/* 5-2 커리큘럼 구성 */}
       {showCurriculum && (
         <section id="admin-section-curriculum" className="mt-16 scroll-mt-24">
-          <h3 className="text-sm font-semibold text-neutral-400">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
             {pad(numCurriculum)}. {labelCurriculum}
           </h3>
           <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
@@ -108,7 +108,7 @@ export default async function CoursesPage() {
       {/* 5-3 대표 교육 과정 — 과정 기간 분류(단기/중장기 등)로 묶어서 보여준다 */}
       {showCourses && (
         <section id="admin-section-courses" className="mt-16 scroll-mt-24">
-          <h3 className="text-sm font-semibold text-neutral-400">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
             {pad(numCourses)}. {labelCourses}
           </h3>
           <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
