@@ -27,7 +27,10 @@ export function MonthsTimeline({
   columns: string[];
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
-  const sortedMonths = [...months].sort((a, b) => a.month_start - b.month_start || a.order - b.order);
+  // 표에 표시되는 줄 순서는 "시작 칸"이 아니라, 관리자 화면 아래쪽 "교육 과정 관리" 목록에서
+  // 위/아래 화살표로 정한 순서(order)를 그대로 따른다. 시작 칸으로 자동 정렬하면 관리자가 일부러
+  // 정해둔 줄 순서가 화면에서 뒤바뀌어 보이는 문제가 있었다.
+  const sortedMonths = [...months].sort((a, b) => a.order - b.order);
   const openMonth = months.find((m) => m.id === openId) ?? null;
 
   const colorOf = (month: ManagementMonth, rowIdx: number) => month.color || PALETTE[rowIdx % PALETTE.length];

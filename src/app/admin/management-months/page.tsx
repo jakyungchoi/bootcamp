@@ -73,7 +73,7 @@ export default function ManagementMonthsAdminPage() {
       <ResourceCrud
         table="management_months"
         title={title}
-        description="교육 관리 페이지에 간트 차트 표로 표시되는 구간입니다. 사진을 등록하면, 방문자가 그 줄을 클릭했을 때 좌우로 넘겨보는 팝업이 뜹니다. 공개 화면에는 아래 목록 순서가 아니라 '시작 칸' 순서대로 위에서부터 표시됩니다."
+        description="교육 관리 페이지에 간트 차트 표로 표시되는 구간입니다. 사진을 등록하면, 방문자가 그 줄을 클릭했을 때 좌우로 넘겨보는 팝업이 뜹니다. 공개 화면에는 아래 목록의 ↑ / ↓ 순서 그대로 위에서부터 표시됩니다."
         titleField="title"
         imageFolder="management-months"
         fields={fields}

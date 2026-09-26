@@ -5,14 +5,30 @@ import { PublicChrome } from "@/components/layout/public-chrome";
 import { getSiteSettings } from "@/lib/data";
 
 // Pretendard(한글 웹폰트)를 npm 패키지("pretendard")에 들어있는 파일 그대로 빌드에
-// 포함시킨다. Google Fonts 같은 외부 CDN에는 전혀 요청을 보내지 않으면서도, 시스템 폰트에만
-// 의존할 때 생기던 문제(예: macOS/Safari가 큰 글씨에서 시스템 폰트를 자동으로 다른 굵기의
-// 폰트로 바꿔버려서 "교육 성과 지표" 숫자만 다른 글씨체처럼 보이던 문제)를 없애준다. 이제는
-// 어떤 기기·브라우저에서 보든 모든 글자가 항상 이 폰트 하나로 통일되어 보인다.
+// 포함시킨다. Google Fonts 같은 외부 CDN에는 전혀 요청을 보내지 않는다.
 const pretendard = localFont({
   src: "../../node_modules/pretendard/dist/web/variable/woff2/PretendardVariable.woff2",
   weight: "45 920",
   variable: "--font-pretendard",
+  display: "swap",
+});
+
+// "교육 성과 지표" 숫자가 주변 한글과 다른 폰트처럼 보이던 문제는 폰트가 잘못 로딩되는
+// 버그가 아니라, Pretendard가 한글은 도장체처럼, 숫자/영문(0-9, O 등)은 훨씬 동글동글하고
+// 기계적으로 그리도록 원래 그렇게 디자인되어 있어서였다 (실제로 확인함). 숫자만 다른 서체로
+// 바꿔달라는 요청에 따라, 숫자 표시용으로 IBM Plex Sans(무료 오픈소스 서체, npm 패키지
+// "@fontsource/ibm-plex-sans"에 들어있는 파일을 그대로 사용 — 역시 외부 요청 없음)를 별도로
+// 불러와 globals.css의 ".font-numeral" 클래스에서만 쓴다. 이 폰트에는 한글 글자가 없어서,
+// 같은 문단 안에 숫자와 한글이 섞여 있어도(예: "OOO명") 브라우저가 자동으로 숫자만 이 폰트로,
+// 한글은 그대로 Pretendard로 그려준다.
+const numeral = localFont({
+  src: [
+    { path: "../../node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "../../node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-500-normal.woff2", weight: "500", style: "normal" },
+    { path: "../../node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-600-normal.woff2", weight: "600", style: "normal" },
+    { path: "../../node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-700-normal.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-numeral",
   display: "swap",
 });
 
@@ -30,7 +46,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const settings = await getSiteSettings();
 
   return (
-    <html lang="ko" className={`h-full antialiased ${pretendard.variable}`}>
+    <html lang="ko" className={`h-full antialiased ${pretendard.variable} ${numeral.variable}`}>
       <body className="flex min-h-full flex-col break-keep bg-white font-sans text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
         <PublicChrome
           siteName={settings.site_name}
