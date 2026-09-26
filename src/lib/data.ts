@@ -323,6 +323,24 @@ export async function getAdminMenuLabels(): Promise<Map<string, string>> {
   return new Map();
 }
 
+// 관리자 대시보드에서 순서를 바꾼 기존 메뉴 목록 (key -> order). 값이 없는 메뉴는 admin-menu.ts의
+// BUILTIN_MENU에 정해진 기본 순서를 그대로 쓴다. 교육 관리 페이지처럼 한 화면에 여러 섹션이
+// 나열되는 페이지가, 관리자 대시보드에서 자유롭게 바꾼 순서(위/아래 화살표)를 공개 화면 섹션
+// 순서에도 그대로 반영하기 위해 사용한다.
+export async function getAdminMenuOrder(): Promise<Map<string, number>> {
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase.from("admin_menu_overrides").select("key, order");
+    if (!error && data) {
+      const map = new Map<string, number>();
+      for (const row of data as { key: string; order: number | null }[]) {
+        if (row.order !== null && row.order !== undefined) map.set(row.key, row.order);
+      }
+      return map;
+    }
+  }
+  return new Map();
+}
+
 // 관리자가 추가한 커스텀 페이지를 slug 로 조회 (공개된 것만). 없으면 null.
 export async function getCustomPageBySlug(slug: string): Promise<CustomPage | null> {
   if (!isSupabaseConfigured || !supabase) return null;
