@@ -100,7 +100,7 @@ export function CarouselModal({ title, items, onClose }: CarouselModalProps) {
               <p className="font-bold text-neutral-900 dark:text-white">{current.title}</p>
             )}
             {current.description && (
-              <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+              <p className="mt-1.5 whitespace-pre-line text-justify text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
                 {current.description}
               </p>
             )}

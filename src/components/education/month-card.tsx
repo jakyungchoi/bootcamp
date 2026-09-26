@@ -33,7 +33,7 @@ export function MonthCard({ month }: { month: ManagementMonth }) {
           </span>
           <p className="mt-3 font-bold text-neutral-900 dark:text-white">{month.title}</p>
           {month.description && (
-            <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+            <p className="mt-1.5 whitespace-pre-line text-justify text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
               {month.description}
             </p>
           )}

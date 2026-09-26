@@ -37,7 +37,7 @@ export function CourseCard({ course, categoryName }: { course: Course; categoryN
         )}
         <h4 className="mt-3 text-lg font-bold text-neutral-900 dark:text-white">{course.title}</h4>
         <p className="text-sm font-medium text-neutral-400">{course.subtitle}</p>
-        <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+        <p className="mt-2 whitespace-pre-line text-justify text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
           {course.description}
         </p>
         <ul className="mt-4 space-y-1.5 text-sm text-neutral-600 dark:text-neutral-300">

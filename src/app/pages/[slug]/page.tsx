@@ -24,7 +24,7 @@ export default async function CustomPublicPage({ params }: { params: Promise<{ s
                 <p className="font-bold text-neutral-900 dark:text-white">{section.heading}</p>
               )}
               {section.body && (
-                <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+                <p className="mt-2 whitespace-pre-line text-justify text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
                   {section.body}
                 </p>
               )}
