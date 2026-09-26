@@ -16,6 +16,7 @@ export type FieldType =
   | "boolean"
   | "select"
   | "image"
+  | "color"
   | "string-list"
   | "object-list";
 
@@ -24,6 +25,9 @@ export type FieldConfig = {
   label: string;
   type: FieldType;
   options?: { value: string; label: string }[]; // select 타입일 때 사용
+  // select 타입일 때, 선택한 값을 문자열이 아니라 숫자로 저장해야 하는 경우(예: DB 컬럼이
+  // 정수) true로 설정한다. (기본은 문자열로 저장 — 아이콘 이름, 카테고리 id 등)
+  numeric?: boolean;
   placeholder?: string;
   required?: boolean;
   helpText?: string;
@@ -148,6 +152,12 @@ export function ResourceCrud({
       // select 필드는 선택하지 않으면 빈 문자열인데, DB 컬럼이 uuid 등이면 빈 문자열은 저장할 수 없다.
       // (필수 항목이 아닌 select는 "선택 안 함"을 null로 저장한다)
       if (f.type === "select" && payload[f.key] === "") {
+        payload[f.key] = null;
+      } else if (f.type === "select" && f.numeric && typeof payload[f.key] === "string") {
+        payload[f.key] = Number(payload[f.key]);
+      }
+      // color 필드도 비워두면(자동 배정) null로 저장한다.
+      if (f.type === "color" && payload[f.key] === "") {
         payload[f.key] = null;
       }
     }
@@ -420,6 +430,32 @@ export function ResourceCrud({
                         </option>
                       ))}
                     </select>
+                  )}
+                  {f.type === "color" && (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={String(formValues[f.key] || "#5b5bd6")}
+                        onChange={(e) => setFormValues((v) => ({ ...v, [f.key]: e.target.value }))}
+                        className="h-9 w-14 cursor-pointer rounded border border-neutral-300"
+                      />
+                      <input
+                        type="text"
+                        value={String(formValues[f.key] ?? "")}
+                        placeholder="비워두면 자동 지정"
+                        onChange={(e) => setFormValues((v) => ({ ...v, [f.key]: e.target.value }))}
+                        className="w-32 rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+                      />
+                      {Boolean(formValues[f.key]) && (
+                        <button
+                          type="button"
+                          onClick={() => setFormValues((v) => ({ ...v, [f.key]: "" }))}
+                          className="text-xs text-neutral-400 underline hover:text-neutral-600"
+                        >
+                          자동으로 되돌리기
+                        </button>
+                      )}
+                    </div>
                   )}
                   {f.type === "boolean" && (
                     <label className="flex items-center gap-2 text-sm text-neutral-600">

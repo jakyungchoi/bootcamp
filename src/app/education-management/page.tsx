@@ -264,7 +264,7 @@ export default async function EducationManagementPage() {
           </Card>
         ) : (
           <div className="mt-5">
-            <MonthsTimeline months={months} totalMonths={settings.management_months_total_months} />
+            <MonthsTimeline months={months} columns={settings.management_months_columns} />
           </div>
         )}
       </section>

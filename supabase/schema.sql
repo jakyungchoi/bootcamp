@@ -737,4 +737,19 @@ alter table management_months add column if not exists month_start int not null 
 alter table management_months add column if not exists month_end int not null default 1;
 
 -- 타임라인이 기준으로 삼는 전체 교육 기간(개월). 예: 가장 긴 과정이 6개월이면 6.
+-- (더 이상 사용하지 않는 컬럼 — 아래 확장 15에서 management_months_columns로 대체됐다. 과거
+-- 데이터 보존을 위해 지우지 않는다.)
 alter table site_settings add column if not exists management_months_total_months int not null default 6;
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 15
+-- "개월차별 관리" 간트 차트 표의 칸(열)을 관리자가 직접 이름 붙이고 개수도 자유롭게 늘릴 수
+-- 있도록 바꾼다 (예: 6개월 과정 뒤에 "수료 이후" 칸 추가). 기존 management_months_total_months
+-- (숫자 하나)를 management_months_columns(칸 이름 목록)로 대체한다. 이미 전체 교육 기간을
+-- 6개월로 설정해뒀던 것과 맞춰, 기본값도 "1개월차"~"6개월차" 6칸으로 시작한다.
+-- 각 구간(management_months) 항목에는 간트 차트 막대 색상을 직접 고를 수 있는 color 컬럼도
+-- 추가한다. 비어있으면(null) 화면에서 자동으로 색을 배정한다.
+alter table site_settings add column if not exists management_months_columns jsonb not null default
+  '["1개월차","2개월차","3개월차","4개월차","5개월차","6개월차"]';
+
+alter table management_months add column if not exists color text;

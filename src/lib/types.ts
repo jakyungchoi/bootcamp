@@ -102,16 +102,20 @@ export type ManagementMonthPhoto = {
 };
 
 // 교육 관리 페이지 "개월차별 관리" 카드. 학습부진자 지도 계획(SupportPlanTrack)과는 별개의 새 섹션이다.
-// 공개 화면에서는 카드가 아니라 가로 타임라인(막대 그래프) 형태로 표시되며, month_start~month_end
-// 구간의 길이에 비례해 막대 너비가 정해진다. (예: month_start=1, month_end=2 → "1~2개월차")
+// 공개 화면에서는 카드가 아니라 간트 차트 표 형태로 표시된다. month_start/month_end는 실제
+// "개월 수"가 아니라, SiteSettings.management_months_columns 배열의 몇 번째 칸인지를 가리키는
+// 1부터 시작하는 번호다 (예: management_months_columns가 ["1개월차",...,"6개월차","수료 이후"]이고
+// month_start=1, month_end=2 면 "1개월차"~"2개월차" 두 칸이 색칠된다. 관리자 화면에서는 이 번호
+// 대신 실제 칸 이름을 고르는 드롭다운으로 보여준다).
 export type ManagementMonth = {
   id: string;
-  month_start: number; // 시작 개월차 (예: 1)
-  month_end: number; // 종료 개월차 (한 개월만 해당하면 month_start와 동일하게, 예: 1)
+  month_start: number;
+  month_end: number;
   title: string;
   description: string;
   tags: string[];
   photos: ManagementMonthPhoto[];
+  color: string | null; // 간트 차트에서 이 구간 막대의 색상 (hex). 비어있으면 자동으로 배정된 색을 쓴다.
   order: number;
   is_published: boolean;
 };
@@ -228,9 +232,10 @@ export type SiteSettings = {
   support_plans_description: string;
   // 교육 관리 페이지 "개월차별 관리" 섹션 제목 바로 아래에 표시되는 한 줄 설명
   management_months_description: string;
-  // "개월차별 관리" 타임라인이 기준으로 삼는 전체 교육 기간(개월). 예: 6개월 과정이 가장 길면 6.
-  // 각 카드의 막대 너비는 이 전체 기간 대비 (month_end - month_start + 1)의 비율로 정해진다.
-  management_months_total_months: number;
+  // "개월차별 관리" 간트 차트 표의 칸(열) 이름 목록. 순서대로 왼쪽부터 표시되며, 관리자가 이름을
+  // 자유롭게 바꾸거나 뒤에 새 칸을 추가할 수 있다 (예: 6개월 과정 뒤에 "수료 이후" 칸을 추가).
+  // 각 ManagementMonth 항목의 month_start/month_end는 이 배열의 몇 번째 칸인지를 가리킨다.
+  management_months_columns: string[];
   // 교육 관리 페이지 "교육 품질 관리" 섹션 제목 바로 아래에 표시되는 한 줄 설명
   quality_management_description: string;
   // 교육 관리 페이지 "오프라인 교육장" 섹션 전체 설명 (사진 슬라이드 위에 표시)

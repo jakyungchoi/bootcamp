@@ -123,8 +123,8 @@ export const siteSettings: SiteSettings = {
   learner_management_description: "교육생 개개인의 학습 현황을 놓치지 않고 관리합니다.",
   support_plans_description: "학습에 어려움을 겪는 교육생을 위한 지원 방식입니다.",
   management_months_description:
-    "개월차별로 어떻게 관리하고 있는지 보여줍니다. 막대를 클릭하면 사진을 좌우로 넘겨볼 수 있습니다.",
-  management_months_total_months: 6,
+    "개월차별로 어떻게 관리하고 있는지 보여줍니다. 줄을 클릭하면 사진을 좌우로 넘겨볼 수 있습니다.",
+  management_months_columns: ["1개월차", "2개월차", "3개월차", "4개월차", "5개월차", "6개월차"],
   quality_management_description: "만족도와 강사 품질을 체계적으로 관리합니다.",
   training_facility_description: "배움에 집중할 수 있는 전용 교육 환경을 제공합니다.",
   training_facility_photos: [],

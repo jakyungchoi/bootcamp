@@ -169,8 +169,8 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         support_plans_description: data.support_plans_description ?? siteSettings.support_plans_description,
         management_months_description:
           data.management_months_description ?? siteSettings.management_months_description,
-        management_months_total_months:
-          data.management_months_total_months ?? siteSettings.management_months_total_months,
+        management_months_columns:
+          data.management_months_columns ?? siteSettings.management_months_columns,
         quality_management_description:
           data.quality_management_description ?? siteSettings.quality_management_description,
         training_facility_description:

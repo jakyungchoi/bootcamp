@@ -89,17 +89,29 @@ export default function AdminDashboardPage() {
     const idx = items.findIndex((i) => i.key === item.key);
     const targetIdx = idx + direction;
     if (targetIdx < 0 || targetIdx >= items.length) return;
-    const target = items[targetIdx];
     const client = supabase;
 
-    async function setOrder(it: MergedMenuItem, order: number) {
-      if (it.isCustom) {
-        return client.from("custom_pages").update({ order }).eq("id", customKeyToId(it.key));
-      }
-      return client.from("admin_menu_overrides").upsert({ key: it.key, order });
-    }
+    // 두 항목의 위치를 바꾼 뒤, 전체 목록의 순서를 처음부터 다시 번호를 매겨 저장한다.
+    // (예전에 저장돼 있던 순서 값끼리 우연히 같거나 꼬여 있으면, 두 값만 맞바꾸는 방식으로는
+    // "값이 똑같아서 바꿔도 그대로"인 경우가 생겨 순서가 안 바뀌는 것처럼 보일 수 있다.
+    // 매번 화면에 보이는 순서 그대로 1, 2, 3...으로 다시 매겨 저장하면 이 문제가 생기지 않는다.
+    // 기존 메뉴와 "새 탭 추가"로 만든 페이지는 서로 다른 숫자 체계를 쓰므로(새 탭은 항상 뒤에
+    // 오도록 내부적으로 1000을 더해서 병합한다), 두 그룹을 각각 따로 1부터 다시 매긴다.)
+    const reordered = [...items];
+    [reordered[idx], reordered[targetIdx]] = [reordered[targetIdx], reordered[idx]];
 
-    const results = await Promise.all([setOrder(item, target.order), setOrder(target, item.order)]);
+    let builtinSeq = 0;
+    let customSeq = 0;
+    const results = await Promise.all(
+      reordered.map((it) => {
+        if (it.isCustom) {
+          customSeq += 1;
+          return client.from("custom_pages").update({ order: customSeq }).eq("id", customKeyToId(it.key));
+        }
+        builtinSeq += 1;
+        return client.from("admin_menu_overrides").upsert({ key: it.key, order: builtinSeq });
+      })
+    );
     const failed = results.find((r) => r.error);
     if (failed?.error) {
       setError(failed.error.message);
