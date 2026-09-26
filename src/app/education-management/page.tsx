@@ -116,7 +116,7 @@ export default async function EducationManagementPage() {
           <div className="mt-5 grid grid-cols-2 divide-x divide-brand/15 rounded-2xl border border-brand/15 bg-gradient-to-br from-brand/[0.06] via-white to-white p-6 shadow-sm sm:grid-cols-4 dark:divide-brand/20 dark:border-brand/20 dark:from-brand/10 dark:via-neutral-900 dark:to-neutral-900">
             {metrics.map((m) => (
               <div key={m.id} className="px-3 text-center first:pl-0 last:pr-0">
-                <p className="text-3xl font-extrabold tracking-tight text-neutral-900 sm:text-4xl dark:text-white">
+                <p className="text-3xl tracking-tight text-neutral-900 sm:text-4xl dark:text-white">
                   {m.value}
                 </p>
                 <p className="mt-2 text-xs font-semibold text-neutral-500 dark:text-neutral-400">{m.label}</p>

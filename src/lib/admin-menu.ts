@@ -49,6 +49,34 @@ export function customKeyToId(key: string): string {
   return key.replace(/^custom:/, "");
 }
 
+// 메뉴 항목이 실제로 어느 공개 페이지에 속하는지 묶어서, 사이드바와 관리자 대시보드 양쪽에
+// 구분선 + 그룹 이름을 보여주기 위한 표. 처음 보는 사람도 "이 메뉴들이 이 페이지 하나를
+// 구성한다"는 걸 한눈에 알 수 있게 하려는 목적이라, 실제 데이터 구조와는 별개로 화면
+// 표시용으로만 쓰인다.
+export const MENU_GROUPS: { label: string; keys: string[] }[] = [
+  { label: "전역 설정", keys: ["site-settings", "page-headers"] },
+  { label: "운영 교육 과정 페이지", keys: ["categories", "duration-types", "courses", "curriculum"] },
+  { label: "교육 문화 페이지", keys: ["culture"] },
+  {
+    label: "교육 관리 페이지",
+    keys: [
+      "learner-management",
+      "support-plans",
+      "management-months",
+      "management-metrics",
+      "training-facility",
+      "quality-management",
+      "collaboration-tools",
+    ],
+  },
+  { label: "참여 기업 연계 페이지", keys: ["participation-types", "company-flow", "case-studies"] },
+];
+
+export function groupLabelForKey(key: string, isCustom: boolean): string {
+  if (isCustom) return "추가한 페이지";
+  return MENU_GROUPS.find((g) => g.keys.includes(key))?.label ?? "기타";
+}
+
 export async function getMergedAdminMenu(): Promise<MergedMenuItem[]> {
   if (!supabase) {
     return BUILTIN_MENU.map((b) => ({ ...b, isVisible: true, isCustom: false }));

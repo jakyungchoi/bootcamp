@@ -14,10 +14,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { ArrowDown, ArrowUp, Eye, EyeOff, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
-import { getMergedAdminMenu, customKeyToId, type MergedMenuItem } from "@/lib/admin-menu";
+import { getMergedAdminMenu, groupLabelForKey, customKeyToId, type MergedMenuItem } from "@/lib/admin-menu";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -157,77 +157,91 @@ export default function AdminDashboardPage() {
         </div>
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          {items.map((item, idx) => (
-            <div
-              key={item.key}
-              className={`rounded-xl border border-neutral-200 bg-white p-4 transition-shadow hover:shadow-sm ${
-                !item.isVisible ? "opacity-50" : ""
-              }`}
-            >
-              <Link href={item.href} className="block">
-                <p className="font-semibold text-neutral-800">
-                  {item.label}
-                  {!item.isVisible && (
-                    <span className="ml-1.5 rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-400">
-                      숨김
-                    </span>
+          {(() => {
+            // 관련된 탭끼리 묶어서 구분선 + 그룹 이름을 보여준다 (사이드바와 동일한 그룹 기준).
+            const groups = items.map((it) => groupLabelForKey(it.key, it.isCustom));
+            return items.map((item, idx) => {
+              const group = groups[idx];
+              const showGroupLabel = idx === 0 || group !== groups[idx - 1];
+              return (
+                <Fragment key={item.key}>
+                  {showGroupLabel && (
+                    <div className={`col-span-full ${idx === 0 ? "" : "mt-2 border-t border-neutral-200 pt-5"}`}>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400">{group}</p>
+                    </div>
                   )}
-                </p>
-                {item.isCustom ? (
-                  <p className="mt-1 text-sm text-neutral-500">공개 주소: /pages/{item.slug}</p>
-                ) : (
-                  item.desc && <p className="mt-1 text-sm text-neutral-500">{item.desc}</p>
-                )}
-              </Link>
-              <div className="mt-3 flex items-center gap-1 border-t border-neutral-100 pt-2.5">
-                <button
-                  type="button"
-                  onClick={() => move(item, -1)}
-                  disabled={idx === 0}
-                  className="rounded p-1.5 text-neutral-400 hover:bg-neutral-100 disabled:opacity-30"
-                  aria-label="위로"
-                >
-                  <ArrowUp size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => move(item, 1)}
-                  disabled={idx === items.length - 1}
-                  className="rounded p-1.5 text-neutral-400 hover:bg-neutral-100 disabled:opacity-30"
-                  aria-label="아래로"
-                >
-                  <ArrowDown size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleRename(item)}
-                  className="rounded p-1.5 text-neutral-400 hover:bg-neutral-100"
-                  aria-label="이름 수정"
-                >
-                  <Pencil size={14} />
-                </button>
-                {item.isCustom ? (
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteCustom(item)}
-                    className="ml-auto rounded p-1.5 text-red-400 hover:bg-red-50"
-                    aria-label="삭제"
+                  <div
+                    className={`rounded-xl border border-neutral-200 bg-white p-4 transition-shadow hover:shadow-sm ${
+                      !item.isVisible ? "opacity-50" : ""
+                    }`}
                   >
-                    <Trash2 size={14} />
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => handleToggleVisible(item)}
-                    className="ml-auto rounded p-1.5 text-neutral-400 hover:bg-neutral-100"
-                    aria-label={item.isVisible ? "메뉴에서 숨기기" : "메뉴에 표시"}
-                  >
-                    {item.isVisible ? <Eye size={14} /> : <EyeOff size={14} />}
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
+                    <Link href={item.href} className="block">
+                      <p className="font-semibold text-neutral-800">
+                        {item.label}
+                        {!item.isVisible && (
+                          <span className="ml-1.5 rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-400">
+                            숨김
+                          </span>
+                        )}
+                      </p>
+                      {item.isCustom ? (
+                        <p className="mt-1 text-sm text-neutral-500">공개 주소: /pages/{item.slug}</p>
+                      ) : (
+                        item.desc && <p className="mt-1 text-sm text-neutral-500">{item.desc}</p>
+                      )}
+                    </Link>
+                    <div className="mt-3 flex items-center gap-1 border-t border-neutral-100 pt-2.5">
+                      <button
+                        type="button"
+                        onClick={() => move(item, -1)}
+                        disabled={idx === 0}
+                        className="rounded p-1.5 text-neutral-400 hover:bg-neutral-100 disabled:opacity-30"
+                        aria-label="위로"
+                      >
+                        <ArrowUp size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => move(item, 1)}
+                        disabled={idx === items.length - 1}
+                        className="rounded p-1.5 text-neutral-400 hover:bg-neutral-100 disabled:opacity-30"
+                        aria-label="아래로"
+                      >
+                        <ArrowDown size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRename(item)}
+                        className="rounded p-1.5 text-neutral-400 hover:bg-neutral-100"
+                        aria-label="이름 수정"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      {item.isCustom ? (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCustom(item)}
+                          className="ml-auto rounded p-1.5 text-red-400 hover:bg-red-50"
+                          aria-label="삭제"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleToggleVisible(item)}
+                          className="ml-auto rounded p-1.5 text-neutral-400 hover:bg-neutral-100"
+                          aria-label={item.isVisible ? "메뉴에서 숨기기" : "메뉴에 표시"}
+                        >
+                          {item.isVisible ? <Eye size={14} /> : <EyeOff size={14} />}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </Fragment>
+              );
+            });
+          })()}
         </div>
       )}
     </div>
