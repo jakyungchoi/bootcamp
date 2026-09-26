@@ -2,14 +2,16 @@
 
 import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
+import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 
 export default function ManagementMonthsAdminPage() {
+  const title = useAdminMenuLabel("management-months", "개월차별 관리");
   return (
     <div>
       <PageHeaderNote />
       <ResourceCrud
         table="management_months"
-        title="개월차별 관리"
+        title={title}
         description="교육 관리 페이지에 개월차 단위로 표시되는 카드입니다. 사진을 등록하면, 방문자가 카드를 클릭했을 때 좌우로 넘겨보는 팝업이 뜹니다."
         titleField="month_label"
         imageFolder="management-months"

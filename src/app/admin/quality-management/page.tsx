@@ -2,15 +2,17 @@
 
 import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
+import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 
 export default function QualityManagementAdminPage() {
+  const title = useAdminMenuLabel("quality-management", "교육 품질 관리");
   return (
     <div>
       <PageHeaderNote />
       <ResourceCrud
         table="quality_management_items"
-        title="교육 품질 관리"
-        description="교육 관리 페이지 '03. 교육 품질 관리'에 표시되는 항목입니다. '구분'에 새 이름을 입력하면 새 카드가 만들어지고, 한 구분의 항목을 모두 지우면 그 카드는 사라집니다."
+        title={title}
+        description={`교육 관리 페이지의 "${title}" 섹션에 표시되는 항목입니다. "구분"에 새 이름을 입력하면 새 카드가 만들어지고, 한 구분의 항목을 모두 지우면 그 카드는 사라집니다.`}
         publishable={false}
         titleField="title"
         fields={[

@@ -2,6 +2,7 @@
 
 import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
+import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 
 const HIGHLIGHT_TYPE_OPTIONS = [
   { value: "stat", label: "숫자 강조 (예: 87.5%)" },
@@ -9,12 +10,13 @@ const HIGHLIGHT_TYPE_OPTIONS = [
 ];
 
 export default function ManagementMetricsAdminPage() {
+  const title = useAdminMenuLabel("management-metrics", "교육 성과 지표");
   return (
     <div className="space-y-10">
       <PageHeaderNote />
       <ResourceCrud
         table="management_metrics"
-        title="교육 성과 지표 — 숫자 카드"
+        title={`${title} — 숫자 카드`}
         description="교육 관리 페이지 맨 위 '숫자로 검증된 실제 결과'에 한 줄로 표시되는 숫자 카드입니다. (예: 99건 / 1·2기 누적 산출)"
         titleField="label"
         fields={[
@@ -25,7 +27,7 @@ export default function ManagementMetricsAdminPage() {
 
       <ResourceCrud
         table="management_highlights"
-        title="교육 성과 지표 — 강조 타일"
+        title={`${title} — 강조 타일`}
         description="숫자 카드 아래에 표시되는 어두운 타일입니다. '숫자 강조'는 큰 숫자+설명(예: 87.5%), '목록'은 제목+목록(예: Reference)입니다."
         titleField="value"
         fields={[

@@ -2,14 +2,16 @@
 
 import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
+import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 
 export default function CultureAdminPage() {
+  const title = useAdminMenuLabel("culture", "교육 문화 프로그램");
   return (
     <div>
       <PageHeaderNote />
       <ResourceCrud
         table="culture_programs"
-        title="교육 문화 프로그램"
+        title={title}
         description="교육 문화 페이지에 표시되는 프로그램 카드입니다. (예: 인간 포텐업, 지식줍줍 등)"
         titleField="title"
         imageFolder="culture-programs"

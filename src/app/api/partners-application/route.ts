@@ -4,6 +4,8 @@
 
 import { NextResponse } from "next/server";
 import { appendPartnersApplicationRow, isPartnersFormConfigured } from "@/lib/partners-submission";
+import { getSiteSettings } from "@/lib/data";
+import type { PartnersRequiredFields } from "@/lib/types";
 
 type ApplicationPayload = {
   companyName: string;
@@ -18,29 +20,40 @@ type ApplicationPayload = {
   message: string;
 };
 
-function isValidPayload(body: unknown): body is ApplicationPayload {
+// 형태만 확인한다 (문자열/배열인지). 실제로 값이 채워져 있어야 하는지는 관리자가 사이트 전역
+// 설정에서 켜고 끈 필수 항목 설정(partners_required_fields)에 따라 아래에서 따로 확인한다.
+function hasValidShape(body: unknown): body is ApplicationPayload {
   if (!body || typeof body !== "object") return false;
   const b = body as Record<string, unknown>;
   return (
     typeof b.companyName === "string" &&
-    b.companyName.trim() !== "" &&
     typeof b.contactName === "string" &&
-    b.contactName.trim() !== "" &&
     typeof b.department === "string" &&
     typeof b.position === "string" &&
     typeof b.email === "string" &&
-    b.email.trim() !== "" &&
     typeof b.phone === "string" &&
-    b.phone.trim() !== "" &&
     Array.isArray(b.participationTypes) &&
     b.participationTypes.every((v) => typeof v === "string") &&
-    b.participationTypes.length > 0 &&
     typeof b.meetingMethod === "string" &&
-    b.meetingMethod.trim() !== "" &&
     typeof b.request === "string" &&
-    b.request.trim() !== "" &&
     typeof b.message === "string"
   );
+}
+
+// 관리자가 필수로 켜둔 항목 중 비어 있는 게 있으면 그 항목의 한글 이름 목록을 돌려준다.
+function findMissingFields(payload: ApplicationPayload, required: PartnersRequiredFields): string[] {
+  const missing: string[] = [];
+  if (required.companyName && !payload.companyName.trim()) missing.push("기업명");
+  if (required.contactName && !payload.contactName.trim()) missing.push("담당자명");
+  if (required.department && !payload.department.trim()) missing.push("부서");
+  if (required.position && !payload.position.trim()) missing.push("직급/직책");
+  if (required.email && !payload.email.trim()) missing.push("이메일");
+  if (required.phone && !payload.phone.trim()) missing.push("연락처");
+  if (required.participationTypes && payload.participationTypes.length === 0) missing.push("참여 희망 방식");
+  if (required.meetingMethod && !payload.meetingMethod.trim()) missing.push("만남 방식");
+  if (required.request && !payload.request.trim()) missing.push("문의/요청 내용");
+  if (required.message && !payload.message.trim()) missing.push("남기실 말씀");
+  return missing;
 }
 
 export async function POST(request: Request) {
@@ -58,8 +71,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "잘못된 요청입니다." }, { status: 400 });
   }
 
-  if (!isValidPayload(body)) {
-    return NextResponse.json({ ok: false, error: "필수 항목을 모두 입력해주세요." }, { status: 400 });
+  if (!hasValidShape(body)) {
+    return NextResponse.json({ ok: false, error: "잘못된 요청입니다." }, { status: 400 });
+  }
+
+  const settings = await getSiteSettings();
+  const missingFields = findMissingFields(body, settings.partners_required_fields);
+  if (missingFields.length > 0) {
+    return NextResponse.json(
+      { ok: false, error: `다음 항목을 입력해주세요: ${missingFields.join(", ")}` },
+      { status: 400 },
+    );
   }
 
   const submittedAt = new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });

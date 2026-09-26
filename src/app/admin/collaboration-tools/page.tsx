@@ -2,14 +2,16 @@
 
 import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
+import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 
 export default function CollaborationToolsAdminPage() {
+  const title = useAdminMenuLabel("collaboration-tools", "협업 도구");
   return (
     <div>
       <PageHeaderNote />
       <ResourceCrud
         table="collaboration_tools"
-        title="협업 도구"
+        title={title}
         description="교육 관리 페이지 '협업 환경'에 표시되는 도구 목록입니다. (예: Notion, Slack)"
         publishable={false}
         titleField="name"

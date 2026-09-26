@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LogOut } from "lucide-react";
 import { AdminAuthProvider, useAdminAuth } from "@/components/admin/auth-context";
+import { AdminMenuProvider } from "@/components/admin/admin-menu-context";
 import { getMergedAdminMenu, type MergedMenuItem } from "@/lib/admin-menu";
 
 function AdminShell({ children }: { children: React.ReactNode }) {
@@ -109,7 +110,9 @@ function AdminShell({ children }: { children: React.ReactNode }) {
           사이트로 돌아가기
         </Link>
       </aside>
-      <main className="min-w-0 flex-1">{children}</main>
+      <main className="min-w-0 flex-1">
+        <AdminMenuProvider menu={menu}>{children}</AdminMenuProvider>
+      </main>
     </div>
   );
 }

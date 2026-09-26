@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { CheckCircle2 } from "lucide-react";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Card } from "@/components/ui/card";
-import { Icon } from "@/components/icon-map";
 import { CaseStudyMarquee } from "@/components/partners/case-study-marquee";
 import { ApplicationCta } from "@/components/partners/application-cta";
 import { isPartnersFormConfigured } from "@/lib/partners-submission";
@@ -88,8 +87,8 @@ export default async function PartnersPage() {
           <h3 className="text-sm font-semibold text-neutral-400">
             {pad(numCompanyFlow)}. {labelCompanyFlow}
           </h3>
-          <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-            기업과 함께 진행할 수 있는 활동입니다.
+          <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
+            {settings.company_flow_description}
           </p>
           <div className="mt-5 flex flex-wrap gap-2.5">
             {steps.map((step) => (
@@ -118,19 +117,9 @@ export default async function PartnersPage() {
                 meetingOptions={settings.partners_meeting_options}
                 privacyNotice={settings.partners_privacy_notice}
                 submitNotice={settings.partners_submit_notice}
+                requiredFields={settings.partners_required_fields}
               />
             )}
-          </div>
-          <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {types.map((type) => (
-              <Card key={type.id}>
-                <Icon name={type.icon} className="h-6 w-6 text-brand" />
-                <p className="mt-3 font-bold text-neutral-900 dark:text-white">{type.title}</p>
-                <p className="mt-1.5 whitespace-pre-line text-justify text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
-                  {type.description}
-                </p>
-              </Card>
-            ))}
           </div>
         </section>
       )}

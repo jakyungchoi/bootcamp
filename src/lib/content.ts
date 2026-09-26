@@ -79,6 +79,19 @@ export const siteSettings: SiteSettings = {
     "보유 및 이용 기간: 신청 접수일로부터 1년 (관련 법령에 따라 보존이 필요한 경우 해당 기간까지)\n" +
     "귀하는 개인정보 수집·이용에 동의하지 않을 권리가 있으며, 동의하지 않을 경우 참여 신청 접수가 제한될 수 있습니다.",
   partners_submit_notice: "제출하시면 담당자가 2영업일 이내에 회신드립니다.",
+  partners_required_fields: {
+    companyName: true,
+    contactName: true,
+    department: false,
+    position: false,
+    email: true,
+    phone: true,
+    participationTypes: true,
+    meetingMethod: true,
+    request: true,
+    message: false,
+  },
+  company_flow_description: "기업과 함께 진행할 수 있는 활동입니다.",
 };
 
 // 과정 기간 분류 (단기 과정 / 중장기 과정). 교육 영역 카테고리와는 별개로 관리한다.

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
-import type { HomeHighlight, NavItem } from "@/lib/types";
+import type { HomeHighlight, NavItem, PartnersRequiredFields } from "@/lib/types";
 
 type SettingsForm = {
   site_name: string;
@@ -19,7 +19,36 @@ type SettingsForm = {
   partners_meeting_options: string[];
   partners_privacy_notice: string;
   partners_submit_notice: string;
+  partners_required_fields: PartnersRequiredFields;
 };
+
+// 신청 폼 필드가 DB에 아직 없을 때(과거 데이터)를 위한 기본값. supabase/schema.sql의 기본값과 맞춘다.
+const DEFAULT_REQUIRED_FIELDS: PartnersRequiredFields = {
+  companyName: true,
+  contactName: true,
+  department: false,
+  position: false,
+  email: true,
+  phone: true,
+  participationTypes: true,
+  meetingMethod: true,
+  request: true,
+  message: false,
+};
+
+// 신청 폼에 실제로 보이는 순서 그대로 나열한다 (관리자 화면의 체크박스 순서와도 맞춘다).
+const REQUIRED_FIELD_ITEMS: { key: keyof PartnersRequiredFields; label: string }[] = [
+  { key: "companyName", label: "기업명" },
+  { key: "contactName", label: "담당자명" },
+  { key: "department", label: "부서" },
+  { key: "position", label: "직급 / 직책" },
+  { key: "email", label: "이메일" },
+  { key: "phone", label: "연락처" },
+  { key: "participationTypes", label: "참여 희망 방식" },
+  { key: "meetingMethod", label: "만남 방식" },
+  { key: "request", label: "문의 / 요청 내용" },
+  { key: "message", label: "남기실 말씀" },
+];
 
 export default function SiteSettingsPage() {
   const [form, setForm] = useState<SettingsForm | null>(null);
@@ -47,6 +76,7 @@ export default function SiteSettingsPage() {
           partners_meeting_options: data.partners_meeting_options ?? [],
           partners_privacy_notice: data.partners_privacy_notice ?? "",
           partners_submit_notice: data.partners_submit_notice ?? "",
+          partners_required_fields: { ...DEFAULT_REQUIRED_FIELDS, ...(data.partners_required_fields ?? {}) },
         });
       }
       setLoading(false);
@@ -83,6 +113,14 @@ export default function SiteSettingsPage() {
       if (!f) return f;
       return { ...f, home_highlights: f.home_highlights.filter((_, i) => i !== idx) };
     });
+  }
+
+  function toggleRequiredField(key: keyof PartnersRequiredFields) {
+    setForm((f) =>
+      f
+        ? { ...f, partners_required_fields: { ...f.partners_required_fields, [key]: !f.partners_required_fields[key] } }
+        : f,
+    );
   }
 
   function updateMeetingOption(idx: number, value: string) {
@@ -251,6 +289,28 @@ export default function SiteSettingsPage() {
         </p>
 
         <div className="mt-4 space-y-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-neutral-700">필수 입력 항목</label>
+            <p className="mb-2 text-xs text-neutral-400">
+              체크한 항목은 폼에 별표(*)가 붙고, 비워둔 채로는 제출할 수 없습니다. 체크를 풀면 방문자가
+              입력하지 않고 넘어갈 수 있는 선택 항목이 됩니다. (&quot;위 내용에 동의합니다&quot; 체크박스는
+              항상 필수입니다)
+            </p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-lg border border-neutral-200 p-3 sm:grid-cols-3">
+              {REQUIRED_FIELD_ITEMS.map(({ key, label }) => (
+                <label key={key} className="flex items-center gap-2 text-sm text-neutral-700">
+                  <input
+                    type="checkbox"
+                    checked={form.partners_required_fields[key]}
+                    onChange={() => toggleRequiredField(key)}
+                    className="h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </div>
+
           <div>
             <div className="mb-1 flex items-center justify-between">
               <label className="block text-sm font-medium text-neutral-700">만남 방식 선택지</label>

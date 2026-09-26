@@ -6,14 +6,33 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { CheckCircle2, Loader2, X } from "lucide-react";
+import type { PartnersRequiredFields } from "@/lib/types";
 
 type ApplicationFormModalProps = {
   participationOptions: string[];
   meetingOptions: string[];
   privacyNotice: string;
   submitNotice: string;
+  requiredFields: PartnersRequiredFields;
   onClose: () => void;
 };
+
+// 전화번호를 입력하는 대로 "010-0000-0000" 형태로 자동으로 하이픈을 넣어준다.
+// 숫자만 남긴 뒤 자릿수에 맞춰 나눠 붙이는 방식이라, 붙여넣기를 하든 하나씩 입력하든 똑같이 동작한다.
+function formatPhoneNumber(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 11);
+  if (digits.startsWith("02")) {
+    // 서울 지역번호(02)는 다른 지역보다 한 자리 짧다.
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 5) return `${digits.slice(0, 2)}-${digits.slice(2)}`;
+    if (digits.length <= 9) return `${digits.slice(0, 2)}-${digits.slice(2, 5)}-${digits.slice(5)}`;
+    return `${digits.slice(0, 2)}-${digits.slice(2, 6)}-${digits.slice(6, 10)}`;
+  }
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  if (digits.length <= 10) return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
+}
 
 type FormState = {
   companyName: string;
@@ -52,6 +71,7 @@ export function ApplicationFormModal({
   meetingOptions,
   privacyNotice,
   submitNotice,
+  requiredFields,
   onClose,
 }: ApplicationFormModalProps) {
   const [form, setForm] = useState<FormState>(initialState);
@@ -69,13 +89,16 @@ export function ApplicationFormModal({
   }
 
   const canSubmit =
-    form.companyName.trim() !== "" &&
-    form.contactName.trim() !== "" &&
-    form.email.trim() !== "" &&
-    form.phone.trim() !== "" &&
-    form.participationTypes.length > 0 &&
-    form.meetingMethod !== "" &&
-    form.request.trim() !== "" &&
+    (!requiredFields.companyName || form.companyName.trim() !== "") &&
+    (!requiredFields.contactName || form.contactName.trim() !== "") &&
+    (!requiredFields.department || form.department.trim() !== "") &&
+    (!requiredFields.position || form.position.trim() !== "") &&
+    (!requiredFields.email || form.email.trim() !== "") &&
+    (!requiredFields.phone || form.phone.trim() !== "") &&
+    (!requiredFields.participationTypes || form.participationTypes.length > 0) &&
+    (!requiredFields.meetingMethod || form.meetingMethod !== "") &&
+    (!requiredFields.request || form.request.trim() !== "") &&
+    (!requiredFields.message || form.message.trim() !== "") &&
     form.agree &&
     !submitting;
 
@@ -150,10 +173,10 @@ export function ApplicationFormModal({
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5">
             <div>
-              <label className={labelClass}>기업명 *</label>
+              <label className={labelClass}>기업명{requiredFields.companyName && " *"}</label>
               <input
                 type="text"
-                required
+                required={requiredFields.companyName}
                 value={form.companyName}
                 onChange={(e) => setForm({ ...form, companyName: e.target.value })}
                 className={inputClass}
@@ -162,19 +185,20 @@ export function ApplicationFormModal({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelClass}>담당자명 *</label>
+                <label className={labelClass}>담당자명{requiredFields.contactName && " *"}</label>
                 <input
                   type="text"
-                  required
+                  required={requiredFields.contactName}
                   value={form.contactName}
                   onChange={(e) => setForm({ ...form, contactName: e.target.value })}
                   className={inputClass}
                 />
               </div>
               <div>
-                <label className={labelClass}>부서</label>
+                <label className={labelClass}>부서{requiredFields.department && " *"}</label>
                 <input
                   type="text"
+                  required={requiredFields.department}
                   value={form.department}
                   onChange={(e) => setForm({ ...form, department: e.target.value })}
                   className={inputClass}
@@ -183,9 +207,10 @@ export function ApplicationFormModal({
             </div>
 
             <div>
-              <label className={labelClass}>직급 / 직책</label>
+              <label className={labelClass}>직급 / 직책{requiredFields.position && " *"}</label>
               <input
                 type="text"
+                required={requiredFields.position}
                 value={form.position}
                 onChange={(e) => setForm({ ...form, position: e.target.value })}
                 className={inputClass}
@@ -194,30 +219,32 @@ export function ApplicationFormModal({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelClass}>이메일 *</label>
+                <label className={labelClass}>이메일{requiredFields.email && " *"}</label>
                 <input
                   type="email"
-                  required
+                  required={requiredFields.email}
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   className={inputClass}
                 />
               </div>
               <div>
-                <label className={labelClass}>연락처 *</label>
+                <label className={labelClass}>연락처{requiredFields.phone && " *"}</label>
                 <input
                   type="tel"
-                  required
+                  required={requiredFields.phone}
                   placeholder="010-0000-0000"
                   value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  onChange={(e) => setForm({ ...form, phone: formatPhoneNumber(e.target.value) })}
                   className={inputClass}
                 />
               </div>
             </div>
 
             <div>
-              <label className={labelClass}>참여 희망 방식 * (복수 선택 가능)</label>
+              <label className={labelClass}>
+                참여 희망 방식{requiredFields.participationTypes && " *"} (복수 선택 가능)
+              </label>
               <div className="space-y-1.5 rounded-lg border border-neutral-200 p-3 dark:border-white/10">
                 {participationOptions.map((title) => (
                   <label key={title} className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200">
@@ -237,14 +264,14 @@ export function ApplicationFormModal({
             </div>
 
             <div>
-              <label className={labelClass}>만남 방식 *</label>
+              <label className={labelClass}>만남 방식{requiredFields.meetingMethod && " *"}</label>
               <div className="space-y-1.5 rounded-lg border border-neutral-200 p-3 dark:border-white/10">
                 {meetingOptions.map((option) => (
                   <label key={option} className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200">
                     <input
                       type="radio"
                       name="meetingMethod"
-                      required
+                      required={requiredFields.meetingMethod}
                       checked={form.meetingMethod === option}
                       onChange={() => setForm({ ...form, meetingMethod: option })}
                       className="h-4 w-4 border-neutral-300 text-brand focus:ring-brand"
@@ -259,9 +286,9 @@ export function ApplicationFormModal({
             </div>
 
             <div>
-              <label className={labelClass}>문의 / 요청 내용 *</label>
+              <label className={labelClass}>문의 / 요청 내용{requiredFields.request && " *"}</label>
               <textarea
-                required
+                required={requiredFields.request}
                 rows={3}
                 value={form.request}
                 onChange={(e) => setForm({ ...form, request: e.target.value })}
@@ -270,8 +297,11 @@ export function ApplicationFormModal({
             </div>
 
             <div>
-              <label className={labelClass}>남기실 말씀 (선택 작성)</label>
+              <label className={labelClass}>
+                남기실 말씀{requiredFields.message ? " *" : " (선택 작성)"}
+              </label>
               <textarea
+                required={requiredFields.message}
                 rows={2}
                 value={form.message}
                 onChange={(e) => setForm({ ...form, message: e.target.value })}

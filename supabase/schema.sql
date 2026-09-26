@@ -643,3 +643,19 @@ alter table site_settings add column if not exists partners_privacy_notice text 
 
 alter table site_settings add column if not exists partners_submit_notice text not null default
   '제출하시면 담당자가 2영업일 이내에 회신드립니다.';
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 9
+-- 참여 신청 팝업 폼의 각 입력 항목(기업명, 담당자명, 부서, 직급/직책, 이메일, 연락처,
+-- 참여 희망 방식, 만남 방식, 문의/요청 내용, 남기실 말씀)을 필수로 받을지 선택 입력으로
+-- 둘지 관리자 대시보드(사이트 전역 설정)에서 켜고 끌 수 있도록 한다.
+alter table site_settings add column if not exists partners_required_fields jsonb not null default
+  '{"companyName": true, "contactName": true, "department": false, "position": false, "email": true, "phone": true, "participationTypes": true, "meetingMethod": true, "request": true, "message": false}';
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 10
+-- 참여 기업 연계 페이지 "이런 협업이 가능해요" 섹션 제목 바로 아래에 표시되는 한 줄 설명이
+-- 코드에 고정된 문구라 관리자 화면에서 수정할 방법이 없었다. site_settings에 컬럼을 추가하고,
+-- 관리자 대시보드의 해당 메뉴(company-flow) 화면에서 바로 수정할 수 있도록 한다.
+alter table site_settings add column if not exists company_flow_description text not null default
+  '기업과 함께 진행할 수 있는 활동입니다.';

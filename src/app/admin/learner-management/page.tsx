@@ -2,6 +2,7 @@
 
 import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
+import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 
 const ICON_OPTIONS = [
   "CalendarCheck",
@@ -18,13 +19,14 @@ const ICON_OPTIONS = [
 ].map((v) => ({ value: v, label: v }));
 
 export default function LearnerManagementAdminPage() {
+  const title = useAdminMenuLabel("learner-management", "학습자 관리 카드");
   return (
     <div>
       <PageHeaderNote />
       <ResourceCrud
         table="learner_management_items"
-        title="학습자 관리 카드"
-        description="교육 관리 페이지 '01. 학습자 관리'에 표시되는 카드입니다."
+        title={title}
+        description={`교육 관리 페이지의 "${title}" 섹션에 표시되는 카드입니다.`}
         titleField="title"
         fields={[
           { key: "title", label: "제목", type: "text", required: true },

@@ -5,8 +5,11 @@ import { Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
+import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 
 export default function CoursesAdminPage() {
+  const title = useAdminMenuLabel("courses", "대표 교육 과정");
+  const durationLabel = useAdminMenuLabel("duration-types", "과정 기간 분류");
   const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string }[] | null>(null);
   const [durationTypeOptions, setDurationTypeOptions] = useState<{ value: string; label: string }[] | null>(
     null
@@ -34,8 +37,8 @@ export default function CoursesAdminPage() {
       <PageHeaderNote />
       <ResourceCrud
         table="courses"
-        title="대표 교육 과정"
-        description="운영 교육 과정 페이지 '03. 대표 교육 과정'에 표시되는 카드입니다. 과정 기간 분류는 '과정 기간 분류' 메뉴에서 추가할 수 있습니다."
+        title={title}
+        description={`운영 교육 과정 페이지의 "${title}" 섹션에 표시되는 카드입니다. 과정 기간 분류는 "${durationLabel}" 메뉴에서 추가할 수 있습니다.`}
         titleField="title"
         fields={[
           { key: "category_id", label: "교육 영역", type: "select", options: categoryOptions, required: true },

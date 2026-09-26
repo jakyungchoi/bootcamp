@@ -2,15 +2,17 @@
 
 import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
+import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 
 export default function SupportPlansAdminPage() {
+  const title = useAdminMenuLabel("support-plans", "학습부진자 지도 계획");
   return (
     <div>
       <PageHeaderNote />
       <ResourceCrud
         table="support_plan_tracks"
-        title="학습부진자 지도 계획"
-        description="교육 관리 페이지 '02. 학습부진자 지도 계획' 표에 표시되는 행입니다."
+        title={title}
+        description={`교육 관리 페이지의 "${title}" 표에 표시되는 행입니다.`}
         publishable={false}
         titleField="track_name"
         fields={[

@@ -145,6 +145,11 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         partners_meeting_options: data.partners_meeting_options ?? siteSettings.partners_meeting_options,
         partners_privacy_notice: data.partners_privacy_notice ?? siteSettings.partners_privacy_notice,
         partners_submit_notice: data.partners_submit_notice ?? siteSettings.partners_submit_notice,
+        partners_required_fields: {
+          ...siteSettings.partners_required_fields,
+          ...(data.partners_required_fields ?? {}),
+        },
+        company_flow_description: data.company_flow_description ?? siteSettings.company_flow_description,
       };
     }
   }
