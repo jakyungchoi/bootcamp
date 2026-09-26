@@ -16,7 +16,9 @@ type SettingsForm = {
   home_hero_image_url: string | null;
   home_highlights: HomeHighlight[];
   nav_items: NavItem[];
-  partners_form_url: string;
+  partners_meeting_options: string[];
+  partners_privacy_notice: string;
+  partners_submit_notice: string;
 };
 
 export default function SiteSettingsPage() {
@@ -42,7 +44,9 @@ export default function SiteSettingsPage() {
           home_hero_image_url: data.home_hero_image_url,
           home_highlights: data.home_highlights,
           nav_items: data.nav_items,
-          partners_form_url: data.partners_form_url ?? "",
+          partners_meeting_options: data.partners_meeting_options ?? [],
+          partners_privacy_notice: data.partners_privacy_notice ?? "",
+          partners_submit_notice: data.partners_submit_notice ?? "",
         });
       }
       setLoading(false);
@@ -79,6 +83,25 @@ export default function SiteSettingsPage() {
       if (!f) return f;
       return { ...f, home_highlights: f.home_highlights.filter((_, i) => i !== idx) };
     });
+  }
+
+  function updateMeetingOption(idx: number, value: string) {
+    setForm((f) => {
+      if (!f) return f;
+      const next = [...f.partners_meeting_options];
+      next[idx] = value;
+      return { ...f, partners_meeting_options: next };
+    });
+  }
+
+  function addMeetingOption() {
+    setForm((f) => (f ? { ...f, partners_meeting_options: [...f.partners_meeting_options, ""] } : f));
+  }
+
+  function removeMeetingOption(idx: number) {
+    setForm((f) =>
+      f ? { ...f, partners_meeting_options: f.partners_meeting_options.filter((_, i) => i !== idx) } : f,
+    );
   }
 
   function updateNavItem(idx: number, patch: Partial<NavItem>) {
@@ -217,22 +240,85 @@ export default function SiteSettingsPage() {
       </section>
 
       <section className="mt-6 rounded-xl border border-neutral-200 bg-white p-5">
-        <h2 className="font-semibold text-neutral-800">참여 기업 연계</h2>
-        <div className="mt-4">
-          <label className="mb-1 block text-sm font-medium text-neutral-700">
-            신청 폼 링크 (구글 폼 등)
-          </label>
-          <input
-            type="text"
-            value={form.partners_form_url}
-            placeholder="예: https://forms.gle/..."
-            onChange={(e) => setForm({ ...form, partners_form_url: e.target.value })}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm font-mono focus:border-brand focus:outline-none"
-          />
-          <p className="mt-1 text-xs text-neutral-400">
-            입력하면 참여 기업 연계 페이지의 &quot;기업 참여 방식&quot; 위에 &quot;참여 신청하기&quot; 버튼이
-            표시됩니다. 비워두면 버튼이 표시되지 않습니다.
-          </p>
+        <h2 className="font-semibold text-neutral-800">참여 기업 연계 — 참여 신청 팝업 폼</h2>
+        <p className="mt-1 text-sm text-neutral-500">
+          참여 기업 연계 페이지의 &quot;참여 신청하기&quot; 버튼을 누르면 뜨는 팝업 폼의 내용입니다. 폼에
+          입력된 내용은 구글 시트에 자동으로 기록되며, 그 연동(구글 서비스 계정 키, 시트 주소 등)은
+          보안을 위해 이 화면이 아니라 배포 환경 변수로 별도 설정합니다 — 자세한 설정 방법은 README의
+          &quot;참여 신청 폼 → 구글 시트 연동 설정&quot; 항목을 참고하거나 개발 담당자에게 요청해주세요.
+          연동이 설정되어 있지 않으면 공개 화면에 버튼 자체가 표시되지 않습니다. 폼의 &quot;참여 희망
+          방식&quot; 체크박스 목록은 위 &quot;기업 참여 방식&quot; 관리 화면의 항목을 그대로 사용합니다.
+        </p>
+
+        <div className="mt-4 space-y-4">
+          <div>
+            <div className="mb-1 flex items-center justify-between">
+              <label className="block text-sm font-medium text-neutral-700">만남 방식 선택지</label>
+              <button
+                type="button"
+                onClick={addMeetingOption}
+                className="inline-flex items-center gap-1 rounded-full border border-neutral-200 px-2.5 py-1 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
+              >
+                <Plus size={12} />
+                선택지 추가
+              </button>
+            </div>
+            <div className="space-y-2">
+              {form.partners_meeting_options.map((option, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={option}
+                    placeholder="예: 30분 온라인 미팅"
+                    onChange={(e) => updateMeetingOption(idx, e.target.value)}
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeMeetingOption(idx)}
+                    className="shrink-0 rounded p-1.5 text-red-400 hover:bg-red-50"
+                    aria-label="삭제"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+              {form.partners_meeting_options.length === 0 && (
+                <p className="text-sm text-neutral-400">
+                  선택지가 없으면 폼에서 만남 방식을 고를 수 없습니다. &quot;선택지 추가&quot;로
+                  만들어보세요.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-neutral-700">
+              개인정보 수집·이용 동의 문구
+            </label>
+            <textarea
+              value={form.partners_privacy_notice}
+              rows={5}
+              onChange={(e) => setForm({ ...form, partners_privacy_notice: e.target.value })}
+              className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+            />
+            <p className="mt-1 text-xs text-neutral-400">
+              폼 하단에 그대로 표시되는 문구입니다. 줄바꿈은 입력한 그대로 반영됩니다.
+            </p>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-neutral-700">제출 완료 안내 문구</label>
+            <input
+              type="text"
+              value={form.partners_submit_notice}
+              onChange={(e) => setForm({ ...form, partners_submit_notice: e.target.value })}
+              className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+            />
+            <p className="mt-1 text-xs text-neutral-400">
+              방문객이 제출하기를 누른 직후에 보여지는 안내 문구입니다.
+            </p>
+          </div>
         </div>
       </section>
 

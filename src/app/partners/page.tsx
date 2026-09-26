@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { CheckCircle2, ExternalLink } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/icon-map";
 import { CaseStudySlider } from "@/components/partners/case-study-slider";
+import { ApplicationCta } from "@/components/partners/application-cta";
+import { isGoogleSheetsConfigured } from "@/lib/google-sheets";
 import {
   getAdminMenuLabels,
   getCompanyCaseStudies,
@@ -47,6 +49,9 @@ export default async function PartnersPage() {
   const showCaseStudies = !hiddenKeys.has("case-studies");
   const showCompanyFlow = !hiddenKeys.has("company-flow");
   const showParticipationTypes = !hiddenKeys.has("participation-types");
+
+  // 구글 시트 연동(서비스 계정 환경 변수)이 서버에 설정되어 있어야만 "참여 신청하기" 버튼을 보여준다.
+  const sheetsConfigured = isGoogleSheetsConfigured();
 
   let sectionNumber = 0;
   const numCaseStudies = showCaseStudies ? ++sectionNumber : 0;
@@ -107,16 +112,13 @@ export default async function PartnersPage() {
             <h3 className="text-sm font-semibold text-neutral-400">
               {pad(numParticipationTypes)}. {labelParticipationTypes}
             </h3>
-            {settings.partners_form_url && (
-              <a
-                href={settings.partners_form_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              >
-                참여 신청하기
-                <ExternalLink size={14} />
-              </a>
+            {sheetsConfigured && (
+              <ApplicationCta
+                participationOptions={types.map((type) => type.title)}
+                meetingOptions={settings.partners_meeting_options}
+                privacyNotice={settings.partners_privacy_notice}
+                submitNotice={settings.partners_submit_notice}
+              />
             )}
           </div>
           <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

@@ -72,7 +72,13 @@ export const siteSettings: SiteSettings = {
     { key: "culture", href: "/culture", title: "교육 문화" },
     { key: "partners", href: "/partners", title: "참여 기업 연계" },
   ],
-  partners_form_url: "",
+  partners_meeting_options: ["30분 온라인 미팅", "원티드랩으로 방문", "기업으로 방문"],
+  partners_privacy_notice:
+    "수집 항목: 기업명, 담당자명, 부서, 직급/직책, 이메일, 연락처, 참여 희망 방식, 만남 방식, 문의/요청 내용, 남기실 말씀\n" +
+    "수집 목적: 참여 기업 연계 신청 접수 및 담당자 회신\n" +
+    "보유 및 이용 기간: 신청 접수일로부터 1년 (관련 법령에 따라 보존이 필요한 경우 해당 기간까지)\n" +
+    "귀하는 개인정보 수집·이용에 동의하지 않을 권리가 있으며, 동의하지 않을 경우 참여 신청 접수가 제한될 수 있습니다.",
+  partners_submit_notice: "제출하시면 담당자가 2영업일 이내에 회신드립니다.",
 };
 
 // 과정 기간 분류 (단기 과정 / 중장기 과정). 교육 영역 카테고리와는 별개로 관리한다.

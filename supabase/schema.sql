@@ -163,7 +163,11 @@ insert into course_categories (name, slug, "order") values
   ('Career', 'career', 3)
 on conflict (slug) do nothing;
 
-insert into company_flow_steps ("order", title) values
+-- company_flow_steps 에는 제목에 고유 제약이 없어서 "on conflict do nothing"이 실제로는 아무 효과가
+-- 없었다 (부딪힐 대상이 없으니 매번 그냥 8개를 새로 추가함) — schema.sql을 다시 실행할 때마다 "이런 협업이
+-- 가능해요" 항목이 계속 중복 생성된 원인이 바로 이것이다. 이미 행이 하나라도 있으면 건너뛰도록 고쳤다.
+insert into company_flow_steps ("order", title)
+select * from (values
   (1, '기업의 문제/수요'),
   (2, '교육 과정 설계'),
   (3, '프로젝트 주제 선정'),
@@ -172,7 +176,8 @@ insert into company_flow_steps ("order", title) values
   (6, '기업 멘토링'),
   (7, '결과물 공유'),
   (8, '현장실습·채용·커리어 연계')
-on conflict do nothing;
+) as v("order", title)
+where not exists (select 1 from company_flow_steps);
 
 -- ══════════════════════════════════════════════════════════════════
 -- 관리자 페이지 확장 — 홈/교육 관리 페이지의 나머지 콘텐츠 + 사이트 전역 설정
@@ -606,3 +611,35 @@ update culture_programs
 set photos = jsonb_build_array(jsonb_build_object('image_url', image_url))
 where image_url is not null
   and photos = '[]'::jsonb;
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 7
+-- "이런 협업이 가능해요"에 같은 항목이 중복으로 쌓여 있던 문제를 정리한다.
+-- 원인: 위 시드 데이터가 "제목이 같으면 건너뛰기"가 걸려 있지 않아서, schema.sql을 다시 실행할 때마다
+-- 8개 항목이 매번 새로 추가되고 있었다 (그래서 관리자 페이지에서 지워도 다음에 schema.sql을 다시
+-- 실행하면 똑같이 다시 생겨난 것처럼 보였다). 이제 시드 자체는 위에서 고쳤고, 아래는 이미 쌓여있는
+-- 중복 행을 한 번에 정리하는 부분이다 (제목이 같은 행 중 하나만 남기고 나머지를 지운다).
+-- 중복이 없는 상태에서 다시 실행해도 아무 일도 일어나지 않아 안전하다.
+delete from company_flow_steps a
+using company_flow_steps b
+where a.title = b.title
+  and a.ctid > b.ctid;
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 8
+-- 참여 기업 연계 페이지에 "참여 신청하기" 팝업 폼을 추가한다. 예전에는 partners_form_url에
+-- 구글 폼 등 외부 링크를 넣으면 새 탭으로 이동하는 방식이었는데, 이제는 사이트 안에서 팝업으로
+-- 폼을 받아 서버가 구글 시트에 직접 기록하는 방식으로 바뀌었다 (구글 서비스 계정 + Sheets API,
+-- 자세한 내용은 README 참고). partners_form_url 컬럼 자체는 과거 데이터 보존을 위해 지우지
+-- 않지만 더 이상 사용하지 않는다.
+alter table site_settings add column if not exists partners_meeting_options jsonb not null default
+  '["30분 온라인 미팅", "원티드랩으로 방문", "기업으로 방문"]';
+
+alter table site_settings add column if not exists partners_privacy_notice text not null default
+  '수집 항목: 기업명, 담당자명, 부서, 직급/직책, 이메일, 연락처, 참여 희망 방식, 만남 방식, 문의/요청 내용, 남기실 말씀
+수집 목적: 참여 기업 연계 신청 접수 및 담당자 회신
+보유 및 이용 기간: 신청 접수일로부터 1년 (관련 법령에 따라 보존이 필요한 경우 해당 기간까지)
+귀하는 개인정보 수집·이용에 동의하지 않을 권리가 있으며, 동의하지 않을 경우 참여 신청 접수가 제한될 수 있습니다.';
+
+alter table site_settings add column if not exists partners_submit_notice text not null default
+  '제출하시면 담당자가 2영업일 이내에 회신드립니다.';

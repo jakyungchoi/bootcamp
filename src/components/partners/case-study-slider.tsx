@@ -30,7 +30,16 @@ export function CaseStudySlider({ cases }: { cases: CompanyCaseStudy[] }) {
             className="w-[280px] shrink-0 snap-start sm:w-[320px]"
           >
             <Card className="h-full">
-              <ImagePlaceholder />
+              {c.image_url ? (
+                // eslint-disable-next-line @next/next/no-img-element -- 다양한 비율의 업로드 이미지를 그대로 보여준다.
+                <img
+                  src={c.image_url}
+                  alt=""
+                  className="aspect-[16/9] w-full rounded-xl object-cover"
+                />
+              ) : (
+                <ImagePlaceholder />
+              )}
               <p className="mt-3 text-xs font-semibold text-brand">{c.company_name}</p>
               <p className="mt-1 font-bold text-neutral-900 dark:text-white">{c.title}</p>
               <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">{c.description}</p>

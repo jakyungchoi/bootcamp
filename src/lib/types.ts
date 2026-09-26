@@ -185,7 +185,12 @@ export type SiteSettings = {
   home_hero_image_url: string | null;
   home_highlights: HomeHighlight[];
   nav_items: NavItem[];
-  partners_form_url: string; // 참여 기업 연계 페이지 "기업 참여 방식"에 표시할 신청 폼(구글 폼 등) 링크
+  // 참여 신청 팝업 폼에서 쓰는 "만남 방식" 선택지 (라디오 버튼 목록)
+  partners_meeting_options: string[];
+  // 참여 신청 팝업 폼 하단에 보여줄 개인정보 수집·이용 동의 문구
+  partners_privacy_notice: string;
+  // 참여 신청 팝업 폼 제출 후 보여줄 안내 문구
+  partners_submit_notice: string;
 };
 
 // 4개 주요 페이지(운영 교육 과정 / 교육 관리 / 교육 문화 / 참여 기업 연계) 맨 위 문구

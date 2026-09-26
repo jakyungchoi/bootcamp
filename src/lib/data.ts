@@ -142,7 +142,9 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         home_hero_image_url: data.home_hero_image_url,
         home_highlights: data.home_highlights ?? siteSettings.home_highlights,
         nav_items: data.nav_items ?? siteSettings.nav_items,
-        partners_form_url: data.partners_form_url ?? siteSettings.partners_form_url,
+        partners_meeting_options: data.partners_meeting_options ?? siteSettings.partners_meeting_options,
+        partners_privacy_notice: data.partners_privacy_notice ?? siteSettings.partners_privacy_notice,
+        partners_submit_notice: data.partners_submit_notice ?? siteSettings.partners_submit_notice,
       };
     }
   }
