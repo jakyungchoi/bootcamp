@@ -18,7 +18,7 @@ export function SectionHeading({
         {title}
       </h2>
       {description && (
-        <p className="mt-3 text-[15px] leading-relaxed text-neutral-500 dark:text-neutral-400">
+        <p className="mt-3 whitespace-pre-line text-[15px] leading-relaxed text-neutral-500 dark:text-neutral-400">
           {description}
         </p>
       )}

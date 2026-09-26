@@ -29,7 +29,7 @@ export default async function CulturePage() {
                 {program.title}
               </h3>
               <p className="mt-1 text-sm font-medium text-neutral-400">{program.subtitle}</p>
-              <p className="mt-3 text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
                 {program.description}
               </p>
               <ul className="mt-4 flex flex-wrap gap-2">

@@ -33,7 +33,7 @@ export function CaseStudySlider({ cases }: { cases: CompanyCaseStudy[] }) {
               <ImagePlaceholder />
               <p className="mt-3 text-xs font-semibold text-brand">{c.company_name}</p>
               <p className="mt-1 font-bold text-neutral-900 dark:text-white">{c.title}</p>
-              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">{c.description}</p>
+              <p className="mt-2 whitespace-pre-line text-sm text-neutral-500 dark:text-neutral-400">{c.description}</p>
             </Card>
           </div>
         ))}

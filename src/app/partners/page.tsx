@@ -124,7 +124,7 @@ export default async function PartnersPage() {
               <Card key={type.id}>
                 <Icon name={type.icon} className="h-6 w-6 text-brand" />
                 <p className="mt-3 font-bold text-neutral-900 dark:text-white">{type.title}</p>
-                <p className="mt-1.5 text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+                <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
                   {type.description}
                 </p>
               </Card>

@@ -119,7 +119,7 @@ export default async function EducationManagementPage() {
                     }`}
                   >
                     <p className="text-3xl font-bold">{h.value}</p>
-                    <p className="mt-2 text-sm leading-relaxed text-white/80">{h.description}</p>
+                    <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-white/80">{h.description}</p>
                   </div>
                 )
               )}
@@ -139,7 +139,7 @@ export default async function EducationManagementPage() {
               <Card key={item.id}>
                 <Icon name={item.icon} className="h-6 w-6 text-brand" />
                 <p className="mt-3 font-bold text-neutral-900 dark:text-white">{item.title}</p>
-                <p className="mt-1.5 text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+                <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
                   {item.description}
                 </p>
               </Card>
@@ -217,7 +217,7 @@ export default async function EducationManagementPage() {
                       .map((q) => (
                         <li key={q.id}>
                           <span className="font-semibold text-neutral-800 dark:text-neutral-100">{q.title}</span>
-                          <span className="text-neutral-400"> — {q.description}</span>
+                          <span className="whitespace-pre-line text-neutral-400"> — {q.description}</span>
                         </li>
                       ))}
                   </ul>
