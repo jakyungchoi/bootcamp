@@ -3,7 +3,7 @@
 // 이 라우트가 서비스 계정 인증을 거쳐 서버 대 서버로 구글 시트에 한 행을 기록한다.
 
 import { NextResponse } from "next/server";
-import { appendPartnersApplicationRow, isGoogleSheetsConfigured } from "@/lib/google-sheets";
+import { appendPartnersApplicationRow, isPartnersFormConfigured } from "@/lib/partners-submission";
 
 type ApplicationPayload = {
   companyName: string;
@@ -44,7 +44,7 @@ function isValidPayload(body: unknown): body is ApplicationPayload {
 }
 
 export async function POST(request: Request) {
-  if (!isGoogleSheetsConfigured()) {
+  if (!isPartnersFormConfigured()) {
     return NextResponse.json(
       { ok: false, error: "아직 구글 시트 연동이 설정되지 않았습니다. 관리자에게 문의해주세요." },
       { status: 500 },

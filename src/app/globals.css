@@ -30,3 +30,28 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
 }
+
+/*
+ * 협업 사례 로고 마퀴(옆으로 끊김 없이 계속 흐르는 띠)에 쓰인다.
+ * 로고 목록을 통째로 두 번 이어붙인 뒤 정확히 절반(-50%)만큼 왼쪽으로 이동시키면,
+ * 한 바퀴가 끝나는 지점과 다음 바퀴가 시작하는 지점이 완전히 같은 모양이라 끊김이 안 보인다.
+ * 마우스를 올리면 잠깐 멈춘다 (내용을 읽거나 로고를 클릭하기 쉽도록).
+ */
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation-name: marquee-scroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}

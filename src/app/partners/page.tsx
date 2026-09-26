@@ -3,9 +3,9 @@ import { CheckCircle2 } from "lucide-react";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/icon-map";
-import { CaseStudySlider } from "@/components/partners/case-study-slider";
+import { CaseStudyMarquee } from "@/components/partners/case-study-marquee";
 import { ApplicationCta } from "@/components/partners/application-cta";
-import { isGoogleSheetsConfigured } from "@/lib/google-sheets";
+import { isPartnersFormConfigured } from "@/lib/partners-submission";
 import {
   getAdminMenuLabels,
   getCompanyCaseStudies,
@@ -50,8 +50,8 @@ export default async function PartnersPage() {
   const showCompanyFlow = !hiddenKeys.has("company-flow");
   const showParticipationTypes = !hiddenKeys.has("participation-types");
 
-  // 구글 시트 연동(서비스 계정 환경 변수)이 서버에 설정되어 있어야만 "참여 신청하기" 버튼을 보여준다.
-  const sheetsConfigured = isGoogleSheetsConfigured();
+  // 구글 시트 연동(앱스 스크립트 웹 앱 주소 환경 변수)이 서버에 설정되어 있어야만 "참여 신청하기" 버튼을 보여준다.
+  const sheetsConfigured = isPartnersFormConfigured();
 
   let sectionNumber = 0;
   const numCaseStudies = showCaseStudies ? ++sectionNumber : 0;
@@ -76,7 +76,7 @@ export default async function PartnersPage() {
             </Card>
           ) : (
             <div className="mt-4">
-              <CaseStudySlider cases={cases} />
+              <CaseStudyMarquee cases={cases} />
             </div>
           )}
         </section>
