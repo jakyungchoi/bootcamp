@@ -119,6 +119,8 @@ export const siteSettings: SiteSettings = {
   },
   partners_custom_fields: [],
   programs_description: "원티드랩이 운영하는 교육 과정입니다. 가장 비중 있게 소개하는 과정은 아래에서 이어서 자세히 다룹니다.",
+  categories_description: "교육 영역별로 실제 운영 중인 대표 과정을 함께 보여줍니다. 과정을 클릭하면 실제 프로젝트 내용을 좌우로 넘겨보며 확인할 수 있습니다.",
+  curriculum_description: "교육의 전체 흐름을 단계별로 보여줍니다.",
   company_flow_description: "기업과 함께 진행할 수 있는 활동입니다.",
   case_studies_description: "원티드랩 부트캠프와 함께한 기업들의 협업 사례입니다.",
   participation_types_description: "다양한 방식으로 부트캠프 교육에 참여할 수 있습니다.",

@@ -928,3 +928,13 @@ where not exists (select 1 from education_programs);
 -- 관리자 페이지("전체 교육 과정 개요" 메뉴)에서 직접 수정할 수 있게 한다.
 alter table site_settings add column if not exists programs_description text not null default
   '원티드랩이 운영하는 교육 과정입니다. 가장 비중 있게 소개하는 과정은 아래에서 이어서 자세히 다룹니다.';
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 24
+-- "부트캠프 교육 영역" · "커리큘럼 구성" 섹션 제목 바로 아래에 표시되는 한 줄 설명도
+-- 관리자 페이지("부트캠프 교육 영역" / "커리큘럼 구성 단계" 메뉴)에서 직접 수정할 수 있게 한다.
+alter table site_settings add column if not exists categories_description text not null default
+  '교육 영역별로 실제 운영 중인 대표 과정을 함께 보여줍니다. 과정을 클릭하면 실제 프로젝트 내용을 좌우로 넘겨보며 확인할 수 있습니다.';
+
+alter table site_settings add column if not exists curriculum_description text not null default
+  '교육의 전체 흐름을 단계별로 보여줍니다.';

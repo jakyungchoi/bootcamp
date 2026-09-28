@@ -91,10 +91,11 @@ export default async function CoursesPage() {
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
           {String(num).padStart(2, "0")}. {labelCategories}
         </h3>
-        <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-          교육 영역별로 실제 운영 중인 대표 과정을 함께 보여줍니다. 과정을 클릭하면 실제 프로젝트 내용을 좌우로
-          넘겨보며 확인할 수 있습니다.
-        </p>
+        {settings.categories_description && (
+          <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
+            {settings.categories_description}
+          </p>
+        )}
 
         {categories.map((category) => {
           const categoryCourses = courses.filter((c: Course) => c.category_id === category.id);
@@ -122,7 +123,11 @@ export default async function CoursesPage() {
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
           {String(num).padStart(2, "0")}. {labelCurriculum}
         </h3>
-        <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">교육의 전체 흐름을 단계별로 보여줍니다.</p>
+        {settings.curriculum_description && (
+          <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
+            {settings.curriculum_description}
+          </p>
+        )}
         <div className="mt-5">
           <FlowSteps steps={flowSteps.map((s) => s.title)} />
         </div>

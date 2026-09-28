@@ -5,6 +5,7 @@ import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
 import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 import { AdminContentLayout } from "@/components/admin/admin-content-layout";
+import { SectionCaptionEditor } from "@/components/admin/section-caption-editor";
 
 export default function CurriculumAdminPage() {
   const title = useAdminMenuLabel("curriculum", "커리큘럼 구성 단계");
@@ -15,6 +16,11 @@ export default function CurriculumAdminPage() {
       previewOptions={[{ label: title, path: "/courses#admin-section-curriculum" }]}
     >
       <PageHeaderNote />
+      <SectionCaptionEditor
+        column="curriculum_description"
+        title={title}
+        onSaved={() => setRefreshToken((n) => n + 1)}
+      />
       <ResourceCrud
         table="curriculum_flow_steps"
         title={title}

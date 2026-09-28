@@ -5,6 +5,7 @@ import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
 import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 import { AdminContentLayout } from "@/components/admin/admin-content-layout";
+import { SectionCaptionEditor } from "@/components/admin/section-caption-editor";
 
 export default function CategoriesAdminPage() {
   const title = useAdminMenuLabel("categories", "부트캠프 교육 영역");
@@ -15,6 +16,11 @@ export default function CategoriesAdminPage() {
       previewOptions={[{ label: title, path: "/courses#admin-section-categories" }]}
     >
       <PageHeaderNote />
+      <SectionCaptionEditor
+        column="categories_description"
+        title={title}
+        onSaved={() => setRefreshToken((n) => n + 1)}
+      />
       <ResourceCrud
         table="course_categories"
         title={title}
