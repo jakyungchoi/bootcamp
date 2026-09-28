@@ -201,9 +201,12 @@ export default function SiteSettingsPage() {
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-neutral-700">제목</label>
-            <input
-              type="text"
+            <p className="mb-1 text-xs text-neutral-400">
+              원하는 위치에서 Enter를 누르면 화면에도 그 위치에서 줄바꿈됩니다.
+            </p>
+            <textarea
               value={form.home_hero_title}
+              rows={2}
               onChange={(e) => setForm({ ...form, home_hero_title: e.target.value })}
               className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
             />

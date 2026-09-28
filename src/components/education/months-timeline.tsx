@@ -40,7 +40,7 @@ export function MonthsTimeline({
       <div className="overflow-x-auto rounded-2xl border border-black/5 dark:border-white/10">
         <table className="w-full min-w-[560px] border-collapse text-sm">
           <thead>
-            <tr className="bg-neutral-900 text-white dark:bg-neutral-950">
+            <tr className="bg-neutral-700 text-white dark:bg-neutral-800">
               <th className="w-44 min-w-[11rem] px-3 py-2 text-left text-xs font-medium">구간</th>
               {columns.map((label, i) => (
                 <th key={i} className="px-1 py-2 text-center text-xs font-medium whitespace-nowrap">
@@ -71,12 +71,12 @@ export function MonthsTimeline({
                 >
                   <td className="px-3 py-2.5 align-top">
                     <p className="text-neutral-900 dark:text-white">{month.title}</p>
-                    <p className="mt-0.5 flex items-center gap-1.5 text-xs text-neutral-400">
+                    <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-neutral-400">
                       {columnRangeLabel(columns, month.month_start, month.month_end)}
                       {hasPhotos && (
-                        <span className="inline-flex items-center gap-0.5 text-brand">
-                          <ImageIcon size={11} />
-                          {month.photos.length}
+                        <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-semibold text-brand dark:bg-brand/20">
+                          <ImageIcon size={13} />
+                          사진 {month.photos.length}장
                         </span>
                       )}
                     </p>
