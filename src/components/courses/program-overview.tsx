@@ -50,7 +50,7 @@ export function ProgramOverview({
                 {p.duration_label}
               </span>
               <h4 className="text-base font-extrabold text-neutral-900 dark:text-white">{p.title}</h4>
-              <p className="text-[13.5px] leading-relaxed text-neutral-500 dark:text-neutral-400">
+              <p className="whitespace-pre-line text-[13.5px] leading-relaxed text-neutral-500 dark:text-neutral-400">
                 {p.description}
               </p>
             </div>

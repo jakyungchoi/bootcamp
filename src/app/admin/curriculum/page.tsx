@@ -20,7 +20,15 @@ export default function CurriculumAdminPage() {
         title={title}
         description={`운영 교육 과정 페이지의 "${title}" 섹션에 표시되는 흐름입니다. (예: 기초 역량 → 직무 교육 → ...)`}
         publishable={false}
-        fields={[{ key: "title", label: "단계 이름", type: "text", required: true }]}
+        fields={[
+          {
+            key: "title",
+            label: "단계 이름",
+            type: "textarea",
+            required: true,
+            helpText: "칸 안에서 줄을 나누고 싶은 위치에서 Enter를 누르면 화면에도 그 위치에서 줄바꿈됩니다.",
+          },
+        ]}
         onSaved={() => setRefreshToken((n) => n + 1)}
       />
     </AdminContentLayout>

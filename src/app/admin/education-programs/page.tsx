@@ -31,7 +31,13 @@ export default function EducationProgramsAdminPage() {
             required: true,
             placeholder: "예: 4주 과정, 6개월 과정",
           },
-          { key: "description", label: "설명", type: "textarea", required: true },
+          {
+            key: "description",
+            label: "설명",
+            type: "textarea",
+            required: true,
+            helpText: "줄을 나누고 싶은 위치에서 Enter를 누르면 화면에도 그 위치에서 줄바꿈됩니다.",
+          },
           {
             key: "is_main",
             label: "메인으로 강조 표시",

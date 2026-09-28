@@ -5,7 +5,7 @@ export function FlowSteps({ steps }: { steps: string[] }) {
     <div className="flex flex-col items-stretch gap-2 md:flex-row md:flex-wrap md:items-center md:gap-3">
       {steps.map((step, i) => (
         <div key={step} className="flex items-center gap-2 md:contents">
-          <div className="flex flex-1 items-center justify-center rounded-xl border border-black/5 bg-white px-4 py-3 text-center text-sm font-semibold text-neutral-800 shadow-sm dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-100">
+          <div className="flex flex-1 items-center justify-center whitespace-pre-line rounded-xl border border-black/5 bg-white px-4 py-3 text-center text-sm font-semibold text-neutral-800 shadow-sm dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-100">
             {step}
           </div>
           {i < steps.length - 1 && (
