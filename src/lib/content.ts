@@ -127,6 +127,7 @@ export const siteSettings: SiteSettings = {
     "개월차별로 어떻게 관리하고 있는지 보여줍니다. 줄을 클릭하면 사진을 좌우로 넘겨볼 수 있습니다.",
   management_months_columns: ["1개월차", "2개월차", "3개월차", "4개월차", "5개월차", "6개월차"],
   quality_management_description: "만족도와 강사 품질을 체계적으로 관리합니다.",
+  quality_process_description: "구성원의 목소리와 교육 데이터를 바탕으로 교육 경험을 점검하고, 다음 교육으로 이어갑니다.",
   training_facility_description: "배움에 집중할 수 있는 전용 교육 환경을 제공합니다.",
   training_facility_photos: [],
   training_facility_highlights: [
@@ -293,14 +294,14 @@ export const managementHighlights: ManagementHighlight[] = [];
 export const managementMonths: ManagementMonth[] = [];
 
 export const qualityManagementItems: QualityManagementItem[] = [
-  { id: "qm-1", group: "만족도 관리", title: "교육 만족도", description: "과정 전반에 대한 만족도를 조사합니다.", icon: "LineChart", order: 1 },
-  { id: "qm-2", group: "만족도 관리", title: "강사 만족도", description: "강사별 강의 만족도를 조사합니다.", icon: "Mic2", order: 2 },
-  { id: "qm-3", group: "만족도 관리", title: "프로젝트 만족도", description: "프로젝트 진행 과정의 만족도를 조사합니다.", icon: "Presentation", order: 3 },
-  { id: "qm-4", group: "만족도 관리", title: "과정별 만족도", description: "과정 단위로 만족도를 비교 관리합니다.", icon: "FileSearch", order: 4 },
-  { id: "qm-5", group: "강사 관리", title: "강사 Pool", description: "검증된 강사 풀을 관리합니다.", icon: "Users2", order: 5 },
-  { id: "qm-6", group: "강사 관리", title: "강사 평가", description: "정기적인 강사 평가를 진행합니다.", icon: "Award", order: 6 },
-  { id: "qm-7", group: "강사 관리", title: "강의 품질 관리", description: "강의 콘텐츠와 진행 품질을 관리합니다.", icon: "GraduationCap", order: 7 },
-  { id: "qm-8", group: "강사 관리", title: "피드백", description: "교육생 피드백을 강사에게 전달하고 반영합니다.", icon: "MessageCircle", order: 8 },
+  { id: "qm-1", group: "만족도 관리", title: "교육 만족도", description: "과정 전반에 대한 만족도를 조사합니다.", icon: "LineChart", order: 1, is_published: true },
+  { id: "qm-2", group: "만족도 관리", title: "강사 만족도", description: "강사별 강의 만족도를 조사합니다.", icon: "Mic2", order: 2, is_published: true },
+  { id: "qm-3", group: "만족도 관리", title: "프로젝트 만족도", description: "프로젝트 진행 과정의 만족도를 조사합니다.", icon: "Presentation", order: 3, is_published: true },
+  { id: "qm-4", group: "만족도 관리", title: "과정별 만족도", description: "과정 단위로 만족도를 비교 관리합니다.", icon: "FileSearch", order: 4, is_published: true },
+  { id: "qm-5", group: "강사 관리", title: "강사 Pool", description: "검증된 강사 풀을 관리합니다.", icon: "Users2", order: 5, is_published: true },
+  { id: "qm-6", group: "강사 관리", title: "강사 평가", description: "정기적인 강사 평가를 진행합니다.", icon: "Award", order: 6, is_published: true },
+  { id: "qm-7", group: "강사 관리", title: "강의 품질 관리", description: "강의 콘텐츠와 진행 품질을 관리합니다.", icon: "GraduationCap", order: 7, is_published: true },
+  { id: "qm-8", group: "강사 관리", title: "피드백", description: "교육생 피드백을 강사에게 전달하고 반영합니다.", icon: "MessageCircle", order: 8, is_published: true },
 ];
 
 // "교육 품질 관리" 섹션 맨 위에 보여주는 프로세스 흐름.

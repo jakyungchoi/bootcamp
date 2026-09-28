@@ -261,6 +261,12 @@ export default async function EducationManagementPage() {
           </div>
         )}
 
+        {showQualityItems && settings.quality_process_description && (
+          <p className="mt-3 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
+            {settings.quality_process_description}
+          </p>
+        )}
+
         {showQualityItems && qualityManagementItems.length > 0 && (
           <div className="mt-5 grid gap-5 sm:grid-cols-2">
             {qualityManagementItems.map((item) => (

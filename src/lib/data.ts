@@ -176,6 +176,8 @@ export async function getSiteSettings(): Promise<SiteSettings> {
           data.management_months_columns ?? siteSettings.management_months_columns,
         quality_management_description:
           data.quality_management_description ?? siteSettings.quality_management_description,
+        quality_process_description:
+          data.quality_process_description ?? siteSettings.quality_process_description,
         training_facility_description:
           data.training_facility_description ?? siteSettings.training_facility_description,
         training_facility_photos: data.training_facility_photos ?? siteSettings.training_facility_photos,
@@ -265,10 +267,11 @@ export async function getQualityManagementItems(): Promise<QualityManagementItem
     const { data, error } = await supabase
       .from("quality_management_items")
       .select("*")
+      .eq("is_published", true)
       .order("order", { ascending: true });
     if (!error && data) return data as QualityManagementItem[];
   }
-  return [...qualityManagementItems].sort((a, b) => a.order - b.order);
+  return qualityManagementItems.filter((q) => q.is_published).sort((a, b) => a.order - b.order);
 }
 
 // "교육 품질 관리" 섹션 맨 위에 보여주는 프로세스 흐름 (예: 경청 확인 → 데이터 분석 → ...)

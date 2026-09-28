@@ -823,3 +823,21 @@ update quality_management_items set icon = 'Users2' where title = '강사 Pool' 
 update quality_management_items set icon = 'Award' where title = '강사 평가' and icon is null;
 update quality_management_items set icon = 'GraduationCap' where title = '강의 품질 관리' and icon is null;
 update quality_management_items set icon = 'MessageCircle' where title = '피드백' and icon is null;
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 18
+-- 프로세스 흐름 바로 아래(카드 목록 위)에도 한 줄 설명을 넣을 수 있게 한다.
+alter table site_settings add column if not exists quality_process_description text not null default
+  '구성원의 목소리와 교육 데이터를 바탕으로 교육 경험을 점검하고, 다음 교육으로 이어갑니다.';
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 19
+-- "교육 품질 관리" 카드도 다른 카드 목록들처럼 개별로 숨기고 다시 보여줄 수 있게 한다
+-- (위 프로세스 흐름만으로 충분하면 카드를 전부 숨겨도 되도록).
+alter table quality_management_items add column if not exists is_published boolean not null default true;
+
+-- 예전에는 이 테이블에 is_published 컬럼이 없어서 "전체 공개" 정책이 걸려 있었다. 이제 컬럼이
+-- 생겼으니, 공개된 카드만 보이도록 정책을 "공개된 것만 읽기"로 바꾼다.
+drop policy if exists "public read all" on quality_management_items;
+drop policy if exists "public read published" on quality_management_items;
+create policy "public read published" on quality_management_items for select using (is_published = true);

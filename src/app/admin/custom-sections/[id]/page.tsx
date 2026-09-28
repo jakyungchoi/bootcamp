@@ -51,7 +51,7 @@ export default function CustomSectionEditor({ params }: { params: Promise<{ id: 
 
   function addItem() {
     setSection((s) =>
-      s ? { ...s, items: [...s.items, { heading: "", body: "", icon: "", image_url: null }] } : s
+      s ? { ...s, items: [...s.items, { heading: "", body: "", icon: "", photos: [], photo_display: "inline" }] } : s
     );
   }
 
@@ -66,6 +66,48 @@ export default function CustomSectionEditor({ params }: { params: Promise<{ id: 
       if (targetIdx < 0 || targetIdx >= s.items.length) return s;
       const next = [...s.items];
       [next[idx], next[targetIdx]] = [next[targetIdx], next[idx]];
+      return { ...s, items: next };
+    });
+  }
+
+  function addPhoto(itemIdx: number) {
+    setSection((s) => {
+      if (!s) return s;
+      const next = [...s.items];
+      next[itemIdx] = { ...next[itemIdx], photos: [...(next[itemIdx].photos ?? []), { image_url: null }] };
+      return { ...s, items: next };
+    });
+  }
+
+  function updatePhoto(itemIdx: number, photoIdx: number, image_url: string | null) {
+    setSection((s) => {
+      if (!s) return s;
+      const next = [...s.items];
+      const photos = [...(next[itemIdx].photos ?? [])];
+      photos[photoIdx] = { image_url };
+      next[itemIdx] = { ...next[itemIdx], photos };
+      return { ...s, items: next };
+    });
+  }
+
+  function removePhoto(itemIdx: number, photoIdx: number) {
+    setSection((s) => {
+      if (!s) return s;
+      const next = [...s.items];
+      next[itemIdx] = { ...next[itemIdx], photos: (next[itemIdx].photos ?? []).filter((_, i) => i !== photoIdx) };
+      return { ...s, items: next };
+    });
+  }
+
+  function movePhoto(itemIdx: number, photoIdx: number, direction: -1 | 1) {
+    setSection((s) => {
+      if (!s) return s;
+      const photos = [...(s.items[itemIdx].photos ?? [])];
+      const targetIdx = photoIdx + direction;
+      if (targetIdx < 0 || targetIdx >= photos.length) return s;
+      [photos[photoIdx], photos[targetIdx]] = [photos[targetIdx], photos[photoIdx]];
+      const next = [...s.items];
+      next[itemIdx] = { ...next[itemIdx], photos };
       return { ...s, items: next };
     });
   }
@@ -276,13 +318,85 @@ export default function CustomSectionEditor({ params }: { params: Promise<{ id: 
                     </select>
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-neutral-500">사진 (선택)</label>
-                    <ImageUploadField
-                      value={item.image_url ?? null}
-                      onChange={(url) => updateItem(idx, { image_url: url })}
-                      folder="custom-sections"
-                    />
+                    <label className="mb-1 block text-xs font-medium text-neutral-500">
+                      사진 (선택, 여러 장 등록하면 좌우로 넘겨볼 수 있고 마지막 사진 다음 다시 첫
+                      사진으로 자연스럽게 이어집니다)
+                    </label>
+                    <div className="flex flex-wrap gap-2.5">
+                      {(item.photos ?? []).map((photo, photoIdx, arr) => (
+                        <div key={photoIdx} className="rounded-lg border border-neutral-200 bg-white p-2">
+                          <ImageUploadField
+                            value={photo.image_url}
+                            onChange={(url) => updatePhoto(idx, photoIdx, url)}
+                            folder="custom-sections"
+                          />
+                          <div className="mt-1.5 flex items-center justify-between gap-1">
+                            <div className="flex gap-1">
+                              <button
+                                type="button"
+                                onClick={() => movePhoto(idx, photoIdx, -1)}
+                                disabled={photoIdx === 0}
+                                className="rounded p-1 text-neutral-400 hover:bg-neutral-100 disabled:opacity-30"
+                                aria-label="앞으로"
+                              >
+                                <span className="block text-xs leading-none">◀</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => movePhoto(idx, photoIdx, 1)}
+                                disabled={photoIdx === arr.length - 1}
+                                className="rounded p-1 text-neutral-400 hover:bg-neutral-100 disabled:opacity-30"
+                                aria-label="뒤로"
+                              >
+                                <span className="block text-xs leading-none">▶</span>
+                              </button>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removePhoto(idx, photoIdx)}
+                              className="rounded p-1 text-red-400 hover:bg-red-50"
+                              aria-label="삭제"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => addPhoto(idx)}
+                        className="flex h-24 w-40 flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-neutral-300 text-neutral-400 hover:border-neutral-400 hover:text-neutral-500"
+                      >
+                        <Plus size={16} />
+                        <span className="text-xs">사진 추가</span>
+                      </button>
+                    </div>
                   </div>
+                  {(item.photos ?? []).length > 0 && (
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-neutral-500">사진 표시 방식</label>
+                      <div className="flex flex-wrap gap-4 text-sm text-neutral-700">
+                        <label className="flex items-center gap-1.5">
+                          <input
+                            type="radio"
+                            name={`photo-display-${idx}`}
+                            checked={(item.photo_display ?? "inline") === "inline"}
+                            onChange={() => updateItem(idx, { photo_display: "inline" })}
+                          />
+                          카드 안에 바로 보여주기
+                        </label>
+                        <label className="flex items-center gap-1.5">
+                          <input
+                            type="radio"
+                            name={`photo-display-${idx}`}
+                            checked={item.photo_display === "popup"}
+                            onChange={() => updateItem(idx, { photo_display: "popup" })}
+                          />
+                          탭하면 팝업으로 보여주기
+                        </label>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

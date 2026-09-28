@@ -139,6 +139,7 @@ export type QualityManagementItem = {
   description: string;
   icon?: string | null; // 카드 맨 위에 보여줄 아이콘 (icon-map.tsx의 이름 중 하나)
   order: number;
+  is_published: boolean; // 개별 카드를 숨길지 여부 (숨겨도 삭제되지는 않는다)
 };
 
 // 교육 관리 페이지 "교육 품질 관리" 섹션 맨 위에 보여주는 프로세스 흐름 (예: 01 경청 확인 →
@@ -248,6 +249,8 @@ export type SiteSettings = {
   management_months_columns: string[];
   // 교육 관리 페이지 "교육 품질 관리" 섹션 제목 바로 아래에 표시되는 한 줄 설명
   quality_management_description: string;
+  // 같은 섹션의 프로세스 흐름(경청 확인 → 데이터 분석 → ...) 바로 아래, 카드 목록 위에 표시되는 한 줄 설명
+  quality_process_description: string;
   // 교육 관리 페이지 "오프라인 교육장" 섹션 전체 설명 (사진 슬라이드 위에 표시)
   training_facility_description: string;
   // "오프라인 교육장" 섹션에 슬라이드로 표시되는 사진 목록
@@ -319,11 +322,17 @@ export type CustomPage = {
   created_at: string;
 };
 
+export type CustomSectionPhoto = {
+  image_url: string | null;
+};
+
 export type CustomSectionItem = {
   heading: string;
   body: string;
   icon?: string | null; // 카드 맨 위에 보여줄 아이콘 (선택 — icon-map.tsx의 이름 중 하나)
-  image_url?: string | null; // 카드에 첨부하는 사진 (선택)
+  image_url?: string | null; // 예전 버전 호환용 필드 (더 이상 새로 저장하지 않음 — 아래 photos 사용)
+  photos?: CustomSectionPhoto[]; // 카드에 첨부하는 사진 목록 (선택, 여러 장 가능 — 좌우로 스와이프해서 넘겨볼 수 있고 마지막 사진 다음 다시 첫 사진으로 자연스럽게 이어진다)
+  photo_display?: "inline" | "popup"; // 사진을 카드 안에 바로 보여줄지("inline", 기본값), 탭했을 때만 팝업으로 보여줄지("popup")
 };
 
 // 관리자가 "운영 교육 과정 / 교육 관리 / 참여 기업 연계" 페이지 안에 자유롭게 추가하는 섹션.

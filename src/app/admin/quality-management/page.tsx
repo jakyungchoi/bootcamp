@@ -31,11 +31,15 @@ export default function QualityManagementAdminPage() {
         fields={[{ key: "title", label: "단계 이름", type: "text", required: true }]}
         onSaved={() => setRefreshToken((n) => n + 1)}
       />
+      <SectionCaptionEditor
+        column="quality_process_description"
+        title="프로세스 흐름"
+        onSaved={() => setRefreshToken((n) => n + 1)}
+      />
       <ResourceCrud
         table="quality_management_items"
         title={`${title} 카드`}
-        description={`프로세스 흐름 아래에 아이콘과 함께 표시되는 카드입니다. 개수 제한 없이 자유롭게 추가・삭제・순서 변경할 수 있습니다.`}
-        publishable={false}
+        description="프로세스 흐름 아래에 아이콘과 함께 표시되는 카드입니다. 개수 제한 없이 자유롭게 추가・삭제・순서 변경할 수 있고, 눈 아이콘으로 카드 하나하나를 숨기거나 다시 보여줄 수도 있습니다 (위 프로세스 흐름 내용만으로 충분하다면 카드를 전부 숨겨도 됩니다)."
         titleField="title"
         fields={[
           { key: "title", label: "제목", type: "text", required: true },
