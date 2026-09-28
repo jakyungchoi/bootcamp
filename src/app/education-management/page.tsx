@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Card } from "@/components/ui/card";
+import { FlowSteps } from "@/components/ui/flow-steps";
 import { Icon } from "@/components/icon-map";
 import { MonthsTimeline } from "@/components/education/months-timeline";
 import { CustomSectionBlock } from "@/components/ui/custom-section-block";
@@ -18,6 +19,7 @@ import {
   getManagementMonths,
   getPageHeader,
   getQualityManagementItems,
+  getQualityProcessSteps,
   getSiteSettings,
   getSupportPlanTracks,
 } from "@/lib/data";
@@ -49,6 +51,7 @@ export default async function EducationManagementPage() {
     learnerManagementItems,
     supportPlanTracks,
     qualityManagementItems,
+    qualityProcessSteps,
     collaborationTools,
     header,
     metrics,
@@ -63,6 +66,7 @@ export default async function EducationManagementPage() {
     getLearnerManagementItems(),
     getSupportPlanTracks(),
     getQualityManagementItems(),
+    getQualityProcessSteps(),
     getCollaborationTools(),
     getPageHeader("education-management"),
     getManagementMetrics(),
@@ -77,8 +81,6 @@ export default async function EducationManagementPage() {
   // 관리자 대시보드에서 위/아래 화살표로 바꾼 순서가 있으면 그 값을, 없으면 admin-menu.ts에 정해진
   // 기본 순서를 그대로 쓴다. 이 페이지의 6개 섹션 순서를 여기서 계산한 값에 맞춰 다시 정렬한다.
   const orderFor = (key: SectionKey) => menuOrder.get(key) ?? BUILTIN_MENU.find((b) => b.key === key)?.order ?? 0;
-  // "구분"은 관리자 페이지에서 자유롭게 입력하는 값이라, 실제로 등록된 값만 나온 순서대로 카드를 만든다.
-  const qualityGroups = Array.from(new Set(qualityManagementItems.map((q) => q.group)));
 
   // 관리자 대시보드에서 이름을 바꾼 메뉴는 공개 화면의 섹션 제목도 그 이름을 따라간다.
   const labelMetrics = labels.get("management-metrics") ?? "교육 성과 지표";
@@ -93,9 +95,9 @@ export default async function EducationManagementPage() {
   const showLearnerManagement = !hiddenKeys.has("learner-management");
   const showSupportPlans = !hiddenKeys.has("support-plans");
   const showMonths = !hiddenKeys.has("management-months");
-  const showQualityGroups = !hiddenKeys.has("quality-management");
+  const showQualityItems = !hiddenKeys.has("quality-management");
   const showCollaborationTools = !hiddenKeys.has("collaboration-tools");
-  const showQualitySection = showQualityGroups || showCollaborationTools;
+  const showQualitySection = showQualityItems || showCollaborationTools;
 
   // 섹션마다 "보일지 여부"와 "그릴 내용"을 미리 함수로 묶어두고, 아래에서 관리자 대시보드
   // 순서대로 정렬한 뒤 실제로 보이는 것만 앞에서부터 번호를 다시 매겨 그린다.
@@ -253,21 +255,21 @@ export default async function EducationManagementPage() {
             {settings.quality_management_description}
           </p>
         )}
-        {showQualityGroups && (
-          <div className="mt-4 grid gap-5 md:grid-cols-2">
-            {qualityGroups.map((group) => (
-              <Card key={group}>
-                <p className="font-bold text-neutral-900 dark:text-white">{group}</p>
-                <ul className="mt-3 space-y-2 text-sm text-neutral-600 dark:text-neutral-300">
-                  {qualityManagementItems
-                    .filter((q) => q.group === group)
-                    .map((q) => (
-                      <li key={q.id}>
-                        <span className="font-semibold text-neutral-800 dark:text-neutral-100">{q.title}</span>
-                        <span className="whitespace-pre-line text-neutral-400"> — {q.description}</span>
-                      </li>
-                    ))}
-                </ul>
+        {showQualityItems && qualityProcessSteps.length > 0 && (
+          <div className="mt-5">
+            <FlowSteps steps={qualityProcessSteps.map((s, i) => `${pad(i + 1)} ${s.title}`)} />
+          </div>
+        )}
+
+        {showQualityItems && qualityManagementItems.length > 0 && (
+          <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            {qualityManagementItems.map((item) => (
+              <Card key={item.id}>
+                {item.icon && <Icon name={item.icon} className="h-6 w-6 text-brand" />}
+                <p className="mt-3 font-bold text-neutral-900 dark:text-white">{item.title}</p>
+                <p className="mt-1.5 whitespace-pre-line text-justify text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+                  {item.description}
+                </p>
               </Card>
             ))}
           </div>
@@ -308,12 +310,12 @@ export default async function EducationManagementPage() {
     .sort((a, b) => orderFor(a) - orderFor(b));
 
   // 고정 섹션과, 관리자가 "새 섹션 추가"로 이 페이지에 끼워 넣은 커스텀 섹션을 순서(order) 기준
-  // 하나로 합쳐서 그린다. 커스텀 섹션은 2000번대 순서를 쓰므로(admin-menu.ts 참고), 대시보드에서
-  // 위/아래 화살표로 옮긴 위치가 여기서도 그대로 반영된다.
+  // 하나로 합쳐서 그린다. 커스텀 섹션의 order도 고정 섹션과 같은 숫자 체계를 쓰므로(admin-menu.ts
+  // 참고), 대시보드에서 위/아래 화살표로 옮긴 위치가 고정 섹션들 "사이"에도 그대로 반영된다.
   const entries: { order: number; render: (num: number, isFirst: boolean) => ReactNode }[] = [
     ...visibleKeys.map((key) => ({ order: orderFor(key), render: sectionRenderers[key] })),
-    ...customSections.map((section, i) => ({
-      order: 2000 + i,
+    ...customSections.map((section) => ({
+      order: section.order,
       render: (num: number, isFirst: boolean) => (
         <CustomSectionBlock key={section.id} section={section} num={num} isFirst={isFirst} />
       ),

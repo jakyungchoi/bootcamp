@@ -16,9 +16,17 @@ export function Card({
   );
 }
 
-export function ImagePlaceholder({ label }: { label?: string }) {
+export function ImagePlaceholder({
+  label,
+  aspectClassName = "aspect-[16/9]",
+}: {
+  label?: string;
+  aspectClassName?: string;
+}) {
   return (
-    <div className="flex aspect-[16/9] w-full items-center justify-center rounded-xl bg-gradient-to-br from-brand/10 to-neutral-100 text-xs font-medium text-neutral-400 dark:from-brand/15 dark:to-neutral-800">
+    <div
+      className={`flex ${aspectClassName} w-full items-center justify-center rounded-xl bg-gradient-to-br from-brand/10 to-neutral-100 text-xs font-medium text-neutral-400 dark:from-brand/15 dark:to-neutral-800`}
+    >
       {label ?? "이미지 영역"}
     </div>
   );

@@ -1,10 +1,15 @@
 // 관리자 대시보드 탭(메뉴) 목록을 만들어주는 헬퍼.
 // - 기존 12개 고정 메뉴(BUILTIN_MENU)는 코드에 이름/순서가 정해져 있지만,
 //   admin_menu_overrides 테이블에 저장된 값이 있으면 그 값으로 덮어쓴다. (이름 변경/순서 변경/숨기기)
-// - 관리자가 새로 추가한 "커스텀 페이지"는 custom_pages 테이블에서 가져와 뒤에 이어붙인다. (완전한 추가/삭제)
-// - 관리자가 기존 페이지 "안에" 추가한 "커스텀 섹션"은 custom_sections 테이블에서 가져와 뒤에 이어붙인다.
+// - 관리자가 새로 추가한 "커스텀 페이지"는 custom_pages 테이블에서 가져와 이어붙인다. (완전한 추가/삭제)
+// - 관리자가 기존 페이지 "안에" 추가한 "커스텀 섹션"은 custom_sections 테이블에서 가져와 이어붙인다.
 //   (완전히 새로운 페이지가 아니라, 운영 교육 과정/교육 관리/참여 기업 연계 페이지 중 하나를 골라
 //   그 페이지의 다른 섹션들과 순서를 자유롭게 섞어서 끼워 넣는다.)
+// 세 그룹(고정 메뉴 / 커스텀 페이지 / 커스텀 섹션) 모두 "order" 값을 같은 하나의 숫자 체계로 쓴다
+// (더 이상 그룹마다 다른 숫자대를 더하지 않는다) — 그래야 관리자 대시보드에서 화살표로 옮길 때
+// 커스텀 섹션이 실제로 기존 섹션들 "사이"에 끼어들 수 있다. order 값이 서로 겹치는 항목이 있어도
+// 문제 없다 — admin/page.tsx의 move()가 화살표를 누를 때마다 화면에 보이는 순서 그대로 전체
+// 목록의 order 값을 처음부터 다시 매겨 저장하기 때문에, 한 번만 옮겨도 겹침은 바로 풀린다.
 // 관리자 대시보드(admin/page.tsx)와 사이드바(admin/layout.tsx)가 공통으로 이 함수를 사용한다.
 
 import { supabase } from "./supabase/client";
@@ -134,23 +139,23 @@ export async function getMergedAdminMenu(): Promise<MergedMenuItem[]> {
       key: `custom:${c.id}`,
       href: `/admin/custom-pages/${c.id}`,
       label: c.title,
-      order: 1000 + (c.order ?? 0),
+      order: c.order ?? 0,
       isVisible: true,
       isCustom: true,
       slug: c.slug,
     })
   );
 
-  // 커스텀 섹션은 custom_pages(완전한 새 탭)와 겹치지 않도록 2000번대 순서를 쓴다. (기존
-  // 메뉴는 1~17, 커스텀 페이지는 1000+, 커스텀 섹션은 2000+ — 세 그룹이 서로 다른 숫자대를
-  // 쓰기 때문에, 관리자 대시보드에서 어느 그룹끼리 섞어서 위/아래로 옮겨도 항상 올바르게
-  // 다시 정렬된다.)
+  // 커스텀 섹션도 위 두 그룹과 같은 order 숫자 체계를 그대로 쓴다 (더하는 값 없음) —
+  // 이렇게 해야 education-management/courses/partners 페이지에서 이 섹션을 그 페이지의
+  // 고정 섹션들과 순서 하나로 정렬할 때(getCustomSectionsForPage 사용처 참고) 고정 섹션
+  // "사이"에도 자연스럽게 끼어들 수 있다.
   const customSectionItems: MergedMenuItem[] = (customSections ?? []).map(
     (c: { id: string; title: string; page_key: string; order: number; is_published: boolean }) => ({
       key: `customsection:${c.id}`,
       href: `/admin/custom-sections/${c.id}`,
       label: c.title?.trim() ? c.title : "(제목 없음)",
-      order: 2000 + (c.order ?? 0),
+      order: c.order ?? 0,
       isVisible: c.is_published,
       isCustom: false,
       isCustomSection: true,

@@ -93,7 +93,9 @@ export default async function CulturePage() {
           </p>
         )}
         <div className="mt-5">
-          <ProgramPhotoSlider photos={settings.training_facility_photos} />
+          {/* 이 섹션은 화면 폭을 전체로 쓰는 자리라, 다른 곳(교육 문화 프로그램 카드)과 같은
+              16:9 비율을 쓰면 세로로 너무 커 보여서 더 넓적한 비율로 줄였다. */}
+          <ProgramPhotoSlider photos={settings.training_facility_photos} aspectClassName="aspect-[21/8]" />
         </div>
         {settings.training_facility_highlights.length > 0 && (
           <div className="mt-6 grid grid-cols-2 gap-y-6 divide-y divide-black/5 rounded-2xl border border-black/5 bg-white p-6 sm:grid-cols-4 sm:gap-y-0 sm:divide-y-0 sm:divide-x dark:divide-white/10 dark:border-white/10 dark:bg-neutral-900">

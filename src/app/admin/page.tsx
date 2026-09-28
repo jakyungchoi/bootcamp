@@ -112,27 +112,25 @@ export default function AdminDashboardPage() {
     // (예전에 저장돼 있던 순서 값끼리 우연히 같거나 꼬여 있으면, 두 값만 맞바꾸는 방식으로는
     // "값이 똑같아서 바꿔도 그대로"인 경우가 생겨 순서가 안 바뀌는 것처럼 보일 수 있다.
     // 매번 화면에 보이는 순서 그대로 1, 2, 3...으로 다시 매겨 저장하면 이 문제가 생기지 않는다.
-    // 기존 메뉴 / "새 탭 추가"로 만든 페이지 / "새 섹션 추가"로 만든 커스텀 섹션은 서로 다른
-    // 숫자 체계를 쓰므로(새 탭은 1000+, 새 섹션은 2000+를 더해서 병합한다), 세 그룹을 각각
-    // 따로 1부터 다시 매긴다.)
+    // 기존 메뉴 / "새 탭 추가"로 만든 페이지 / "새 섹션 추가"로 만든 커스텀 섹션 세 그룹 모두
+    // 하나의 순서 번호 체계를 함께 쓴다 — 그래야 예를 들어 "커스텀 섹션"을 화살표로 옮겨서
+    // 어떤 고정 섹션보다 앞/뒤로 실제로 보낼 수 있다. (예전에는 그룹마다 서로 다른 숫자대를
+    // 따로 썼는데, 그러면 커스텀 섹션은 화살표를 아무리 눌러도 항상 고정 섹션들 맨 뒤에만
+    // 있게 되는 문제가 있었다.)
     const reordered = [...items];
     [reordered[idx], reordered[targetIdx]] = [reordered[targetIdx], reordered[idx]];
 
-    let builtinSeq = 0;
-    let customSeq = 0;
-    let customSectionSeq = 0;
+    let seq = 0;
     const results = await Promise.all(
       reordered.map((it) => {
+        seq += 1;
         if (it.isCustomSection) {
-          customSectionSeq += 1;
-          return client.from("custom_sections").update({ order: customSectionSeq }).eq("id", customSectionKeyToId(it.key));
+          return client.from("custom_sections").update({ order: seq }).eq("id", customSectionKeyToId(it.key));
         }
         if (it.isCustom) {
-          customSeq += 1;
-          return client.from("custom_pages").update({ order: customSeq }).eq("id", customKeyToId(it.key));
+          return client.from("custom_pages").update({ order: seq }).eq("id", customKeyToId(it.key));
         }
-        builtinSeq += 1;
-        return client.from("admin_menu_overrides").upsert({ key: it.key, order: builtinSeq });
+        return client.from("admin_menu_overrides").upsert({ key: it.key, order: seq });
       })
     );
     const failed = results.find((r) => r.error);
@@ -148,8 +146,8 @@ export default function AdminDashboardPage() {
     const title = window.prompt("새 탭 이름을 입력하세요. (예: 자주 묻는 질문)");
     if (!title || !title.trim()) return;
     const slug = `page-${Math.random().toString(36).slice(2, 8)}`;
-    const customOrders = items.filter((i) => i.isCustom).map((i) => i.order - 1000);
-    const nextOrder = customOrders.length > 0 ? Math.max(...customOrders) + 1 : 1;
+    // 새로 만든 탭은 일단 전체 목록의 맨 끝에 추가되고, 위치는 화살표로 정한다.
+    const nextOrder = items.length > 0 ? Math.max(...items.map((i) => i.order)) + 1 : 1;
     const { data, error: err } = await supabase
       .from("custom_pages")
       .insert({ title: title.trim(), slug, order: nextOrder })
@@ -168,8 +166,9 @@ export default function AdminDashboardPage() {
       "새 섹션 이름을 입력하세요. (예: 커리어 지원)\n다음 화면에서 어느 페이지에 넣을지 고를 수 있어요."
     );
     if (!title || !title.trim()) return;
-    const sectionOrders = items.filter((i) => i.isCustomSection).map((i) => i.order - 2000);
-    const nextOrder = sectionOrders.length > 0 ? Math.max(...sectionOrders) + 1 : 1;
+    // 새로 만든 섹션은 일단 전체 목록의 맨 끝에 추가되고, 위치(어느 고정 섹션 앞/뒤에 놓일지)는
+    // 대시보드의 화살표로 정한다.
+    const nextOrder = items.length > 0 ? Math.max(...items.map((i) => i.order)) + 1 : 1;
     const { data, error: err } = await supabase
       .from("custom_sections")
       .insert({ title: title.trim(), page_key: "education-management", order: nextOrder })

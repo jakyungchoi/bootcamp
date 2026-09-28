@@ -6,6 +6,7 @@ import { PageHeaderNote } from "@/components/admin/page-header-note";
 import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 import { AdminContentLayout } from "@/components/admin/admin-content-layout";
 import { SectionCaptionEditor } from "@/components/admin/section-caption-editor";
+import { ICON_OPTIONS } from "@/lib/icon-options";
 
 export default function QualityManagementAdminPage() {
   const title = useAdminMenuLabel("quality-management", "교육 품질 관리");
@@ -22,22 +23,24 @@ export default function QualityManagementAdminPage() {
         onSaved={() => setRefreshToken((n) => n + 1)}
       />
       <ResourceCrud
+        table="quality_process_steps"
+        title="프로세스 흐름"
+        description={`"${title}" 섹션 맨 위에 화살표로 이어지는 흐름으로 표시됩니다. (예: 경청 확인 → 데이터 분석 → 피드백 반영 → 다음 교육으로)`}
+        publishable={false}
+        titleField="title"
+        fields={[{ key: "title", label: "단계 이름", type: "text", required: true }]}
+        onSaved={() => setRefreshToken((n) => n + 1)}
+      />
+      <ResourceCrud
         table="quality_management_items"
-        title={title}
-        description={`교육 관리 페이지의 "${title}" 섹션에 표시되는 항목입니다. "구분"에 새 이름을 입력하면 새 카드가 만들어지고, 한 구분의 항목을 모두 지우면 그 카드는 사라집니다.`}
+        title={`${title} 카드`}
+        description={`프로세스 흐름 아래에 아이콘과 함께 표시되는 카드입니다. 개수 제한 없이 자유롭게 추가・삭제・순서 변경할 수 있습니다.`}
         publishable={false}
         titleField="title"
         fields={[
-          {
-            key: "group",
-            label: "구분 (카드 제목)",
-            type: "text",
-            required: true,
-            placeholder: "예: 만족도 관리, 강사 관리, 시설 관리 ...",
-            helpText: "기존 카드에 추가하려면 같은 이름을 그대로 입력하세요.",
-          },
-          { key: "title", label: "항목 이름", type: "text", required: true },
+          { key: "title", label: "제목", type: "text", required: true },
           { key: "description", label: "설명", type: "textarea" },
+          { key: "icon", label: "아이콘", type: "select", options: ICON_OPTIONS },
         ]}
         onSaved={() => setRefreshToken((n) => n + 1)}
       />

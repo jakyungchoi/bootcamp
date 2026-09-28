@@ -19,7 +19,15 @@ import type { CultureProgramPhoto } from "@/lib/types";
 
 const AUTO_ADVANCE_MS = 4000;
 
-export function ProgramPhotoSlider({ photos }: { photos: CultureProgramPhoto[] }) {
+export function ProgramPhotoSlider({
+  photos,
+  aspectClassName = "aspect-[16/9]",
+}: {
+  photos: CultureProgramPhoto[];
+  // 사진 영역의 가로세로 비율. 화면 폭 전체를 그대로 쓰는 곳(예: 오프라인 교육장)에서는 16:9로
+  // 두면 세로로 너무 커 보여서, 그런 곳에는 더 넓적한 비율(예: "aspect-[21/9]")을 넘겨준다.
+  aspectClassName?: string;
+}) {
   const urls = photos.map((p) => p.image_url).filter((u): u is string => Boolean(u));
   const count = urls.length;
 
@@ -74,11 +82,11 @@ export function ProgramPhotoSlider({ photos }: { photos: CultureProgramPhoto[] }
     return () => clearTimeout(timer);
   }, [trackIndex, paused, count]);
 
-  if (count === 0) return <ImagePlaceholder />;
+  if (count === 0) return <ImagePlaceholder aspectClassName={aspectClassName} />;
 
   return (
     <div
-      className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-800"
+      className={`relative ${aspectClassName} w-full overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-800`}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >

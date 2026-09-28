@@ -22,6 +22,7 @@ import type {
   PageHeader,
   PageHeaderKey,
   QualityManagementItem,
+  QualityProcessStep,
   SiteSettings,
   SupportPlanTrack,
 } from "./types";
@@ -41,6 +42,7 @@ import {
   managementMonths,
   pageHeaders,
   qualityManagementItems,
+  qualityProcessSteps,
   siteSettings,
   supportPlanTracks,
 } from "./content";
@@ -267,6 +269,18 @@ export async function getQualityManagementItems(): Promise<QualityManagementItem
     if (!error && data) return data as QualityManagementItem[];
   }
   return [...qualityManagementItems].sort((a, b) => a.order - b.order);
+}
+
+// "교육 품질 관리" 섹션 맨 위에 보여주는 프로세스 흐름 (예: 경청 확인 → 데이터 분석 → ...)
+export async function getQualityProcessSteps(): Promise<QualityProcessStep[]> {
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from("quality_process_steps")
+      .select("*")
+      .order("order", { ascending: true });
+    if (!error && data) return data as QualityProcessStep[];
+  }
+  return [...qualityProcessSteps].sort((a, b) => a.order - b.order);
 }
 
 export async function getCollaborationTools(): Promise<CollaborationTool[]> {

@@ -780,3 +780,46 @@ drop policy if exists "admin manage" on custom_sections;
 create policy "admin manage" on custom_sections for all
   using (auth.uid() in (select id from admin_users))
   with check (auth.uid() in (select id from admin_users));
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 17
+-- "교육 품질 관리" 섹션을 (1) 맨 위에 프로세스 흐름(예: 경청 확인 → 데이터 분석 → 피드백 반영 →
+-- 다음 교육으로)이 먼저 보이고, (2) 그 아래에 "구분" 없이 아이콘 카드를 자유롭게 추가할 수
+-- 있는 형태로 바꾼다.
+create table if not exists quality_process_steps (
+  id uuid primary key default gen_random_uuid(),
+  "order" int not null,
+  title text not null
+);
+
+-- 카드에 아이콘을 붙일 수 있도록 컬럼 추가. "구분(group)" 카드 나누기는 더 이상 화면에 쓰지
+-- 않아서(대신 아이콘이 있는 낱개 카드로 보여준다), 새 카드를 추가할 때 값을 안 넣어도 되도록
+-- 필수 조건을 없앤다. 기존에 입력해둔 값은 그대로 남아있고, 필요하면 나중에 다시 쓸 수 있다.
+alter table quality_management_items add column if not exists icon text;
+alter table quality_management_items alter column "group" drop not null;
+
+alter table quality_process_steps enable row level security;
+
+drop policy if exists "public read all" on quality_process_steps;
+create policy "public read all" on quality_process_steps for select using (true);
+
+drop policy if exists "admin write" on quality_process_steps;
+create policy "admin write" on quality_process_steps for all
+  using (auth.uid() in (select id from admin_users))
+  with check (auth.uid() in (select id from admin_users));
+
+insert into quality_process_steps ("order", title)
+select * from (values
+  (1, '경청 확인'), (2, '데이터 분석'), (3, '피드백 반영'), (4, '다음 교육으로')
+) as v("order", title)
+where not exists (select 1 from quality_process_steps);
+
+-- 기존 8개 카드에도 기본 아이콘을 하나씩 배정 (관리자 페이지에서 언제든 바꿀 수 있음)
+update quality_management_items set icon = 'LineChart' where title = '교육 만족도' and icon is null;
+update quality_management_items set icon = 'Mic2' where title = '강사 만족도' and icon is null;
+update quality_management_items set icon = 'Presentation' where title = '프로젝트 만족도' and icon is null;
+update quality_management_items set icon = 'FileSearch' where title = '과정별 만족도' and icon is null;
+update quality_management_items set icon = 'Users2' where title = '강사 Pool' and icon is null;
+update quality_management_items set icon = 'Award' where title = '강사 평가' and icon is null;
+update quality_management_items set icon = 'GraduationCap' where title = '강의 품질 관리' and icon is null;
+update quality_management_items set icon = 'MessageCircle' where title = '피드백' and icon is null;

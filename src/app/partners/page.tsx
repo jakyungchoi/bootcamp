@@ -141,12 +141,12 @@ export default async function PartnersPage() {
     .sort((a, b) => orderFor(a) - orderFor(b));
 
   // 고정 섹션과, 관리자가 "새 섹션 추가"로 이 페이지에 끼워 넣은 커스텀 섹션을 순서(order) 기준
-  // 하나로 합쳐서 그린다. 커스텀 섹션은 2000번대 순서를 쓰므로(admin-menu.ts 참고), 대시보드에서
-  // 위/아래 화살표로 옮긴 위치가 여기서도 그대로 반영된다.
+  // 하나로 합쳐서 그린다. 커스텀 섹션의 order도 고정 섹션과 같은 숫자 체계를 쓰므로(admin-menu.ts
+  // 참고), 대시보드에서 위/아래 화살표로 옮긴 위치가 고정 섹션들 "사이"에도 그대로 반영된다.
   const entries: { order: number; render: (num: number, isFirst: boolean) => ReactNode }[] = [
     ...visibleKeys.map((key) => ({ order: orderFor(key), render: sectionRenderers[key] })),
-    ...customSections.map((section, i) => ({
-      order: 2000 + i,
+    ...customSections.map((section) => ({
+      order: section.order,
       render: (num: number, isFirst: boolean) => (
         <CustomSectionBlock key={section.id} section={section} num={num} isFirst={isFirst} />
       ),

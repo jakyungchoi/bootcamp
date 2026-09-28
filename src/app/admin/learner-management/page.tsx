@@ -6,20 +6,7 @@ import { PageHeaderNote } from "@/components/admin/page-header-note";
 import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 import { AdminContentLayout } from "@/components/admin/admin-content-layout";
 import { SectionCaptionEditor } from "@/components/admin/section-caption-editor";
-
-const ICON_OPTIONS = [
-  "CalendarCheck",
-  "Users",
-  "LifeBuoy",
-  "LineChart",
-  "Lightbulb",
-  "Database",
-  "Server",
-  "Presentation",
-  "Users2",
-  "Mic2",
-  "Building2",
-].map((v) => ({ value: v, label: v }));
+import { ICON_OPTIONS } from "@/lib/icon-options";
 
 export default function LearnerManagementAdminPage() {
   const title = useAdminMenuLabel("learner-management", "학습자 관리 카드");

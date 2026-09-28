@@ -12,7 +12,9 @@ import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowUp, Loader2, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { AdminContentLayout } from "@/components/admin/admin-content-layout";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { CUSTOM_SECTION_PAGE_OPTIONS } from "@/lib/admin-menu";
+import { ICON_OPTIONS } from "@/lib/icon-options";
 import type { CustomSection, CustomSectionItem } from "@/lib/types";
 
 export default function CustomSectionEditor({ params }: { params: Promise<{ id: string }> }) {
@@ -48,7 +50,9 @@ export default function CustomSectionEditor({ params }: { params: Promise<{ id: 
   }
 
   function addItem() {
-    setSection((s) => (s ? { ...s, items: [...s.items, { heading: "", body: "" }] } : s));
+    setSection((s) =>
+      s ? { ...s, items: [...s.items, { heading: "", body: "", icon: "", image_url: null }] } : s
+    );
   }
 
   function removeItem(idx: number) {
@@ -254,6 +258,31 @@ export default function CustomSectionEditor({ params }: { params: Promise<{ id: 
                     onChange={(e) => updateItem(idx, { body: e.target.value })}
                     className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
                   />
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-neutral-500">
+                      아이콘 (선택 — 카드 맨 위에 표시됩니다)
+                    </label>
+                    <select
+                      value={item.icon ?? ""}
+                      onChange={(e) => updateItem(idx, { icon: e.target.value || null })}
+                      className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+                    >
+                      <option value="">(아이콘 없음)</option>
+                      {ICON_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-neutral-500">사진 (선택)</label>
+                    <ImageUploadField
+                      value={item.image_url ?? null}
+                      onChange={(url) => updateItem(idx, { image_url: url })}
+                      folder="custom-sections"
+                    />
+                  </div>
                 </div>
               </div>
             ))}

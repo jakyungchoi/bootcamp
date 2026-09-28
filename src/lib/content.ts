@@ -21,6 +21,7 @@ import type {
   PageHeader,
   PageHeaderKey,
   QualityManagementItem,
+  QualityProcessStep,
   SiteSettings,
   SupportPlanTrack,
 } from "./types";
@@ -292,14 +293,22 @@ export const managementHighlights: ManagementHighlight[] = [];
 export const managementMonths: ManagementMonth[] = [];
 
 export const qualityManagementItems: QualityManagementItem[] = [
-  { id: "qm-1", group: "만족도 관리", title: "교육 만족도", description: "과정 전반에 대한 만족도를 조사합니다.", order: 1 },
-  { id: "qm-2", group: "만족도 관리", title: "강사 만족도", description: "강사별 강의 만족도를 조사합니다.", order: 2 },
-  { id: "qm-3", group: "만족도 관리", title: "프로젝트 만족도", description: "프로젝트 진행 과정의 만족도를 조사합니다.", order: 3 },
-  { id: "qm-4", group: "만족도 관리", title: "과정별 만족도", description: "과정 단위로 만족도를 비교 관리합니다.", order: 4 },
-  { id: "qm-5", group: "강사 관리", title: "강사 Pool", description: "검증된 강사 풀을 관리합니다.", order: 5 },
-  { id: "qm-6", group: "강사 관리", title: "강사 평가", description: "정기적인 강사 평가를 진행합니다.", order: 6 },
-  { id: "qm-7", group: "강사 관리", title: "강의 품질 관리", description: "강의 콘텐츠와 진행 품질을 관리합니다.", order: 7 },
-  { id: "qm-8", group: "강사 관리", title: "피드백", description: "교육생 피드백을 강사에게 전달하고 반영합니다.", order: 8 },
+  { id: "qm-1", group: "만족도 관리", title: "교육 만족도", description: "과정 전반에 대한 만족도를 조사합니다.", icon: "LineChart", order: 1 },
+  { id: "qm-2", group: "만족도 관리", title: "강사 만족도", description: "강사별 강의 만족도를 조사합니다.", icon: "Mic2", order: 2 },
+  { id: "qm-3", group: "만족도 관리", title: "프로젝트 만족도", description: "프로젝트 진행 과정의 만족도를 조사합니다.", icon: "Presentation", order: 3 },
+  { id: "qm-4", group: "만족도 관리", title: "과정별 만족도", description: "과정 단위로 만족도를 비교 관리합니다.", icon: "FileSearch", order: 4 },
+  { id: "qm-5", group: "강사 관리", title: "강사 Pool", description: "검증된 강사 풀을 관리합니다.", icon: "Users2", order: 5 },
+  { id: "qm-6", group: "강사 관리", title: "강사 평가", description: "정기적인 강사 평가를 진행합니다.", icon: "Award", order: 6 },
+  { id: "qm-7", group: "강사 관리", title: "강의 품질 관리", description: "강의 콘텐츠와 진행 품질을 관리합니다.", icon: "GraduationCap", order: 7 },
+  { id: "qm-8", group: "강사 관리", title: "피드백", description: "교육생 피드백을 강사에게 전달하고 반영합니다.", icon: "MessageCircle", order: 8 },
+];
+
+// "교육 품질 관리" 섹션 맨 위에 보여주는 프로세스 흐름.
+export const qualityProcessSteps: QualityProcessStep[] = [
+  { id: "qp-1", order: 1, title: "경청 확인" },
+  { id: "qp-2", order: 2, title: "데이터 분석" },
+  { id: "qp-3", order: 3, title: "피드백 반영" },
+  { id: "qp-4", order: 4, title: "다음 교육으로" },
 ];
 
 export const collaborationTools: CollaborationTool[] = [

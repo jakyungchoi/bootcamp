@@ -134,10 +134,20 @@ export type TrainingFacilityHighlight = {
 
 export type QualityManagementItem = {
   id: string;
-  group: string; // 자유 입력 (관리자 페이지에서 새 구분을 추가/삭제할 수 있다)
+  group?: string | null; // 예전 버전에서 쓰던 "구분" 값(더 이상 화면에 표시하지 않음, 과거 데이터 호환용)
   title: string;
   description: string;
+  icon?: string | null; // 카드 맨 위에 보여줄 아이콘 (icon-map.tsx의 이름 중 하나)
   order: number;
+};
+
+// 교육 관리 페이지 "교육 품질 관리" 섹션 맨 위에 보여주는 프로세스 흐름 (예: 01 경청 확인 →
+// 02 데이터 분석 → 03 피드백 반영 → 04 다음 교육으로). 커리큘럼 구성 단계와 같은 방식으로
+// 이름만 있는 단계를 순서대로 등록한다.
+export type QualityProcessStep = {
+  id: string;
+  order: number;
+  title: string;
 };
 
 export type CollaborationTool = {
@@ -312,6 +322,8 @@ export type CustomPage = {
 export type CustomSectionItem = {
   heading: string;
   body: string;
+  icon?: string | null; // 카드 맨 위에 보여줄 아이콘 (선택 — icon-map.tsx의 이름 중 하나)
+  image_url?: string | null; // 카드에 첨부하는 사진 (선택)
 };
 
 // 관리자가 "운영 교육 과정 / 교육 관리 / 참여 기업 연계" 페이지 안에 자유롭게 추가하는 섹션.
