@@ -12,7 +12,7 @@ export default function TrainingFacilityAdminPage() {
   return (
     <AdminContentLayout
       refreshToken={refreshToken}
-      previewOptions={[{ label: title, path: "/education-management#admin-section-training-facility" }]}
+      previewOptions={[{ label: title, path: "/culture#admin-section-training-facility" }]}
     >
       <PageHeaderNote />
       <TrainingFacilityEditor onSaved={() => setRefreshToken((n) => n + 1)} />

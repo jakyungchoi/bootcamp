@@ -33,11 +33,11 @@ export const BUILTIN_MENU: BuiltinMenuItem[] = [
   { key: "courses", href: "/admin/courses", label: "대표 교육 과정", desc: "운영 교육 과정 페이지의 과정 카드", order: 5 },
   { key: "curriculum", href: "/admin/curriculum", label: "커리큘럼 구성 단계", desc: "기초 역량 → 취업 연계 흐름", order: 6 },
   { key: "culture", href: "/admin/culture", label: "교육 문화 프로그램", desc: "인간 포텐업, 지식줍줍 등", order: 7 },
-  { key: "learner-management", href: "/admin/learner-management", label: "학습자 관리 카드", desc: "출결, 학습 참여 등", order: 8 },
-  { key: "support-plans", href: "/admin/support-plans", label: "학습부진자 지도 계획", desc: "과정별 지원 방식", order: 9 },
-  { key: "management-months", href: "/admin/management-months", label: "개월차별 관리", desc: "개월차 카드 + 클릭 시 사진 팝업", order: 10 },
-  { key: "management-metrics", href: "/admin/management-metrics", label: "교육 성과 지표", desc: "상단 숫자 카드 + 강조 타일", order: 11 },
-  { key: "training-facility", href: "/admin/training-facility", label: "오프라인 교육장", desc: "교육 환경 설명 + 사진 슬라이드 + 특징 카드", order: 12 },
+  { key: "training-facility", href: "/admin/training-facility", label: "오프라인 교육장", desc: "교육 환경 설명 + 사진 슬라이드 + 특징 카드", order: 8 },
+  { key: "learner-management", href: "/admin/learner-management", label: "학습자 관리 카드", desc: "출결, 학습 참여 등", order: 9 },
+  { key: "support-plans", href: "/admin/support-plans", label: "학습부진자 지도 계획", desc: "과정별 지원 방식", order: 10 },
+  { key: "management-months", href: "/admin/management-months", label: "개월차별 관리", desc: "개월차 카드 + 클릭 시 사진 팝업", order: 11 },
+  { key: "management-metrics", href: "/admin/management-metrics", label: "교육 성과 지표", desc: "상단 숫자 카드 + 강조 타일", order: 12 },
   { key: "quality-management", href: "/admin/quality-management", label: "교육 품질 관리", desc: "구분(카드)을 자유롭게 추가/삭제 가능", order: 13 },
   { key: "collaboration-tools", href: "/admin/collaboration-tools", label: "협업 도구", desc: "Notion, Slack 등", order: 14 },
   { key: "participation-types", href: "/admin/participation-types", label: "기업 참여 방식", desc: "참여 기업 연계 페이지 카드", order: 15 },
@@ -56,7 +56,7 @@ export function customKeyToId(key: string): string {
 export const MENU_GROUPS: { label: string; keys: string[] }[] = [
   { label: "전역 설정", keys: ["site-settings", "page-headers"] },
   { label: "운영 교육 과정 페이지", keys: ["categories", "duration-types", "courses", "curriculum"] },
-  { label: "교육 문화 페이지", keys: ["culture"] },
+  { label: "교육 문화 페이지", keys: ["culture", "training-facility"] },
   {
     label: "교육 관리 페이지",
     keys: [
@@ -64,7 +64,6 @@ export const MENU_GROUPS: { label: string; keys: string[] }[] = [
       "support-plans",
       "management-months",
       "management-metrics",
-      "training-facility",
       "quality-management",
       "collaboration-tools",
     ],

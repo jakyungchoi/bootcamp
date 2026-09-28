@@ -4,7 +4,6 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/icon-map";
 import { MonthsTimeline } from "@/components/education/months-timeline";
-import { ProgramPhotoSlider } from "@/components/culture/program-photo-slider";
 import { BUILTIN_MENU } from "@/lib/admin-menu";
 import {
   getAdminMenuLabels,
@@ -26,11 +25,11 @@ function pad(n: number) {
   return String(n).padStart(2, "0");
 }
 
-// 이 페이지에 들어가는 6개 섹션의 키. 관리자 대시보드 메뉴 목록(admin-menu.ts)의 키와 같아서,
+// 이 페이지에 들어가는 5개 섹션의 키. 관리자 대시보드 메뉴 목록(admin-menu.ts)의 키와 같아서,
 // 대시보드에서 위/아래 화살표로 바꾼 순서를 그대로 이 페이지의 섹션 순서에도 반영할 수 있다.
+// ("오프라인 교육장"은 교육 문화 페이지 맨 아래로 옮겨서 더 이상 여기 없다.)
 type SectionKey =
   | "management-metrics"
-  | "training-facility"
   | "learner-management"
   | "support-plans"
   | "management-months"
@@ -79,7 +78,6 @@ export default async function EducationManagementPage() {
 
   // 관리자 대시보드에서 이름을 바꾼 메뉴는 공개 화면의 섹션 제목도 그 이름을 따라간다.
   const labelMetrics = labels.get("management-metrics") ?? "교육 성과 지표";
-  const labelFacility = labels.get("training-facility") ?? "오프라인 교육장";
   const labelLearnerManagement = labels.get("learner-management") ?? "학습자 관리";
   const labelSupportPlans = labels.get("support-plans") ?? "학습부진자 지도 계획";
   const labelMonths = labels.get("management-months") ?? "개월차별 관리";
@@ -88,7 +86,6 @@ export default async function EducationManagementPage() {
   // 관리자 대시보드에서 "숨기기" 한 메뉴에 해당하는 섹션은 공개 화면에서도 통째로 감추고,
   // 남은 섹션의 번호를 앞에서부터 다시 매긴다.
   const showMetrics = !hiddenKeys.has("management-metrics") && (metrics.length > 0 || highlights.length > 0);
-  const showFacility = !hiddenKeys.has("training-facility");
   const showLearnerManagement = !hiddenKeys.has("learner-management");
   const showSupportPlans = !hiddenKeys.has("support-plans");
   const showMonths = !hiddenKeys.has("management-months");
@@ -153,36 +150,6 @@ export default async function EducationManagementPage() {
                 </div>
               )
             )}
-          </div>
-        )}
-      </section>
-    ),
-    "training-facility": (num, isFirst) => (
-      <section
-        id="admin-section-training-facility"
-        className={`${isFirst ? "mt-14" : "mt-16"} scroll-mt-24`}
-      >
-        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-          {pad(num)}. {labelFacility}
-        </h3>
-        {settings.training_facility_description && (
-          <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
-            {settings.training_facility_description}
-          </p>
-        )}
-        <div className="mt-5">
-          <ProgramPhotoSlider photos={settings.training_facility_photos} />
-        </div>
-        {settings.training_facility_highlights.length > 0 && (
-          <div className="mt-6 grid grid-cols-2 gap-y-6 divide-y divide-black/5 rounded-2xl border border-black/5 bg-white p-6 sm:grid-cols-4 sm:gap-y-0 sm:divide-y-0 sm:divide-x dark:divide-white/10 dark:border-white/10 dark:bg-neutral-900">
-            {settings.training_facility_highlights.map((h) => (
-              <div key={h.id} className="px-4 pt-5 first:pt-0 first:pl-0 last:pr-0 sm:pt-0">
-                <p className="font-bold text-neutral-900 dark:text-white">{h.title}</p>
-                <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
-                  {h.description}
-                </p>
-              </div>
-            ))}
           </div>
         )}
       </section>
@@ -326,7 +293,6 @@ export default async function EducationManagementPage() {
 
   const sectionShow: Record<SectionKey, boolean> = {
     "management-metrics": showMetrics,
-    "training-facility": showFacility,
     "learner-management": showLearnerManagement,
     "support-plans": showSupportPlans,
     "management-months": showMonths,
