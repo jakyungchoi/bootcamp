@@ -23,6 +23,15 @@ function AdminShell({ children }: { children: React.ReactNode }) {
     loadMenu();
   }, [isAdmin]);
 
+  // 로그인 안 된 상태면 로그인 화면으로 보낸다. 화면을 그리는 도중(render)에 바로
+  // router.replace()를 부르면 "다른 컴포넌트를 그리는 중에 상태를 바꾸려 했다"는 경고가
+  // 뜨므로(리액트 규칙 위반), useEffect 안에서 그리기가 끝난 뒤에 이동시킨다.
+  useEffect(() => {
+    if (!loading && supabaseConfigured && !session) {
+      router.replace("/admin/login");
+    }
+  }, [loading, supabaseConfigured, session, router]);
+
   if (pathname === "/admin/login") return <>{children}</>;
 
   if (!supabaseConfigured) {
@@ -42,7 +51,6 @@ function AdminShell({ children }: { children: React.ReactNode }) {
   }
 
   if (!session) {
-    router.replace("/admin/login");
     return null;
   }
 
@@ -81,7 +89,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
           </Link>
           {(() => {
             const visibleItems = menu.filter((item) => item.isVisible);
-            const groups = visibleItems.map((item) => groupLabelForKey(item.key, item.isCustom));
+            const groups = visibleItems.map((item) => groupLabelForKey(item.key, item.isCustom, item.pageKey));
             return visibleItems.map((item, idx) => {
               const group = groups[idx];
               const showGroupLabel = idx === 0 || group !== groups[idx - 1];

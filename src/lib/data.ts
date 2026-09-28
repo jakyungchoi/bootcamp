@@ -14,6 +14,7 @@ import type {
   CultureProgram,
   CurriculumFlowStep,
   CustomPage,
+  CustomSection,
   LearnerManagementItem,
   ManagementHighlight,
   ManagementMetric,
@@ -352,4 +353,19 @@ export async function getCustomPageBySlug(slug: string): Promise<CustomPage | nu
     .maybeSingle();
   if (error || !data) return null;
   return data as CustomPage;
+}
+
+// 관리자가 "운영 교육 과정 / 교육 관리 / 참여 기업 연계" 페이지 안에 자유롭게 추가한 커스텀
+// 섹션 중, 해당 페이지(pageKey)에 속하고 공개된 것만 순서(order)대로 조회한다. 각 공개
+// 페이지는 이 목록을 자기 페이지의 기존 섹션들과 순서를 맞춰 함께 끼워 넣어 보여준다.
+export async function getCustomSectionsForPage(pageKey: string): Promise<CustomSection[]> {
+  if (!isSupabaseConfigured || !supabase) return [];
+  const { data, error } = await supabase
+    .from("custom_sections")
+    .select("*")
+    .eq("page_key", pageKey)
+    .eq("is_published", true)
+    .order("order", { ascending: true });
+  if (error || !data) return [];
+  return data as CustomSection[];
 }

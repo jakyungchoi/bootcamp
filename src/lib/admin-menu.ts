@@ -2,6 +2,9 @@
 // - 기존 12개 고정 메뉴(BUILTIN_MENU)는 코드에 이름/순서가 정해져 있지만,
 //   admin_menu_overrides 테이블에 저장된 값이 있으면 그 값으로 덮어쓴다. (이름 변경/순서 변경/숨기기)
 // - 관리자가 새로 추가한 "커스텀 페이지"는 custom_pages 테이블에서 가져와 뒤에 이어붙인다. (완전한 추가/삭제)
+// - 관리자가 기존 페이지 "안에" 추가한 "커스텀 섹션"은 custom_sections 테이블에서 가져와 뒤에 이어붙인다.
+//   (완전히 새로운 페이지가 아니라, 운영 교육 과정/교육 관리/참여 기업 연계 페이지 중 하나를 골라
+//   그 페이지의 다른 섹션들과 순서를 자유롭게 섞어서 끼워 넣는다.)
 // 관리자 대시보드(admin/page.tsx)와 사이드바(admin/layout.tsx)가 공통으로 이 함수를 사용한다.
 
 import { supabase } from "./supabase/client";
@@ -22,6 +25,8 @@ export type MergedMenuItem = {
   order: number;
   isVisible: boolean;
   isCustom: boolean;
+  isCustomSection?: boolean;
+  pageKey?: string;
   slug?: string;
 };
 
@@ -30,23 +35,39 @@ export const BUILTIN_MENU: BuiltinMenuItem[] = [
   { key: "page-headers", href: "/admin/page-headers", label: "페이지 상단 문구", desc: "각 페이지 맨 위 영문 소제목 · 제목 · 설명", order: 2 },
   { key: "categories", href: "/admin/categories", label: "교육 영역 카테고리", desc: "AI/AX, 개발, Career 등 교육 영역", order: 3 },
   { key: "duration-types", href: "/admin/duration-types", label: "과정 기간 분류", desc: "단기 과정, 중장기 과정 등", order: 4 },
-  { key: "courses", href: "/admin/courses", label: "대표 교육 과정", desc: "운영 교육 과정 페이지의 과정 카드", order: 5 },
-  { key: "curriculum", href: "/admin/curriculum", label: "커리큘럼 구성 단계", desc: "기초 역량 → 취업 연계 흐름", order: 6 },
-  { key: "culture", href: "/admin/culture", label: "교육 문화 프로그램", desc: "인간 포텐업, 지식줍줍 등", order: 7 },
-  { key: "training-facility", href: "/admin/training-facility", label: "오프라인 교육장", desc: "교육 환경 설명 + 사진 슬라이드 + 특징 카드", order: 8 },
+  { key: "curriculum", href: "/admin/curriculum", label: "커리큘럼 구성 단계", desc: "기초 역량 → 취업 연계 흐름", order: 5 },
+  { key: "courses", href: "/admin/courses", label: "대표 교육 과정", desc: "운영 교육 과정 페이지의 과정 카드", order: 6 },
+  { key: "training-facility", href: "/admin/training-facility", label: "오프라인 교육장", desc: "교육 환경 설명 + 사진 슬라이드 + 특징 카드", order: 7 },
+  { key: "culture", href: "/admin/culture", label: "교육 문화 프로그램", desc: "인간 포텐업, 지식줍줍 등", order: 8 },
   { key: "learner-management", href: "/admin/learner-management", label: "학습자 관리 카드", desc: "출결, 학습 참여 등", order: 9 },
   { key: "support-plans", href: "/admin/support-plans", label: "학습부진자 지도 계획", desc: "과정별 지원 방식", order: 10 },
   { key: "management-months", href: "/admin/management-months", label: "개월차별 관리", desc: "개월차 카드 + 클릭 시 사진 팝업", order: 11 },
   { key: "management-metrics", href: "/admin/management-metrics", label: "교육 성과 지표", desc: "상단 숫자 카드 + 강조 타일", order: 12 },
   { key: "quality-management", href: "/admin/quality-management", label: "교육 품질 관리", desc: "구분(카드)을 자유롭게 추가/삭제 가능", order: 13 },
   { key: "collaboration-tools", href: "/admin/collaboration-tools", label: "협업 도구", desc: "Notion, Slack 등", order: 14 },
-  { key: "participation-types", href: "/admin/participation-types", label: "기업 참여 방식", desc: "참여 기업 연계 페이지 카드", order: 15 },
+  { key: "case-studies", href: "/admin/case-studies", label: "협업 사례", desc: "실제 기업 협업 사례 (슬라이드로 표시)", order: 15 },
   { key: "company-flow", href: "/admin/company-flow", label: "이런 협업이 가능해요", desc: "기업과 함께할 수 있는 활동 목록", order: 16 },
-  { key: "case-studies", href: "/admin/case-studies", label: "협업 사례", desc: "실제 기업 협업 사례 (슬라이드로 표시)", order: 17 },
+  { key: "participation-types", href: "/admin/participation-types", label: "기업 참여 방식", desc: "참여 기업 연계 페이지 카드", order: 17 },
 ];
 
 export function customKeyToId(key: string): string {
   return key.replace(/^custom:/, "");
+}
+
+export function customSectionKeyToId(key: string): string {
+  return key.replace(/^customsection:/, "");
+}
+
+// "커스텀 섹션"이 들어갈 수 있는 공개 페이지 목록. 관리자가 새 섹션을 추가할 때 이 중 하나를
+// 고르고, 그 페이지는 자기 페이지에 속한 커스텀 섹션들을 가져와 기존 섹션들과 순서를 섞어 보여준다.
+export const CUSTOM_SECTION_PAGE_OPTIONS: { value: string; label: string }[] = [
+  { value: "education-management", label: "교육 관리 페이지" },
+  { value: "partners", label: "참여 기업 연계 페이지" },
+  { value: "courses", label: "운영 교육 과정 페이지" },
+];
+
+export function pageLabelForKey(pageKey: string | undefined): string {
+  return CUSTOM_SECTION_PAGE_OPTIONS.find((p) => p.value === pageKey)?.label ?? "(페이지 미지정)";
 }
 
 // 메뉴 항목이 실제로 어느 공개 페이지에 속하는지 묶어서, 사이드바와 관리자 대시보드 양쪽에
@@ -55,8 +76,8 @@ export function customKeyToId(key: string): string {
 // 표시용으로만 쓰인다.
 export const MENU_GROUPS: { label: string; keys: string[] }[] = [
   { label: "전역 설정", keys: ["site-settings", "page-headers"] },
-  { label: "운영 교육 과정 페이지", keys: ["categories", "duration-types", "courses", "curriculum"] },
-  { label: "교육 문화 페이지", keys: ["culture", "training-facility"] },
+  { label: "운영 교육 과정 페이지", keys: ["categories", "duration-types", "curriculum", "courses"] },
+  { label: "교육 문화 페이지", keys: ["training-facility", "culture"] },
   {
     label: "교육 관리 페이지",
     keys: [
@@ -68,11 +89,12 @@ export const MENU_GROUPS: { label: string; keys: string[] }[] = [
       "collaboration-tools",
     ],
   },
-  { label: "참여 기업 연계 페이지", keys: ["participation-types", "company-flow", "case-studies"] },
+  { label: "참여 기업 연계 페이지", keys: ["case-studies", "company-flow", "participation-types"] },
 ];
 
-export function groupLabelForKey(key: string, isCustom: boolean): string {
+export function groupLabelForKey(key: string, isCustom: boolean, pageKey?: string): string {
   if (isCustom) return "추가한 페이지";
+  if (pageKey) return pageLabelForKey(pageKey);
   return MENU_GROUPS.find((g) => g.keys.includes(key))?.label ?? "기타";
 }
 
@@ -81,9 +103,13 @@ export async function getMergedAdminMenu(): Promise<MergedMenuItem[]> {
     return BUILTIN_MENU.map((b) => ({ ...b, isVisible: true, isCustom: false }));
   }
 
-  const [{ data: overrides }, { data: customPages }] = await Promise.all([
+  const [{ data: overrides }, { data: customPages }, { data: customSections }] = await Promise.all([
     supabase.from("admin_menu_overrides").select("*"),
     supabase.from("custom_pages").select("id, title, slug, order").order("order", { ascending: true }),
+    supabase
+      .from("custom_sections")
+      .select("id, title, page_key, order, is_published")
+      .order("order", { ascending: true }),
   ]);
 
   const overrideMap = new Map(
@@ -115,5 +141,22 @@ export async function getMergedAdminMenu(): Promise<MergedMenuItem[]> {
     })
   );
 
-  return [...builtins, ...customs].sort((a, b) => a.order - b.order);
+  // 커스텀 섹션은 custom_pages(완전한 새 탭)와 겹치지 않도록 2000번대 순서를 쓴다. (기존
+  // 메뉴는 1~17, 커스텀 페이지는 1000+, 커스텀 섹션은 2000+ — 세 그룹이 서로 다른 숫자대를
+  // 쓰기 때문에, 관리자 대시보드에서 어느 그룹끼리 섞어서 위/아래로 옮겨도 항상 올바르게
+  // 다시 정렬된다.)
+  const customSectionItems: MergedMenuItem[] = (customSections ?? []).map(
+    (c: { id: string; title: string; page_key: string; order: number; is_published: boolean }) => ({
+      key: `customsection:${c.id}`,
+      href: `/admin/custom-sections/${c.id}`,
+      label: c.title?.trim() ? c.title : "(제목 없음)",
+      order: 2000 + (c.order ?? 0),
+      isVisible: c.is_published,
+      isCustom: false,
+      isCustomSection: true,
+      pageKey: c.page_key,
+    })
+  );
+
+  return [...builtins, ...customs, ...customSectionItems].sort((a, b) => a.order - b.order);
 }

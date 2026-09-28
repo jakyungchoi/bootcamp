@@ -753,3 +753,30 @@ alter table site_settings add column if not exists management_months_columns jso
   '["1개월차","2개월차","3개월차","4개월차","5개월차","6개월차"]';
 
 alter table management_months add column if not exists color text;
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 16
+-- 관리자가 "운영 교육 과정 / 교육 관리 / 참여 기업 연계" 페이지 "안에" 완전히 새로운 섹션을
+-- 코드 수정 없이 직접 추가할 수 있게 한다. custom_pages(완전히 새로운 탭 = 별도 주소의 새
+-- 페이지)와 다르게, 이건 이미 있는 공개 페이지의 다른 섹션들 사이 어디든 순서를 자유롭게
+-- 끼워 넣을 수 있다 — 관리자 대시보드에서 기존 메뉴들과 똑같이 위/아래 화살표로 위치를 정한다.
+create table if not exists custom_sections (
+  id uuid primary key default gen_random_uuid(),
+  page_key text not null check (page_key in ('courses', 'education-management', 'partners')),
+  title text not null default '',
+  description text not null default '',
+  items jsonb not null default '[]', -- [{ "heading": "...", "body": "..." }, ...]
+  "order" int not null default 0,
+  is_published boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+alter table custom_sections enable row level security;
+
+drop policy if exists "public read published" on custom_sections;
+create policy "public read published" on custom_sections for select using (is_published = true);
+
+drop policy if exists "admin manage" on custom_sections;
+create policy "admin manage" on custom_sections for all
+  using (auth.uid() in (select id from admin_users))
+  with check (auth.uid() in (select id from admin_users));

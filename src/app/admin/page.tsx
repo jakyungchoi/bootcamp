@@ -17,7 +17,14 @@ import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useState } from "react";
 import { ArrowDown, ArrowUp, Eye, EyeOff, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
-import { getMergedAdminMenu, groupLabelForKey, customKeyToId, type MergedMenuItem } from "@/lib/admin-menu";
+import {
+  customKeyToId,
+  customSectionKeyToId,
+  getMergedAdminMenu,
+  groupLabelForKey,
+  pageLabelForKey,
+  type MergedMenuItem,
+} from "@/lib/admin-menu";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -47,13 +54,16 @@ export default function AdminDashboardPage() {
   }
 
   async function handleRename(item: MergedMenuItem) {
-    const next = window.prompt("탭 이름을 입력하세요.", item.label);
+    const next = window.prompt("이름을 입력하세요.", item.label);
     if (next === null || !supabase) return;
     const label = next.trim();
     if (!label) return;
+    const client = supabase;
     const { error: err } = item.isCustom
-      ? await supabase.from("custom_pages").update({ title: label }).eq("id", customKeyToId(item.key))
-      : await supabase.from("admin_menu_overrides").upsert({ key: item.key, label });
+      ? await client.from("custom_pages").update({ title: label }).eq("id", customKeyToId(item.key))
+      : item.isCustomSection
+        ? await client.from("custom_sections").update({ title: label }).eq("id", customSectionKeyToId(item.key))
+        : await client.from("admin_menu_overrides").upsert({ key: item.key, label });
     if (err) {
       setError(err.message);
       return;
@@ -63,9 +73,10 @@ export default function AdminDashboardPage() {
 
   async function handleToggleVisible(item: MergedMenuItem) {
     if (!supabase || item.isCustom) return;
-    const { error: err } = await supabase
-      .from("admin_menu_overrides")
-      .upsert({ key: item.key, is_visible: !item.isVisible });
+    const client = supabase;
+    const { error: err } = item.isCustomSection
+      ? await client.from("custom_sections").update({ is_published: !item.isVisible }).eq("id", customSectionKeyToId(item.key))
+      : await client.from("admin_menu_overrides").upsert({ key: item.key, is_visible: !item.isVisible });
     if (err) {
       setError(err.message);
       return;
@@ -73,10 +84,16 @@ export default function AdminDashboardPage() {
     reload();
   }
 
-  async function handleDeleteCustom(item: MergedMenuItem) {
-    if (!supabase || !item.isCustom) return;
-    if (!confirm(`"${item.label}" 탭을 삭제할까요? 페이지 내용도 함께 삭제되며 되돌릴 수 없습니다.`)) return;
-    const { error: err } = await supabase.from("custom_pages").delete().eq("id", customKeyToId(item.key));
+  async function handleDelete(item: MergedMenuItem) {
+    if (!supabase || (!item.isCustom && !item.isCustomSection)) return;
+    const confirmMessage = item.isCustom
+      ? `"${item.label}" 탭을 삭제할까요? 페이지 내용도 함께 삭제되며 되돌릴 수 없습니다.`
+      : `"${item.label}" 섹션을 삭제할까요? 되돌릴 수 없습니다.`;
+    if (!confirm(confirmMessage)) return;
+    const client = supabase;
+    const { error: err } = item.isCustom
+      ? await client.from("custom_pages").delete().eq("id", customKeyToId(item.key))
+      : await client.from("custom_sections").delete().eq("id", customSectionKeyToId(item.key));
     if (err) {
       setError(err.message);
       return;
@@ -95,15 +112,21 @@ export default function AdminDashboardPage() {
     // (예전에 저장돼 있던 순서 값끼리 우연히 같거나 꼬여 있으면, 두 값만 맞바꾸는 방식으로는
     // "값이 똑같아서 바꿔도 그대로"인 경우가 생겨 순서가 안 바뀌는 것처럼 보일 수 있다.
     // 매번 화면에 보이는 순서 그대로 1, 2, 3...으로 다시 매겨 저장하면 이 문제가 생기지 않는다.
-    // 기존 메뉴와 "새 탭 추가"로 만든 페이지는 서로 다른 숫자 체계를 쓰므로(새 탭은 항상 뒤에
-    // 오도록 내부적으로 1000을 더해서 병합한다), 두 그룹을 각각 따로 1부터 다시 매긴다.)
+    // 기존 메뉴 / "새 탭 추가"로 만든 페이지 / "새 섹션 추가"로 만든 커스텀 섹션은 서로 다른
+    // 숫자 체계를 쓰므로(새 탭은 1000+, 새 섹션은 2000+를 더해서 병합한다), 세 그룹을 각각
+    // 따로 1부터 다시 매긴다.)
     const reordered = [...items];
     [reordered[idx], reordered[targetIdx]] = [reordered[targetIdx], reordered[idx]];
 
     let builtinSeq = 0;
     let customSeq = 0;
+    let customSectionSeq = 0;
     const results = await Promise.all(
       reordered.map((it) => {
+        if (it.isCustomSection) {
+          customSectionSeq += 1;
+          return client.from("custom_sections").update({ order: customSectionSeq }).eq("id", customSectionKeyToId(it.key));
+        }
         if (it.isCustom) {
           customSeq += 1;
           return client.from("custom_pages").update({ order: customSeq }).eq("id", customKeyToId(it.key));
@@ -139,6 +162,26 @@ export default function AdminDashboardPage() {
     router.push(`/admin/custom-pages/${data.id}`);
   }
 
+  async function handleAddSection() {
+    if (!supabase) return;
+    const title = window.prompt(
+      "새 섹션 이름을 입력하세요. (예: 커리어 지원)\n다음 화면에서 어느 페이지에 넣을지 고를 수 있어요."
+    );
+    if (!title || !title.trim()) return;
+    const sectionOrders = items.filter((i) => i.isCustomSection).map((i) => i.order - 2000);
+    const nextOrder = sectionOrders.length > 0 ? Math.max(...sectionOrders) + 1 : 1;
+    const { data, error: err } = await supabase
+      .from("custom_sections")
+      .insert({ title: title.trim(), page_key: "education-management", order: nextOrder })
+      .select()
+      .single();
+    if (err || !data) {
+      setError(err?.message ?? "섹션을 추가하지 못했습니다.");
+      return;
+    }
+    router.push(`/admin/custom-sections/${data.id}`);
+  }
+
   return (
     <div>
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -148,17 +191,29 @@ export default function AdminDashboardPage() {
             수정하고 싶은 화면을 선택하세요. 저장하면 공개 사이트에 바로 반영됩니다. 카드 아래 아이콘으로 이름
             변경 · 순서 변경 · 숨기기가 가능하고, 완전히 새로운 탭도 추가할 수 있습니다. 대부분의 메뉴는
             이름을 바꾸면 공개 화면의 섹션 제목도 함께 바뀌고, 숨기면 해당 섹션이 통째로 사라지면서 남은
-            섹션 번호가 자동으로 다시 매겨집니다.
+            섹션 번호가 자동으로 다시 매겨집니다. &quot;새 섹션 추가&quot;로는 운영 교육 과정 / 교육 관리 /
+            참여 기업 연계 페이지 중 원하는 곳에 완전히 새로운 섹션(제목+설명+카드 목록)을 직접 만들어
+            넣을 수 있고, 위/아래 화살표로 다른 섹션들과 순서도 자유롭게 섞을 수 있습니다.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleAddTab}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-        >
-          <Plus size={16} />
-          새 탭 추가
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={handleAddSection}
+            className="inline-flex items-center gap-1.5 rounded-full border border-brand px-4 py-2 text-sm font-semibold text-brand hover:bg-brand/5"
+          >
+            <Plus size={16} />
+            새 섹션 추가
+          </button>
+          <button
+            type="button"
+            onClick={handleAddTab}
+            className="inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+          >
+            <Plus size={16} />
+            새 탭 추가
+          </button>
+        </div>
       </div>
 
       {error && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
@@ -171,7 +226,7 @@ export default function AdminDashboardPage() {
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {(() => {
             // 관련된 탭끼리 묶어서 구분선 + 그룹 이름을 보여준다 (사이드바와 동일한 그룹 기준).
-            const groups = items.map((it) => groupLabelForKey(it.key, it.isCustom));
+            const groups = items.map((it) => groupLabelForKey(it.key, it.isCustom, it.pageKey));
             return items.map((item, idx) => {
               const group = groups[idx];
               const showGroupLabel = idx === 0 || group !== groups[idx - 1];
@@ -198,6 +253,8 @@ export default function AdminDashboardPage() {
                       </p>
                       {item.isCustom ? (
                         <p className="mt-1 text-sm text-neutral-500">공개 주소: /pages/{item.slug}</p>
+                      ) : item.isCustomSection ? (
+                        <p className="mt-1 text-sm text-neutral-500">표시 위치: {pageLabelForKey(item.pageKey)}</p>
                       ) : (
                         item.desc && <p className="mt-1 text-sm text-neutral-500">{item.desc}</p>
                       )}
@@ -229,23 +286,26 @@ export default function AdminDashboardPage() {
                       >
                         <Pencil size={14} />
                       </button>
-                      {item.isCustom ? (
+                      {!item.isCustom && (
                         <button
                           type="button"
-                          onClick={() => handleDeleteCustom(item)}
+                          onClick={() => handleToggleVisible(item)}
+                          className={`rounded p-1.5 text-neutral-400 hover:bg-neutral-100 ${
+                            item.isCustomSection ? "" : "ml-auto"
+                          }`}
+                          aria-label={item.isVisible ? "메뉴에서 숨기기" : "메뉴에 표시"}
+                        >
+                          {item.isVisible ? <Eye size={14} /> : <EyeOff size={14} />}
+                        </button>
+                      )}
+                      {(item.isCustom || item.isCustomSection) && (
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(item)}
                           className="ml-auto rounded p-1.5 text-red-400 hover:bg-red-50"
                           aria-label="삭제"
                         >
                           <Trash2 size={14} />
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleToggleVisible(item)}
-                          className="ml-auto rounded p-1.5 text-neutral-400 hover:bg-neutral-100"
-                          aria-label={item.isVisible ? "메뉴에서 숨기기" : "메뉴에 표시"}
-                        >
-                          {item.isVisible ? <Eye size={14} /> : <EyeOff size={14} />}
                         </button>
                       )}
                     </div>

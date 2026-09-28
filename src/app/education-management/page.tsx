@@ -4,11 +4,13 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/icon-map";
 import { MonthsTimeline } from "@/components/education/months-timeline";
+import { CustomSectionBlock } from "@/components/ui/custom-section-block";
 import { BUILTIN_MENU } from "@/lib/admin-menu";
 import {
   getAdminMenuLabels,
   getAdminMenuOrder,
   getCollaborationTools,
+  getCustomSectionsForPage,
   getHiddenAdminKeys,
   getLearnerManagementItems,
   getManagementHighlights,
@@ -56,6 +58,7 @@ export default async function EducationManagementPage() {
     hiddenKeys,
     labels,
     menuOrder,
+    customSections,
   ] = await Promise.all([
     getLearnerManagementItems(),
     getSupportPlanTracks(),
@@ -69,6 +72,7 @@ export default async function EducationManagementPage() {
     getHiddenAdminKeys(),
     getAdminMenuLabels(),
     getAdminMenuOrder(),
+    getCustomSectionsForPage("education-management"),
   ]);
   // 관리자 대시보드에서 위/아래 화살표로 바꾼 순서가 있으면 그 값을, 없으면 admin-menu.ts에 정해진
   // 기본 순서를 그대로 쓴다. 이 페이지의 6개 섹션 순서를 여기서 계산한 값에 맞춰 다시 정렬한다.
@@ -303,12 +307,25 @@ export default async function EducationManagementPage() {
     .filter((key) => sectionShow[key])
     .sort((a, b) => orderFor(a) - orderFor(b));
 
+  // 고정 섹션과, 관리자가 "새 섹션 추가"로 이 페이지에 끼워 넣은 커스텀 섹션을 순서(order) 기준
+  // 하나로 합쳐서 그린다. 커스텀 섹션은 2000번대 순서를 쓰므로(admin-menu.ts 참고), 대시보드에서
+  // 위/아래 화살표로 옮긴 위치가 여기서도 그대로 반영된다.
+  const entries: { order: number; render: (num: number, isFirst: boolean) => ReactNode }[] = [
+    ...visibleKeys.map((key) => ({ order: orderFor(key), render: sectionRenderers[key] })),
+    ...customSections.map((section, i) => ({
+      order: 2000 + i,
+      render: (num: number, isFirst: boolean) => (
+        <CustomSectionBlock key={section.id} section={section} num={num} isFirst={isFirst} />
+      ),
+    })),
+  ].sort((a, b) => a.order - b.order);
+
   return (
     <div className="mx-auto max-w-6xl px-5 py-16">
       <SectionHeading eyebrow={header.eyebrow} title={header.title} description={header.description} />
 
-      {visibleKeys.map((key, idx) => (
-        <div key={key}>{sectionRenderers[key](idx + 1, idx === 0)}</div>
+      {entries.map((entry, idx) => (
+        <div key={idx}>{entry.render(idx + 1, idx === 0)}</div>
       ))}
     </div>
   );

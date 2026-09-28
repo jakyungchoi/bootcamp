@@ -309,3 +309,23 @@ export type CustomPage = {
   created_at: string;
 };
 
+export type CustomSectionItem = {
+  heading: string;
+  body: string;
+};
+
+// 관리자가 "운영 교육 과정 / 교육 관리 / 참여 기업 연계" 페이지 안에 자유롭게 추가하는 섹션.
+// custom_pages(완전히 새로운 탭 = 별도 주소의 새 페이지)와 다르게, 이건 이미 있는 공개 페이지의
+// 다른 섹션들 사이 어디든 순서를 자유롭게 끼워 넣을 수 있다 — 관리자 대시보드에서 기존 메뉴들과
+// 똑같이 위/아래 화살표로 위치를 정한다.
+export type CustomSection = {
+  id: string;
+  page_key: "courses" | "education-management" | "partners";
+  title: string;
+  description: string;
+  items: CustomSectionItem[];
+  order: number;
+  is_published: boolean;
+  created_at: string;
+};
+
