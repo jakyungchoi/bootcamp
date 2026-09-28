@@ -66,13 +66,21 @@ export function CustomSectionBlock({
   section,
   num,
   isFirst,
+  spacing = "default",
 }: {
   section: CustomSection;
   num: number;
   isFirst: boolean;
+  // "default": 이 컴포넌트가 스스로 위쪽 여백을 만든다(운영 교육 과정 / 참여 기업 연계 페이지처럼
+  // 흰 배경이 쭉 이어지는 곳에서 쓰는 기존 방식). "none": 바깥에서 이미 섹션 간 여백(배경 띠)을
+  // 만들어주는 경우(교육 관리 페이지)로, 여백이 중복되지 않도록 자체 여백을 없앤다.
+  spacing?: "default" | "none";
 }) {
   return (
-    <section id={`custom-section-${section.id}`} className={`${isFirst ? "mt-14" : "mt-16"} scroll-mt-24`}>
+    <section
+      id={`custom-section-${section.id}`}
+      className={`${spacing === "none" ? "" : isFirst ? "mt-14" : "mt-16"} scroll-mt-24`}
+    >
       <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
         {pad(num)}. {section.title || "(제목 없음)"}
       </h3>

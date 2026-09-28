@@ -102,11 +102,8 @@ export default async function EducationManagementPage() {
   // 섹션마다 "보일지 여부"와 "그릴 내용"을 미리 함수로 묶어두고, 아래에서 관리자 대시보드
   // 순서대로 정렬한 뒤 실제로 보이는 것만 앞에서부터 번호를 다시 매겨 그린다.
   const sectionRenderers: Record<SectionKey, (num: number, isFirst: boolean) => ReactNode> = {
-    "management-metrics": (num, isFirst) => (
-      <section
-        id="admin-section-management-metrics"
-        className={`${isFirst ? "mt-14" : "mt-16"} scroll-mt-24`}
-      >
+    "management-metrics": (num) => (
+      <section id="admin-section-management-metrics" className="scroll-mt-24">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
           {pad(num)}. {labelMetrics}
         </h3>
@@ -160,11 +157,8 @@ export default async function EducationManagementPage() {
         )}
       </section>
     ),
-    "learner-management": (num, isFirst) => (
-      <section
-        id="admin-section-learner-management"
-        className={`${isFirst ? "mt-14" : "mt-16"} scroll-mt-24`}
-      >
+    "learner-management": (num) => (
+      <section id="admin-section-learner-management" className="scroll-mt-24">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
           {pad(num)}. {labelLearnerManagement}
         </h3>
@@ -186,11 +180,8 @@ export default async function EducationManagementPage() {
         </div>
       </section>
     ),
-    "support-plans": (num, isFirst) => (
-      <section
-        id="admin-section-support-plans"
-        className={`${isFirst ? "mt-14" : "mt-16"} scroll-mt-24`}
-      >
+    "support-plans": (num) => (
+      <section id="admin-section-support-plans" className="scroll-mt-24">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
           {pad(num)}. {labelSupportPlans}
         </h3>
@@ -216,11 +207,8 @@ export default async function EducationManagementPage() {
         </div>
       </section>
     ),
-    "management-months": (num, isFirst) => (
-      <section
-        id="admin-section-management-months"
-        className={`${isFirst ? "mt-14" : "mt-16"} scroll-mt-24`}
-      >
+    "management-months": (num) => (
+      <section id="admin-section-management-months" className="scroll-mt-24">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
           {pad(num)}. {labelMonths}
         </h3>
@@ -242,11 +230,8 @@ export default async function EducationManagementPage() {
         )}
       </section>
     ),
-    "quality-management": (num, isFirst) => (
-      <section
-        id="admin-section-quality-management"
-        className={`${isFirst ? "mt-14" : "mt-16"} scroll-mt-24`}
-      >
+    "quality-management": (num) => (
+      <section id="admin-section-quality-management" className="scroll-mt-24">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
           {pad(num)}. {labelQuality}
         </h3>
@@ -261,16 +246,24 @@ export default async function EducationManagementPage() {
           </div>
         )}
 
+        {/* 위 프로세스 흐름 카드와 구분되도록, 여기는 박스 그리드 대신 구분선으로 나누는
+            목록 형태로 보여준다(같은 모양의 네모 박스가 페이지 안에서 계속 반복되지 않도록). */}
         {showQualityItems && qualityManagementItems.length > 0 && (
-          <div className="mt-5 grid gap-5 sm:grid-cols-2">
+          <div className="mt-5 divide-y divide-black/5 overflow-hidden rounded-2xl border border-black/5 bg-white dark:divide-white/10 dark:border-white/10 dark:bg-neutral-900">
             {qualityManagementItems.map((item) => (
-              <Card key={item.id}>
-                {item.icon && <Icon name={item.icon} className="h-6 w-6 text-brand" />}
-                <p className="mt-3 font-bold text-neutral-900 dark:text-white">{item.title}</p>
-                <p className="mt-1.5 whitespace-pre-line text-justify text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
-                  {item.description}
-                </p>
-              </Card>
+              <div key={item.id} className="flex items-start gap-3.5 p-4 sm:p-5">
+                {item.icon && (
+                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
+                    <Icon name={item.icon} className="h-5 w-5" />
+                  </span>
+                )}
+                <div>
+                  <p className="font-bold text-neutral-900 dark:text-white">{item.title}</p>
+                  <p className="mt-1 whitespace-pre-line text-justify text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+                    {item.description}
+                  </p>
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -317,18 +310,30 @@ export default async function EducationManagementPage() {
     ...customSections.map((section) => ({
       order: section.order,
       render: (num: number, isFirst: boolean) => (
-        <CustomSectionBlock key={section.id} section={section} num={num} isFirst={isFirst} />
+        <CustomSectionBlock key={section.id} section={section} num={num} isFirst={isFirst} spacing="none" />
       ),
     })),
   ].sort((a, b) => a.order - b.order);
 
+  // 섹션마다 똑같은 흰 배경이 쭉 이어지면 구분이 잘 안 되므로, 한 칸씩 건너뛰며 옅은 회색
+  // 배경을 화면 전체 너비로 깔아서 섹션이 눈에 잘 나뉘어 보이게 한다.
   return (
-    <div className="mx-auto max-w-6xl px-5 py-16">
-      <SectionHeading eyebrow={header.eyebrow} title={header.title} description={header.description} />
+    <div>
+      <div className="mx-auto max-w-6xl px-5 pt-16">
+        <SectionHeading eyebrow={header.eyebrow} title={header.title} description={header.description} />
+      </div>
 
-      {entries.map((entry, idx) => (
-        <div key={idx}>{entry.render(idx + 1, idx === 0)}</div>
-      ))}
+      {entries.map((entry, idx) => {
+        const tinted = idx % 2 === 0;
+        const isLast = idx === entries.length - 1;
+        return (
+          <div key={idx} className={tinted ? "bg-neutral-50 dark:bg-white/[0.03]" : ""}>
+            <div className={`mx-auto max-w-6xl px-5 ${idx === 0 ? "pt-14" : "pt-12"} ${isLast ? "pb-16" : "pb-12"}`}>
+              {entry.render(idx + 1, idx === 0)}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
