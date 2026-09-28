@@ -16,19 +16,22 @@ import type { TransitionEvent } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ImagePlaceholder } from "@/components/ui/card";
 
-const AUTO_ADVANCE_MS = 4000;
+const DEFAULT_AUTO_ADVANCE_MS = 4000;
 
 export function SwipePhotoGallery({
   urls,
   aspectClassName = "aspect-[16/9]",
   autoAdvance = true,
+  autoAdvanceMs = DEFAULT_AUTO_ADVANCE_MS,
 }: {
   urls: string[];
   // 사진 영역의 가로세로 비율.
   aspectClassName?: string;
-  // 4초마다 자동으로 다음 사진으로 넘어갈지 여부. 팝업 안에서는 보는 도중 사진이 저절로
+  // 자동으로 다음 사진으로 넘어갈지 여부. 팝업 안에서는 보는 도중 사진이 저절로
   // 바뀌면 불편할 수 있어서 꺼두는 것을 권장한다.
   autoAdvance?: boolean;
+  // 몇 밀리초마다 다음 사진으로 넘길지 (기본 4000 = 4초).
+  autoAdvanceMs?: number;
 }) {
   const count = urls.length;
 
@@ -79,9 +82,9 @@ export function SwipePhotoGallery({
     const timer = setTimeout(() => {
       setSkipTransition(false);
       setTrackIndex((i) => i + 1);
-    }, AUTO_ADVANCE_MS);
+    }, autoAdvanceMs);
     return () => clearTimeout(timer);
-  }, [trackIndex, paused, count, autoAdvance]);
+  }, [trackIndex, paused, count, autoAdvance, autoAdvanceMs]);
 
   if (count === 0) return <ImagePlaceholder aspectClassName={aspectClassName} />;
 

@@ -15,5 +15,5 @@ export function ProgramPhotoSlider({
   aspectClassName?: string;
 }) {
   const urls = photos.map((p) => p.image_url).filter((u): u is string => Boolean(u));
-  return <SwipePhotoGallery urls={urls} aspectClassName={aspectClassName} />;
+  return <SwipePhotoGallery urls={urls} aspectClassName={aspectClassName} autoAdvanceMs={2000} />;
 }

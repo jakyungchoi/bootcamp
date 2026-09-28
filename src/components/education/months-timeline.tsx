@@ -8,7 +8,6 @@
 // 색상은 구간마다 관리자가 직접 고를 수 있고, 비워두면 자동으로 배정된다.
 
 import { useState } from "react";
-import { ImageIcon } from "lucide-react";
 import { CarouselModal } from "@/components/ui/carousel-modal";
 import type { ManagementMonth } from "@/lib/types";
 
@@ -56,7 +55,6 @@ export function MonthsTimeline({
           <tbody>
             {sortedMonths.map((month, rowIdx) => {
               const color = colorOf(month, rowIdx);
-              const totalPhotos = month.cell_photos.reduce((sum, c) => sum + c.photos.length, 0);
               return (
                 <tr
                   key={month.id}
@@ -66,14 +64,8 @@ export function MonthsTimeline({
                 >
                   <td className="px-3 py-2.5 align-top">
                     <p className="text-neutral-900 dark:text-white">{month.title}</p>
-                    <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-neutral-400">
+                    <p className="mt-0.5 text-xs text-neutral-400">
                       {columnRangeLabel(columns, month.month_start, month.month_end)}
-                      {totalPhotos > 0 && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-semibold text-brand dark:bg-brand/20">
-                          <ImageIcon size={13} />
-                          사진 {totalPhotos}장
-                        </span>
-                      )}
                     </p>
                   </td>
                   {columns.map((_, n0) => {
@@ -99,12 +91,14 @@ export function MonthsTimeline({
                                 : undefined
                             }
                             aria-label={hasCellPhotos ? `${columns[n0]} 사진 보기` : undefined}
-                            className={`flex h-5 items-center justify-center rounded-sm ${
-                              hasCellPhotos ? "cursor-pointer ring-offset-1 hover:brightness-110" : ""
+                            className={`relative flex h-5 items-center justify-center rounded-sm ${
+                              hasCellPhotos ? "cursor-pointer hover:brightness-110" : ""
                             }`}
                             style={{ backgroundColor: color }}
                           >
-                            {hasCellPhotos && <ImageIcon size={11} className="text-white/95 drop-shadow-sm" />}
+                            {hasCellPhotos && (
+                              <span className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-white/80" />
+                            )}
                           </div>
                         )}
                       </td>
@@ -116,7 +110,7 @@ export function MonthsTimeline({
           </tbody>
         </table>
       </div>
-      <p className="mt-2 text-xs text-neutral-400">사진이 등록된 칸(사진 아이콘 표시)을 클릭하면 사진을 볼 수 있습니다.</p>
+      <p className="mt-2 text-xs text-neutral-400">사진이 등록된 칸(오른쪽 위 작은 점 표시)을 클릭하면 사진을 볼 수 있습니다.</p>
 
       {openMonth && openCell && openPhotos.length > 0 && (
         <CarouselModal
