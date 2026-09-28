@@ -255,6 +255,8 @@ export type SiteSettings = {
   partners_field_visibility: PartnersFieldVisibility;
   // 관리자가 자유롭게 추가한 참여 신청 팝업 폼의 추가 항목 (단순 한 줄 입력)
   partners_custom_fields: PartnersCustomField[];
+  // 운영 교육 과정 페이지 "전체 교육 과정" 섹션 제목 바로 아래에 표시되는 한 줄 설명
+  programs_description: string;
   // 참여 기업 연계 페이지 "이런 협업이 가능해요" 섹션 제목 바로 아래에 표시되는 한 줄 설명
   company_flow_description: string;
   // 참여 기업 연계 페이지 "협업 사례" 섹션 제목 바로 아래에 표시되는 한 줄 설명

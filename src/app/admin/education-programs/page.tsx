@@ -5,6 +5,7 @@ import { ResourceCrud } from "@/components/admin/resource-crud";
 import { PageHeaderNote } from "@/components/admin/page-header-note";
 import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 import { AdminContentLayout } from "@/components/admin/admin-content-layout";
+import { SectionCaptionEditor } from "@/components/admin/section-caption-editor";
 
 export default function EducationProgramsAdminPage() {
   const title = useAdminMenuLabel("programs", "전체 교육 과정 개요");
@@ -16,6 +17,12 @@ export default function EducationProgramsAdminPage() {
       previewOptions={[{ label: title, path: "/courses#admin-section-programs" }]}
     >
       <PageHeaderNote />
+
+      <SectionCaptionEditor
+        column="programs_description"
+        title={title}
+        onSaved={() => setRefreshToken((n) => n + 1)}
+      />
 
       <ResourceCrud
         table="education_programs"

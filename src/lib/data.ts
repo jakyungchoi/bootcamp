@@ -177,6 +177,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
           ...(data.partners_field_visibility ?? {}),
         },
         partners_custom_fields: data.partners_custom_fields ?? siteSettings.partners_custom_fields,
+        programs_description: data.programs_description ?? siteSettings.programs_description,
         company_flow_description: data.company_flow_description ?? siteSettings.company_flow_description,
         case_studies_description: data.case_studies_description ?? siteSettings.case_studies_description,
         participation_types_description:

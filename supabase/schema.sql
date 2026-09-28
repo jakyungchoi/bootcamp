@@ -921,3 +921,10 @@ select * from (values
   ('부트캠프', '6개월 과정', 'AI/AX, 개발, 커리어 트랙을 아우르는 원티드랩의 대표 교육 과정입니다. 6개월간 기초 역량부터 실무 프로젝트, 취업 연계까지 이어지는 전 과정을 운영합니다. 지금부터 이어지는 교육 영역·커리큘럼 소개는 모두 이 부트캠프를 기준으로 합니다.', true, 4)
 ) as v(title, duration_label, description, is_main, "order")
 where not exists (select 1 from education_programs);
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 23
+-- "전체 교육 과정" 섹션 제목 바로 아래에 표시되는 한 줄 설명도 다른 섹션들과 동일하게
+-- 관리자 페이지("전체 교육 과정 개요" 메뉴)에서 직접 수정할 수 있게 한다.
+alter table site_settings add column if not exists programs_description text not null default
+  '원티드랩이 운영하는 교육 과정입니다. 가장 비중 있게 소개하는 과정은 아래에서 이어서 자세히 다룹니다.';

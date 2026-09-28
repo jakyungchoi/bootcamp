@@ -16,6 +16,7 @@ import {
   getEducationPrograms,
   getHiddenAdminKeys,
   getPageHeader,
+  getSiteSettings,
 } from "@/lib/data";
 import type { Course } from "@/lib/types";
 
@@ -39,6 +40,7 @@ export default async function CoursesPage() {
     courses,
     flowSteps,
     header,
+    settings,
     hiddenKeys,
     labels,
     menuOrder,
@@ -49,6 +51,7 @@ export default async function CoursesPage() {
     getCourses(),
     getCurriculumFlowSteps(),
     getPageHeader("courses"),
+    getSiteSettings(),
     getHiddenAdminKeys(),
     getAdminMenuLabels(),
     getAdminMenuOrder(),
@@ -75,9 +78,11 @@ export default async function CoursesPage() {
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
           {String(num).padStart(2, "0")}. {labelPrograms}
         </h3>
-        <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-          원티드랩이 운영하는 교육 과정입니다. 가장 비중 있게 소개하는 과정은 아래에서 이어서 자세히 다룹니다.
-        </p>
+        {settings.programs_description && (
+          <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
+            {settings.programs_description}
+          </p>
+        )}
         <ProgramOverview programs={programs} detailAnchor="#admin-section-categories" />
       </section>
     ),
