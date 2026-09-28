@@ -9,56 +9,41 @@ import { useAdminMenuLabel } from "@/components/admin/admin-menu-context";
 import { AdminContentLayout } from "@/components/admin/admin-content-layout";
 
 export default function CoursesAdminPage() {
-  const title = useAdminMenuLabel("courses", "대표 교육 과정");
-  const durationLabel = useAdminMenuLabel("duration-types", "과정 기간 분류");
+  const title = useAdminMenuLabel("courses", "대표 교육 과정 (카드 내용)");
+  const categoriesLabel = useAdminMenuLabel("categories", "부트캠프 교육 영역");
   const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string }[] | null>(null);
-  const [durationTypeOptions, setDurationTypeOptions] = useState<{ value: string; label: string }[] | null>(
-    null
-  );
   const [refreshToken, setRefreshToken] = useState(0);
 
   useEffect(() => {
     async function load() {
       if (!supabase) return;
-      const [{ data: categories }, { data: durationTypes }] = await Promise.all([
-        supabase.from("course_categories").select("id, name").order("order"),
-        supabase.from("course_duration_types").select("id, name").order("order"),
-      ]);
+      const { data: categories } = await supabase.from("course_categories").select("id, name").order("order");
       setCategoryOptions((categories ?? []).map((c) => ({ value: c.id, label: c.name })));
-      setDurationTypeOptions((durationTypes ?? []).map((d) => ({ value: d.id, label: d.name })));
     }
     load();
   }, []);
 
-  if (!categoryOptions || !durationTypeOptions) {
+  if (!categoryOptions) {
     return <div className="py-10 text-center text-neutral-400"><Loader2 className="mx-auto animate-spin" /></div>;
   }
 
   return (
     <AdminContentLayout
       refreshToken={refreshToken}
-      previewOptions={[{ label: title, path: "/courses#admin-section-courses" }]}
+      previewOptions={[{ label: title, path: "/courses#admin-section-categories" }]}
     >
       <PageHeaderNote />
       <ResourceCrud
         table="courses"
         title={title}
-        description={`운영 교육 과정 페이지의 "${title}" 섹션에 표시되는 카드입니다. 과정 기간 분류는 "${durationLabel}" 메뉴에서 추가할 수 있습니다.`}
+        description={`운영 교육 과정 페이지의 "${categoriesLabel}" 섹션 안에, 아래에서 고른 교육 영역 그룹에 묶여서 표시되는 과정 카드입니다. 같은 교육 영역을 고른 카드가 여러 개면 한 그룹 안에 나란히 표시됩니다.`}
         titleField="title"
         fields={[
           { key: "category_id", label: "교육 영역", type: "select", options: categoryOptions, required: true },
-          {
-            key: "duration_type_id",
-            label: "과정 기간 분류 (단기/중장기 등)",
-            type: "select",
-            options: durationTypeOptions,
-            helpText: "선택하지 않아도 됩니다. 화면에서는 이 분류를 기준으로 과정이 묶여서 보여집니다.",
-          },
           { key: "title", label: "과정명", type: "text", required: true },
           { key: "subtitle", label: "부제목", type: "text" },
           { key: "description", label: "설명", type: "textarea" },
           { key: "highlights", label: "주요 교육 내용", type: "string-list", helpText: "한 줄에 하나씩 입력하세요." },
-          { key: "project", label: "프로젝트 설명 (카드에 한 줄로 표시)", type: "text" },
           { key: "image_url", label: "대표 이미지", type: "image" },
           {
             key: "projects",

@@ -15,6 +15,7 @@ import type {
   CurriculumFlowStep,
   CustomPage,
   CustomSection,
+  EducationProgram,
   LearnerManagementItem,
   ManagementHighlight,
   ManagementMetric,
@@ -36,6 +37,7 @@ import {
   courses,
   culturePrograms,
   curriculumFlowSteps,
+  educationPrograms,
   learnerManagementItems,
   managementHighlights,
   managementMetrics,
@@ -57,6 +59,20 @@ export async function getCourseCategories(): Promise<CourseCategory[]> {
     if (!error && data) return data as CourseCategory[];
   }
   return courseCategories.filter((c) => c.is_published).sort((a, b) => a.order - b.order);
+}
+
+// "운영 교육 과정" 페이지 맨 위 "전체 교육 과정" 개요에 나열되는 프로그램 목록
+// (AX 챔피언 4주, AX 해커톤 4주, 커리어 교육 4주, 부트캠프 6개월 등).
+export async function getEducationPrograms(): Promise<EducationProgram[]> {
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from("education_programs")
+      .select("*")
+      .eq("is_published", true)
+      .order("order", { ascending: true });
+    if (!error && data) return data as EducationProgram[];
+  }
+  return educationPrograms.filter((p) => p.is_published).sort((a, b) => a.order - b.order);
 }
 
 // 과정 기간 분류 (단기 과정 / 중장기 과정 등). 교육 영역 카테고리와는 별개의 분류축이다.

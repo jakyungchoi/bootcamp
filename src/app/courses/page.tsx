@@ -2,18 +2,18 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { FlowSteps } from "@/components/ui/flow-steps";
-import { Card } from "@/components/ui/card";
 import { CourseCard } from "@/components/courses/course-card";
+import { ProgramOverview } from "@/components/courses/program-overview";
 import { CustomSectionBlock } from "@/components/ui/custom-section-block";
 import { BUILTIN_MENU } from "@/lib/admin-menu";
 import {
   getAdminMenuLabels,
   getAdminMenuOrder,
   getCourseCategories,
-  getCourseDurationTypes,
   getCourses,
   getCurriculumFlowSteps,
   getCustomSectionsForPage,
+  getEducationPrograms,
   getHiddenAdminKeys,
   getPageHeader,
 } from "@/lib/data";
@@ -28,66 +28,88 @@ export const dynamic = "force-dynamic";
 
 // 이 페이지에 들어가는 3개 섹션의 키. 관리자 대시보드 메뉴 목록(admin-menu.ts)의 키와 같아서,
 // 대시보드에서 위/아래 화살표로 바꾼 순서를 그대로 이 페이지의 섹션 순서에도 반영할 수 있다.
-type SectionKey = "categories" | "curriculum" | "courses";
+// ("courses"는 더 이상 별도 섹션이 아니라 "categories" 섹션 안에서 그룹별로 함께 그려지므로
+// 여기 목록에는 없다 — 대신 "categories" 섹션이 교육 영역별로 과정 카드를 묶어서 보여준다.)
+type SectionKey = "programs" | "categories" | "curriculum";
 
 export default async function CoursesPage() {
-  const [categories, durationTypes, courses, flowSteps, header, hiddenKeys, labels, menuOrder, customSections] =
-    await Promise.all([
-      getCourseCategories(),
-      getCourseDurationTypes(),
-      getCourses(),
-      getCurriculumFlowSteps(),
-      getPageHeader("courses"),
-      getHiddenAdminKeys(),
-      getAdminMenuLabels(),
-      getAdminMenuOrder(),
-      getCustomSectionsForPage("courses"),
-    ]);
+  const [
+    programs,
+    categories,
+    courses,
+    flowSteps,
+    header,
+    hiddenKeys,
+    labels,
+    menuOrder,
+    customSections,
+  ] = await Promise.all([
+    getEducationPrograms(),
+    getCourseCategories(),
+    getCourses(),
+    getCurriculumFlowSteps(),
+    getPageHeader("courses"),
+    getHiddenAdminKeys(),
+    getAdminMenuLabels(),
+    getAdminMenuOrder(),
+    getCustomSectionsForPage("courses"),
+  ]);
 
   // 관리자 대시보드에서 위/아래 화살표로 바꾼 순서가 있으면 그 값을, 없으면 admin-menu.ts에 정해진
   // 기본 순서를 그대로 쓴다.
   const orderFor = (key: SectionKey) => menuOrder.get(key) ?? BUILTIN_MENU.find((b) => b.key === key)?.order ?? 0;
 
   // 관리자 대시보드에서 이름을 바꾼 메뉴는 공개 화면의 섹션 제목도 그 이름을 따라간다.
-  const labelCategories = labels.get("categories") ?? "교육 영역";
+  const labelPrograms = labels.get("programs") ?? "전체 교육 과정";
+  const labelCategories = labels.get("categories") ?? "부트캠프 교육 영역";
   const labelCurriculum = labels.get("curriculum") ?? "커리큘럼 구성";
-  const labelCourses = labels.get("courses") ?? "대표 교육 과정";
-
-  // 과정 기간 분류(단기/중장기 등)로 먼저 묶고, 어떤 분류에도 속하지 않은 과정은 마지막에 따로 모아 보여준다.
-  const coursesByDurationType = durationTypes.map((d) => ({
-    durationType: d,
-    courses: courses.filter((c) => c.duration_type_id === d.id),
-  }));
-  const uncategorized = courses.filter(
-    (c) => !c.duration_type_id || !durationTypes.some((d) => d.id === c.duration_type_id)
-  );
 
   // 관리자 대시보드에서 "숨기기" 한 메뉴에 해당하는 섹션은 공개 화면에서도 통째로 감춘다.
+  const showPrograms = !hiddenKeys.has("programs");
   const showCategories = !hiddenKeys.has("categories");
   const showCurriculum = !hiddenKeys.has("curriculum");
-  const showCourses = !hiddenKeys.has("courses");
 
   const sectionRenderers: Record<SectionKey, (num: number, isFirst: boolean) => ReactNode> = {
+    programs: (num, isFirst) => (
+      <section id="admin-section-programs" className={`${isFirst ? "mt-14" : "mt-16"} scroll-mt-24`}>
+        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+          {String(num).padStart(2, "0")}. {labelPrograms}
+        </h3>
+        <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+          원티드랩이 운영하는 교육 과정입니다. 가장 비중 있게 소개하는 과정은 아래에서 이어서 자세히 다룹니다.
+        </p>
+        <ProgramOverview programs={programs} detailAnchor="#admin-section-categories" />
+      </section>
+    ),
     categories: (num, isFirst) => (
       <section id="admin-section-categories" className={`${isFirst ? "mt-14" : "mt-16"} scroll-mt-24`}>
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
           {String(num).padStart(2, "0")}. {labelCategories}
         </h3>
-        <div className="mt-4 grid gap-5 sm:grid-cols-3">
-          {categories.map((category) => (
-            <Card key={category.id}>
-              <p className="text-base font-bold text-neutral-900 dark:text-white">{category.name}</p>
-              <ul className="mt-3 space-y-1.5 text-sm text-neutral-500 dark:text-neutral-400">
-                {category.topics.map((topic) => (
-                  <li key={topic} className="flex items-center gap-2">
-                    <span className="h-1 w-1 rounded-full bg-brand" />
-                    {topic}
-                  </li>
+        <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+          교육 영역별로 실제 운영 중인 대표 과정을 함께 보여줍니다. 과정을 클릭하면 실제 프로젝트 내용을 좌우로
+          넘겨보며 확인할 수 있습니다.
+        </p>
+
+        {categories.map((category) => {
+          const categoryCourses = courses.filter((c: Course) => c.category_id === category.id);
+          if (categoryCourses.length === 0) return null;
+          return (
+            <div key={category.id} className="mt-7 first:mt-5">
+              <div className="flex items-center gap-2.5">
+                <span className="h-4 w-[3px] rounded-full bg-neutral-900 dark:bg-white" />
+                <h4 className="text-[15px] font-bold text-neutral-900 dark:text-white">{category.name}</h4>
+              </div>
+              <div className="mt-3.5 flex flex-wrap gap-5">
+                {categoryCourses.map((course) => (
+                  <div key={course.id} className="min-w-[280px] flex-1 basis-[280px]">
+                    <CourseCard course={course} category={category} />
+                  </div>
                 ))}
-              </ul>
-            </Card>
-          ))}
-        </div>
+              </div>
+            </div>
+          );
+        })}
       </section>
     ),
     curriculum: (num, isFirst) => (
@@ -101,38 +123,12 @@ export default async function CoursesPage() {
         </div>
       </section>
     ),
-    courses: (num, isFirst) => (
-      <section id="admin-section-courses" className={`${isFirst ? "mt-14" : "mt-16"} scroll-mt-24`}>
-        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-          {String(num).padStart(2, "0")}. {labelCourses}
-        </h3>
-        <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-          과정을 클릭하면 실제 프로젝트 내용을 좌우로 넘겨보며 확인할 수 있습니다.
-        </p>
-
-        {[...coursesByDurationType, { durationType: null, courses: uncategorized }]
-          .filter((group) => group.courses.length > 0)
-          .map((group) => (
-            <div key={group.durationType?.id ?? "uncategorized"} className="mt-8 first:mt-4">
-              <h4 className="text-base font-bold text-neutral-800 dark:text-neutral-100">
-                {group.durationType?.name ?? "기타 과정"}
-              </h4>
-              <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {group.courses.map((course: Course) => {
-                  const category = categories.find((c) => c.id === course.category_id);
-                  return <CourseCard key={course.id} course={course} categoryName={category?.name} />;
-                })}
-              </div>
-            </div>
-          ))}
-      </section>
-    ),
   };
 
   const sectionShow: Record<SectionKey, boolean> = {
+    programs: showPrograms,
     categories: showCategories,
     curriculum: showCurriculum,
-    courses: showCourses,
   };
 
   const visibleKeys = (Object.keys(sectionShow) as SectionKey[])

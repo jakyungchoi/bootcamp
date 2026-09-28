@@ -2,15 +2,19 @@
 
 // 과정 카드. 프로젝트 상세(course.projects)가 하나라도 있으면 클릭 시 좌우로 넘겨보는
 // 팝업(CarouselModal)이 뜬다. 등록된 프로젝트 상세가 없으면 예전처럼 클릭되지 않는 카드로 보여준다.
+// 카드가 속한 교육 영역(category)의 세부 토픽은 카드 하단에 작은 태그로 보여준다 — 카테고리
+// 이름 자체는 이 카드 위에 한 번만 나오는 그룹 제목(courses/page.tsx)에서 보여주므로 카드마다
+// 중복해서 표시하지 않는다.
 
 import { useState } from "react";
 import { ImagePlaceholder } from "@/components/ui/card";
 import { CarouselModal } from "@/components/ui/carousel-modal";
-import type { Course } from "@/lib/types";
+import type { Course, CourseCategory } from "@/lib/types";
 
-export function CourseCard({ course, categoryName }: { course: Course; categoryName?: string }) {
+export function CourseCard({ course, category }: { course: Course; category?: CourseCategory }) {
   const [open, setOpen] = useState(false);
   const hasProjects = course.projects.length > 0;
+  const topics = category?.topics ?? [];
 
   return (
     <>
@@ -29,13 +33,8 @@ export function CourseCard({ course, categoryName }: { course: Course; categoryN
           hasProjects ? "cursor-pointer hover:shadow-md" : ""
         }`}
       >
-        <ImagePlaceholder />
-        {categoryName && (
-          <span className="mt-4 inline-block w-fit rounded-full bg-brand/10 px-2.5 py-1 text-[11px] font-semibold text-brand">
-            {categoryName}
-          </span>
-        )}
-        <h4 className="mt-3 text-lg font-bold text-neutral-900 dark:text-white">{course.title}</h4>
+        <ImagePlaceholder aspectClassName="aspect-[21/9]" />
+        <h4 className="mt-4 text-lg font-bold text-neutral-900 dark:text-white">{course.title}</h4>
         <p className="text-sm font-medium text-neutral-400">{course.subtitle}</p>
         <p className="mt-2 whitespace-pre-line text-justify text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
           {course.description}
@@ -48,10 +47,27 @@ export function CourseCard({ course, categoryName }: { course: Course; categoryN
             </li>
           ))}
         </ul>
-        <p className="mt-4 border-t border-black/5 pt-3 text-xs text-neutral-400 dark:border-white/10">
-          프로젝트 · {course.project}
-          {hasProjects && <span className="ml-1.5 text-brand">（클릭해서 자세히 보기）</span>}
-        </p>
+        {topics.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-1.5 border-t border-black/5 pt-3 dark:border-white/10">
+            {topics.map((t) => (
+              <span
+                key={t}
+                className="rounded-full bg-brand/10 px-2.5 py-1 text-[11px] font-semibold text-brand dark:bg-brand/20"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+        )}
+        {hasProjects && (
+          <p
+            className={`text-xs font-semibold text-brand ${
+              topics.length > 0 ? "mt-2" : "mt-4 border-t border-black/5 pt-3 dark:border-white/10"
+            }`}
+          >
+            클릭해서 프로젝트 자세히 보기
+          </p>
+        )}
       </div>
 
       {open && hasProjects && (

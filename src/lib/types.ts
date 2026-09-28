@@ -10,6 +10,20 @@ export type CourseCategory = {
   is_published: boolean;
 };
 
+// "운영 교육 과정" 페이지 맨 위에 나열되는 전체 교육 과정 개요(예: AX 챔피언 4주, AX 해커톤 4주,
+// 커리어 교육 4주, 부트캠프 6개월). is_main으로 표시한 과정 하나가 더 크게/강조되어 보여지고,
+// 그 아래 이어지는 "교육 영역"·"커리큘럼 구성" 등 상세 섹션은 모두 그 과정(부트캠프)을 기준으로
+// 한다는 뜻이다. 관리자 페이지에서 자유롭게 추가/삭제/순서 변경할 수 있다.
+export type EducationProgram = {
+  id: string;
+  title: string; // "AX 챔피언", "부트캠프" 등
+  duration_label: string; // "4주 과정", "6개월 과정" 등 자유 입력
+  description: string;
+  is_main: boolean; // 이 항목만 크게 강조해서 보여준다 (하나만 true로 두는 것을 권장)
+  order: number;
+  is_published: boolean;
+};
+
 // 과정 기간 분류 (단기 과정 / 중장기 과정 등). 교육 영역 카테고리(CourseCategory)와는 별개의 분류축이다.
 export type CourseDurationType = {
   id: string;
@@ -34,7 +48,9 @@ export type Course = {
   subtitle: string;
   description: string;
   highlights: string[]; // 주요 교육 내용
-  project: string; // 프로젝트 설명 (카드에 표시되는 한 줄 요약)
+  // 프로젝트 한 줄 요약 (과거에는 카드 하단에 표시했으나, 지금은 카드 하단에 교육 영역의 세부
+  // 토픽 태그를 대신 보여준다. 컬럼은 남겨두되 공개 화면에서는 더 이상 쓰지 않는다.)
+  project: string | null;
   projects: CourseProject[]; // 클릭 시 팝업으로 좌우로 넘겨볼 수 있는 프로젝트 상세 목록
   image_url: string | null;
   detail_page_enabled: boolean;

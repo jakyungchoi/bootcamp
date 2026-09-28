@@ -879,3 +879,45 @@ alter table management_months add column if not exists cell_photos jsonb not nul
 update management_months
 set cell_photos = jsonb_build_array(jsonb_build_object('column', month_start, 'photos', photos))
 where cell_photos = '[]'::jsonb and photos is not null and photos <> '[]'::jsonb;
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 22
+-- "운영 교육 과정" 페이지 맨 위에 "전체 교육 과정" 개요(예: AX 챔피언 4주, AX 해커톤 4주,
+-- 커리어 교육 4주, 부트캠프 6개월)를 새로 추가한다. is_main으로 표시한 과정 하나만 크게
+-- 강조되어 보이고, 그 아래 이어지는 "부트캠프 교육 영역"·"커리큘럼 구성" 섹션은 모두 그 과정을
+-- 기준으로 소개된다는 뜻이다. 관리자 페이지(전체 교육 과정 개요 메뉴)에서 자유롭게 추가/삭제할
+-- 수 있다.
+--
+-- 참고: 이번 개편으로 "대표 교육 과정"의 프론트/백엔드 트랙을 하나(협업 트랙)로 합치고, 카드
+-- 하단에는 프로젝트 한 줄 설명 대신 교육 영역의 세부 토픽 태그를 보여주도록 바꿨다. 이 부분은
+-- 기존에 등록해둔 실제 과정 카드 내용에 따라 달라서 SQL로 자동 이관하지 않는다 — "대표 교육
+-- 과정" 관리자 화면에서 Backend/Frontend 두 카드를 하나로 합쳐 정리해주면 된다.
+create table if not exists education_programs (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  duration_label text not null default '',
+  description text,
+  is_main boolean not null default false,
+  "order" int not null default 0,
+  is_published boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+alter table education_programs enable row level security;
+
+drop policy if exists "public read published" on education_programs;
+create policy "public read published" on education_programs for select using (is_published = true);
+
+drop policy if exists "admin write" on education_programs;
+create policy "admin write" on education_programs for all
+  using (auth.uid() in (select id from admin_users))
+  with check (auth.uid() in (select id from admin_users));
+
+insert into education_programs (title, duration_label, description, is_main, "order")
+select * from (values
+  ('AX 챔피언', '4주 과정', '생성형 AI를 업무에 적용하는 역량을 4주 동안 집중적으로 끌어올리는 챌린지형 프로그램입니다.', false, 1),
+  ('AX 해커톤', '4주 과정', 'AI 에이전트를 활용한 아이디어를 실제 서비스로 구현해보는 4주간의 해커톤 프로그램입니다.', false, 2),
+  ('커리어 교육', '4주 과정', '이력서·포트폴리오부터 모의 면접까지, 취업에 필요한 실전 역량을 4주 동안 집중적으로 다집니다.', false, 3),
+  ('부트캠프', '6개월 과정', 'AI/AX, 개발, 커리어 트랙을 아우르는 원티드랩의 대표 교육 과정입니다. 6개월간 기초 역량부터 실무 프로젝트, 취업 연계까지 이어지는 전 과정을 운영합니다. 지금부터 이어지는 교육 영역·커리큘럼 소개는 모두 이 부트캠프를 기준으로 합니다.', true, 4)
+) as v(title, duration_label, description, is_main, "order")
+where not exists (select 1 from education_programs);
