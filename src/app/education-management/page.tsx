@@ -230,64 +230,81 @@ export default async function EducationManagementPage() {
         )}
       </section>
     ),
-    "quality-management": (num) => (
-      <section id="admin-section-quality-management" className="scroll-mt-24">
-        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-          {pad(num)}. {labelQuality}
-        </h3>
-        {settings.quality_management_description && (
-          <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
-            {settings.quality_management_description}
-          </p>
-        )}
-        {showQualityItems && qualityProcessSteps.length > 0 && (
-          <div className="mt-5">
-            <ProcessStepFlow steps={qualityProcessSteps} />
-          </div>
-        )}
-
-        {/* 위 프로세스 흐름 카드와 구분되도록, 여기는 박스 그리드 대신 구분선으로 나누는
-            목록 형태로 보여준다(같은 모양의 네모 박스가 페이지 안에서 계속 반복되지 않도록). */}
-        {showQualityItems && qualityManagementItems.length > 0 && (
-          <div className="mt-5 divide-y divide-black/5 overflow-hidden rounded-2xl border border-black/5 bg-white dark:divide-white/10 dark:border-white/10 dark:bg-neutral-900">
-            {qualityManagementItems.map((item) => (
-              <div key={item.id} className="flex items-start gap-3.5 p-4 sm:p-5">
-                {item.icon && (
-                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
-                    <Icon name={item.icon} className="h-5 w-5" />
-                  </span>
-                )}
-                <div>
-                  <p className="font-bold text-neutral-900 dark:text-white">{item.title}</p>
-                  <p className="mt-1 whitespace-pre-line text-justify text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
-                    {item.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {showCollaborationTools && (
-          <Card className="mt-5">
-            <p className="font-bold text-neutral-900 dark:text-white">협업 환경</p>
-            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-              현재 사용 중인 협업 도구입니다.
+    "quality-management": (num) => {
+      // 커리어지원 등 다른 섹션의 박스 카드와 비교했을 때 이 카드 목록만 유독 볼륨(크기감)이
+      // 작아 보이지 않도록, 한 줄짜리 목록이 아니라 2단으로 나눈 패널 형태로 보여준다. 각 패널은
+      // 카드들과 비슷한 굵기의 테두리·그림자를 갖고, 안쪽 줄 간격과 아이콘도 카드 수준으로 키운다.
+      const half = Math.ceil(qualityManagementItems.length / 2);
+      const qualityColumns = [qualityManagementItems.slice(0, half), qualityManagementItems.slice(half)].filter(
+        (col) => col.length > 0
+      );
+      return (
+        <section id="admin-section-quality-management" className="scroll-mt-24">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+            {pad(num)}. {labelQuality}
+          </h3>
+          {settings.quality_management_description && (
+            <p className="mt-2 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
+              {settings.quality_management_description}
             </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {collaborationTools.map((tool) => (
-                <span
-                  key={tool.id}
-                  className="rounded-full border border-black/10 px-3.5 py-1.5 text-sm font-medium text-neutral-700 dark:border-white/15 dark:text-neutral-200"
+          )}
+          {showQualityItems && qualityProcessSteps.length > 0 && (
+            <div className="mt-5">
+              <ProcessStepFlow steps={qualityProcessSteps} />
+            </div>
+          )}
+
+          {/* 위 프로세스 흐름 카드와 완전히 같은 모양이 되지 않도록 낱개 박스 대신 구분선으로
+              나누는 목록 형태를 쓰되, 2단 패널로 나누고 안쪽 여백·아이콘을 카드 수준으로 키워서
+              다른 섹션과 비슷한 볼륨감을 갖게 한다. */}
+          {showQualityItems && qualityManagementItems.length > 0 && (
+            <div className="mt-5 grid gap-5 sm:grid-cols-2">
+              {qualityColumns.map((col, colIdx) => (
+                <div
+                  key={colIdx}
+                  className="divide-y divide-black/5 overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm dark:divide-white/10 dark:border-white/10 dark:bg-neutral-900"
                 >
-                  {tool.name}
-                </span>
+                  {col.map((item) => (
+                    <div key={item.id} className="flex items-start gap-4 p-5 sm:p-6">
+                      {item.icon && (
+                        <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
+                          <Icon name={item.icon} className="h-6 w-6" />
+                        </span>
+                      )}
+                      <div>
+                        <p className="font-bold text-neutral-900 dark:text-white">{item.title}</p>
+                        <p className="mt-1.5 whitespace-pre-line text-justify text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ))}
             </div>
-          </Card>
-        )}
-      </section>
-    ),
+          )}
+
+          {showCollaborationTools && (
+            <Card className="mt-5">
+              <p className="font-bold text-neutral-900 dark:text-white">협업 환경</p>
+              <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                현재 사용 중인 협업 도구입니다.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {collaborationTools.map((tool) => (
+                  <span
+                    key={tool.id}
+                    className="rounded-full border border-black/10 px-3.5 py-1.5 text-sm font-medium text-neutral-700 dark:border-white/15 dark:text-neutral-200"
+                  >
+                    {tool.name}
+                  </span>
+                ))}
+              </div>
+            </Card>
+          )}
+        </section>
+      );
+    },
   };
 
   const sectionShow: Record<SectionKey, boolean> = {
@@ -324,7 +341,7 @@ export default async function EducationManagementPage() {
       </div>
 
       {entries.map((entry, idx) => {
-        const tinted = idx % 2 === 0;
+        const tinted = idx % 2 === 1;
         const isLast = idx === entries.length - 1;
         return (
           <div key={idx} className={tinted ? "bg-neutral-50 dark:bg-white/[0.03]" : ""}>
