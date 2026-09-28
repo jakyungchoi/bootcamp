@@ -127,7 +127,6 @@ export const siteSettings: SiteSettings = {
     "개월차별로 어떻게 관리하고 있는지 보여줍니다. 줄을 클릭하면 사진을 좌우로 넘겨볼 수 있습니다.",
   management_months_columns: ["1개월차", "2개월차", "3개월차", "4개월차", "5개월차", "6개월차"],
   quality_management_description: "만족도와 강사 품질을 체계적으로 관리합니다.",
-  quality_process_description: "구성원의 목소리와 교육 데이터를 바탕으로 교육 경험을 점검하고, 다음 교육으로 이어갑니다.",
   training_facility_description: "배움에 집중할 수 있는 전용 교육 환경을 제공합니다.",
   training_facility_photos: [],
   training_facility_highlights: [
@@ -306,10 +305,34 @@ export const qualityManagementItems: QualityManagementItem[] = [
 
 // "교육 품질 관리" 섹션 맨 위에 보여주는 프로세스 흐름.
 export const qualityProcessSteps: QualityProcessStep[] = [
-  { id: "qp-1", order: 1, title: "경청 확인" },
-  { id: "qp-2", order: 2, title: "데이터 분석" },
-  { id: "qp-3", order: 3, title: "피드백 반영" },
-  { id: "qp-4", order: 4, title: "다음 교육으로" },
+  {
+    id: "qp-1",
+    order: 1,
+    title: "경청 확인",
+    description: "교육생과 강사의 목소리를 설문과 면담으로 꾸준히 듣습니다.",
+    icon: "MessageCircle",
+  },
+  {
+    id: "qp-2",
+    order: 2,
+    title: "데이터 분석",
+    description: "출석, 과제, 만족도 등 교육 데이터를 정리하고 분석합니다.",
+    icon: "LineChart",
+  },
+  {
+    id: "qp-3",
+    order: 3,
+    title: "피드백 반영",
+    description: "분석 결과를 바탕으로 커리큘럼과 운영 방식을 개선합니다.",
+    icon: "Lightbulb",
+  },
+  {
+    id: "qp-4",
+    order: 4,
+    title: "다음 교육으로",
+    description: "개선한 내용을 다음 기수 교육 설계에 반영합니다.",
+    icon: "GraduationCap",
+  },
 ];
 
 export const collaborationTools: CollaborationTool[] = [

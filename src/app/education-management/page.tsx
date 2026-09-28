@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Card } from "@/components/ui/card";
-import { FlowSteps } from "@/components/ui/flow-steps";
+import { ProcessStepFlow } from "@/components/ui/process-step-flow";
 import { Icon } from "@/components/icon-map";
 import { MonthsTimeline } from "@/components/education/months-timeline";
 import { CustomSectionBlock } from "@/components/ui/custom-section-block";
@@ -257,14 +257,8 @@ export default async function EducationManagementPage() {
         )}
         {showQualityItems && qualityProcessSteps.length > 0 && (
           <div className="mt-5">
-            <FlowSteps steps={qualityProcessSteps.map((s, i) => `${pad(i + 1)} ${s.title}`)} />
+            <ProcessStepFlow steps={qualityProcessSteps} />
           </div>
-        )}
-
-        {showQualityItems && settings.quality_process_description && (
-          <p className="mt-3 whitespace-pre-line text-justify text-sm text-neutral-500 dark:text-neutral-400">
-            {settings.quality_process_description}
-          </p>
         )}
 
         {showQualityItems && qualityManagementItems.length > 0 && (

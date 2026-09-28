@@ -25,15 +25,14 @@ export default function QualityManagementAdminPage() {
       <ResourceCrud
         table="quality_process_steps"
         title="프로세스 흐름"
-        description={`"${title}" 섹션 맨 위에 화살표로 이어지는 흐름으로 표시됩니다. (예: 경청 확인 → 데이터 분석 → 피드백 반영 → 다음 교육으로)`}
+        description={`"${title}" 섹션 맨 위에 화살표로 이어지는 카드로 표시됩니다. (예: 경청 확인 → 데이터 분석 → 피드백 반영 → 다음 교육으로) 카드마다 아이콘과 짧은 설명을 넣을 수 있습니다.`}
         publishable={false}
         titleField="title"
-        fields={[{ key: "title", label: "단계 이름", type: "text", required: true }]}
-        onSaved={() => setRefreshToken((n) => n + 1)}
-      />
-      <SectionCaptionEditor
-        column="quality_process_description"
-        title="프로세스 흐름"
+        fields={[
+          { key: "title", label: "단계 이름", type: "text", required: true },
+          { key: "description", label: "설명", type: "textarea" },
+          { key: "icon", label: "아이콘", type: "select", options: ICON_OPTIONS },
+        ]}
         onSaved={() => setRefreshToken((n) => n + 1)}
       />
       <ResourceCrud

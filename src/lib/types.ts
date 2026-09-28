@@ -143,12 +143,14 @@ export type QualityManagementItem = {
 };
 
 // 교육 관리 페이지 "교육 품질 관리" 섹션 맨 위에 보여주는 프로세스 흐름 (예: 01 경청 확인 →
-// 02 데이터 분석 → 03 피드백 반영 → 04 다음 교육으로). 커리큘럼 구성 단계와 같은 방식으로
-// 이름만 있는 단계를 순서대로 등록한다.
+// 02 데이터 분석 → 03 피드백 반영 → 04 다음 교육으로). 화살표로 이어지는 카드 형태로 표시되며,
+// 카드마다 아이콘 + 번호 + 제목 + 짧은 설명이 들어간다.
 export type QualityProcessStep = {
   id: string;
   order: number;
   title: string;
+  description?: string;
+  icon?: string | null;
 };
 
 export type CollaborationTool = {
@@ -249,8 +251,6 @@ export type SiteSettings = {
   management_months_columns: string[];
   // 교육 관리 페이지 "교육 품질 관리" 섹션 제목 바로 아래에 표시되는 한 줄 설명
   quality_management_description: string;
-  // 같은 섹션의 프로세스 흐름(경청 확인 → 데이터 분석 → ...) 바로 아래, 카드 목록 위에 표시되는 한 줄 설명
-  quality_process_description: string;
   // 교육 관리 페이지 "오프라인 교육장" 섹션 전체 설명 (사진 슬라이드 위에 표시)
   training_facility_description: string;
   // "오프라인 교육장" 섹션에 슬라이드로 표시되는 사진 목록

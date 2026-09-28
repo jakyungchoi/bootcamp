@@ -841,3 +841,26 @@ alter table quality_management_items add column if not exists is_published boole
 drop policy if exists "public read all" on quality_management_items;
 drop policy if exists "public read published" on quality_management_items;
 create policy "public read published" on quality_management_items for select using (is_published = true);
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 20
+-- 프로세스 흐름 각 단계를 "화살표로 이어지는 짧은 이름"에서 "아이콘 + 번호 + 제목 + 짧은 설명이
+-- 있는 카드"로 바꾼다. 설명은 이제 단계별로 들어가므로, 확장 18에서 추가했던 "프로세스 흐름
+-- 전체 아래" 한 줄 설명 칸은 더 이상 쓰지 않아 없앤다.
+alter table quality_process_steps add column if not exists description text not null default '';
+alter table quality_process_steps add column if not exists icon text;
+
+alter table site_settings drop column if exists quality_process_description;
+
+update quality_process_steps set
+  description = '교육생과 강사의 목소리를 설문과 면담으로 꾸준히 듣습니다.', icon = 'MessageCircle'
+  where title = '경청 확인' and icon is null;
+update quality_process_steps set
+  description = '출석, 과제, 만족도 등 교육 데이터를 정리하고 분석합니다.', icon = 'LineChart'
+  where title = '데이터 분석' and icon is null;
+update quality_process_steps set
+  description = '분석 결과를 바탕으로 커리큘럼과 운영 방식을 개선합니다.', icon = 'Lightbulb'
+  where title = '피드백 반영' and icon is null;
+update quality_process_steps set
+  description = '개선한 내용을 다음 기수 교육 설계에 반영합니다.', icon = 'GraduationCap'
+  where title = '다음 교육으로' and icon is null;

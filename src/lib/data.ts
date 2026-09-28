@@ -176,8 +176,6 @@ export async function getSiteSettings(): Promise<SiteSettings> {
           data.management_months_columns ?? siteSettings.management_months_columns,
         quality_management_description:
           data.quality_management_description ?? siteSettings.quality_management_description,
-        quality_process_description:
-          data.quality_process_description ?? siteSettings.quality_process_description,
         training_facility_description:
           data.training_facility_description ?? siteSettings.training_facility_description,
         training_facility_photos: data.training_facility_photos ?? siteSettings.training_facility_photos,
