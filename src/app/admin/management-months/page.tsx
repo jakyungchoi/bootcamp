@@ -53,13 +53,12 @@ export default function ManagementMonthsAdminPage() {
     { key: "color", label: "막대 색상", type: "color", helpText: "비워두면 자동으로 색이 배정됩니다." },
     { key: "tags", label: "태그", type: "string-list", helpText: "한 줄에 하나씩 입력하세요. (예: 게임 프레임워크 모듈)" },
     {
-      key: "photos",
-      label: "사진 (클릭 시 팝업으로 좌우로 넘겨볼 수 있어요)",
-      type: "object-list",
-      subFields: [
-        { key: "image_url", label: "사진", type: "image" },
-        { key: "caption", label: "설명 (선택)", type: "text" },
-      ],
+      key: "cell_photos",
+      label: "칸별 사진 (칸을 클릭하면 팝업으로 사진을 볼 수 있어요)",
+      type: "cell-photos",
+      cellPhotosConfig: { startField: "month_start", endField: "month_end", columnLabels: columns },
+      helpText:
+        "위에서 정한 시작 칸 ~ 종료 칸 범위의 칸마다 따로 사진을 등록합니다. 예를 들어 1개월차~6개월차에 걸친 구간이면 6개 칸에 각각 다른 사진을 넣을 수 있습니다.",
     },
   ];
 
@@ -73,7 +72,7 @@ export default function ManagementMonthsAdminPage() {
       <ResourceCrud
         table="management_months"
         title={title}
-        description="교육 관리 페이지에 간트 차트 표로 표시되는 구간입니다. 사진을 등록하면, 방문자가 그 줄을 클릭했을 때 좌우로 넘겨보는 팝업이 뜹니다. 공개 화면에는 아래 목록의 ↑ / ↓ 순서 그대로 위에서부터 표시됩니다."
+        description="교육 관리 페이지에 간트 차트 표로 표시되는 구간입니다. 칸별 사진을 등록하면, 방문자가 색칠된 칸을 클릭했을 때 그 칸의 사진을 좌우로 넘겨보는 팝업이 뜹니다. 공개 화면에는 아래 목록의 ↑ / ↓ 순서 그대로 위에서부터 표시됩니다."
         titleField="title"
         imageFolder="management-months"
         fields={fields}

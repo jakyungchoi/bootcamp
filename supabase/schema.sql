@@ -864,3 +864,18 @@ update quality_process_steps set
 update quality_process_steps set
   description = '개선한 내용을 다음 기수 교육 설계에 반영합니다.', icon = 'GraduationCap'
   where title = '다음 교육으로' and icon is null;
+
+-- ══════════════════════════════════════════════════════════════════
+-- 관리자 페이지 확장 21
+-- "개월차별 관리" 간트 차트에서, 구간 전체에 사진 하나를 묶어 등록하던 방식(photos)을
+-- 칸(열) 하나하나에 따로 사진을 등록하는 방식(cell_photos)으로 바꾼다. 예를 들어 "프로젝트"가
+-- 1~6개월차에 걸쳐 있으면, 이제 6개 칸마다 서로 다른 사진을 등록하고 칸을 클릭해 그 칸의
+-- 사진만 볼 수 있다.
+alter table management_months add column if not exists cell_photos jsonb not null default '[]';
+
+-- 기존에 구간 전체에 등록해뒀던 사진(photos)은, 시작 칸에 대응하는 칸별 사진(cell_photos)으로
+-- 옮겨서 그대로 보이게 한다. (여러 칸에 걸친 구간이면 일단 시작 칸에 몰아서 옮겨두고, 필요하면
+-- 관리자 화면에서 칸별로 다시 나눠 등록할 수 있다.)
+update management_months
+set cell_photos = jsonb_build_array(jsonb_build_object('column', month_start, 'photos', photos))
+where cell_photos = '[]'::jsonb and photos is not null and photos <> '[]'::jsonb;

@@ -18,7 +18,8 @@ export type FieldType =
   | "image"
   | "color"
   | "string-list"
-  | "object-list";
+  | "object-list"
+  | "cell-photos";
 
 export type FieldConfig = {
   key: string;
@@ -34,6 +35,14 @@ export type FieldConfig = {
   // object-list 타입일 때 사용: 항목 하나(객체 하나)가 어떤 필드들로 이루어지는지 정의한다.
   // (text / textarea / image 만 지원 — 항목 안에 또 목록을 넣는 중첩은 지원하지 않는다)
   subFields?: FieldConfig[];
+  // cell-photos 타입일 때 사용: 같은 폼 안의 시작/종료 칸 필드 key와, 칸 이름 목록. 시작~종료
+  // 칸 범위에 있는 칸마다 각각 사진 목록(여러 장)을 등록할 수 있는 특수 입력칸을 그려준다.
+  // (개월차별 관리의 "칸별 사진" 전용 — object-list처럼 완전히 범용은 아니다)
+  cellPhotosConfig?: {
+    startField: string;
+    endField: string;
+    columnLabels: string[];
+  };
 };
 
 export type ResourceCrudProps = {
@@ -56,7 +65,7 @@ function emptyFormValues(fields: FieldConfig[]): Record<string, unknown> {
   const values: Record<string, unknown> = {};
   for (const f of fields) {
     if (f.type === "boolean") values[f.key] = true;
-    else if (f.type === "string-list" || f.type === "object-list") values[f.key] = [];
+    else if (f.type === "string-list" || f.type === "object-list" || f.type === "cell-photos") values[f.key] = [];
     else if (f.type === "number") values[f.key] = 0;
     else values[f.key] = "";
   }
@@ -118,7 +127,9 @@ export function ResourceCrud({
   function openEdit(row: Row) {
     const values: Record<string, unknown> = {};
     for (const f of fields) {
-      values[f.key] = row[f.key] ?? (f.type === "string-list" || f.type === "object-list" ? [] : "");
+      values[f.key] =
+        row[f.key] ??
+        (f.type === "string-list" || f.type === "object-list" || f.type === "cell-photos" ? [] : "");
     }
     if (orderable) values.order = row.order ?? 0;
     if (publishable) values.is_published = row.is_published ?? true;
@@ -148,6 +159,24 @@ export function ResourceCrud({
             return cleaned;
           })
           .filter((item) => Object.values(item).some((v) => v !== "" && v !== null));
+      }
+      // cell-photos 필드는 칸(column)별로 사진 목록을 갖는데, 저장 직전에 사진이 하나도 없는
+      // 칸 묶음과, 이미지도 설명도 둘 다 비어있는 사진 항목을 정리한다.
+      if (f.type === "cell-photos" && Array.isArray(payload[f.key])) {
+        payload[f.key] = (
+          payload[f.key] as { column: number; photos: Record<string, unknown>[] }[]
+        )
+          .map((group) => ({
+            column: group.column,
+            photos: (group.photos ?? [])
+              .map((item) => ({
+                image_url:
+                  typeof item.image_url === "string" ? item.image_url.trim() || null : (item.image_url ?? null),
+                caption: typeof item.caption === "string" ? item.caption.trim() : "",
+              }))
+              .filter((item) => item.image_url !== null || item.caption !== ""),
+          }))
+          .filter((group) => group.photos.length > 0);
       }
       // select 필드는 선택하지 않으면 빈 문자열인데, DB 컬럼이 uuid 등이면 빈 문자열은 저장할 수 없다.
       // (필수 항목이 아닌 select는 "선택 안 함"을 null로 저장한다)
@@ -245,6 +274,64 @@ export function ResourceCrud({
       const targetIdx = idx + direction;
       if (targetIdx < 0 || targetIdx >= list.length) return v;
       [list[idx], list[targetIdx]] = [list[targetIdx], list[idx]];
+      return { ...v, [fieldKey]: list };
+    });
+  }
+
+  // cell-photos 필드(개월차별 관리의 "칸별 사진") 편집용 헬퍼. formValues[fieldKey]는
+  // { column, photos } 묶음의 배열이며, 칸(column) 하나당 묶음이 최대 하나만 있다.
+  type CellPhotoGroup = { column: number; photos: Record<string, unknown>[] };
+
+  function getCellPhotos(fieldKey: string, column: number): Record<string, unknown>[] {
+    const list = (formValues[fieldKey] as CellPhotoGroup[]) ?? [];
+    return list.find((g) => g.column === column)?.photos ?? [];
+  }
+
+  function addCellPhoto(fieldKey: string, column: number) {
+    setFormValues((v) => {
+      const list = [...(((v[fieldKey] as CellPhotoGroup[]) ?? []))];
+      const idx = list.findIndex((g) => g.column === column);
+      const emptyPhoto = { image_url: null, caption: "" };
+      if (idx === -1) list.push({ column, photos: [emptyPhoto] });
+      else list[idx] = { ...list[idx], photos: [...list[idx].photos, emptyPhoto] };
+      return { ...v, [fieldKey]: list };
+    });
+  }
+
+  function updateCellPhoto(fieldKey: string, column: number, photoIdx: number, subKey: string, value: unknown) {
+    setFormValues((v) => {
+      const list = [...(((v[fieldKey] as CellPhotoGroup[]) ?? []))];
+      const idx = list.findIndex((g) => g.column === column);
+      if (idx === -1) return v;
+      const photos = [...list[idx].photos];
+      photos[photoIdx] = { ...photos[photoIdx], [subKey]: value };
+      list[idx] = { ...list[idx], photos };
+      return { ...v, [fieldKey]: list };
+    });
+  }
+
+  function removeCellPhoto(fieldKey: string, column: number, photoIdx: number) {
+    setFormValues((v) => {
+      const list = [...(((v[fieldKey] as CellPhotoGroup[]) ?? []))];
+      const idx = list.findIndex((g) => g.column === column);
+      if (idx === -1) return v;
+      const photos = [...list[idx].photos];
+      photos.splice(photoIdx, 1);
+      list[idx] = { ...list[idx], photos };
+      return { ...v, [fieldKey]: list };
+    });
+  }
+
+  function moveCellPhoto(fieldKey: string, column: number, photoIdx: number, direction: -1 | 1) {
+    setFormValues((v) => {
+      const list = [...(((v[fieldKey] as CellPhotoGroup[]) ?? []))];
+      const idx = list.findIndex((g) => g.column === column);
+      if (idx === -1) return v;
+      const photos = [...list[idx].photos];
+      const targetIdx = photoIdx + direction;
+      if (targetIdx < 0 || targetIdx >= photos.length) return v;
+      [photos[photoIdx], photos[targetIdx]] = [photos[targetIdx], photos[photoIdx]];
+      list[idx] = { ...list[idx], photos };
       return { ...v, [fieldKey]: list };
     });
   }
@@ -555,6 +642,97 @@ export function ResourceCrud({
                       folder={imageFolder ?? table}
                     />
                   )}
+                  {f.type === "cell-photos" &&
+                    f.cellPhotosConfig &&
+                    (() => {
+                      const { startField, endField, columnLabels } = f.cellPhotosConfig;
+                      const start = Number(formValues[startField] ?? 0);
+                      const end = Number(formValues[endField] ?? 0);
+                      if (!start || !end) {
+                        return (
+                          <p className="text-xs text-neutral-400">
+                            먼저 위에서 시작 칸 / 종료 칸을 선택하세요.
+                          </p>
+                        );
+                      }
+                      const lo = Math.min(start, end);
+                      const hi = Math.max(start, end);
+                      const cols = Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
+                      return (
+                        <div className="space-y-3">
+                          {cols.map((col) => {
+                            const label = columnLabels[col - 1] ?? `${col}번째 칸`;
+                            const photos = getCellPhotos(f.key, col);
+                            return (
+                              <div key={col} className="rounded-lg border border-neutral-200 bg-neutral-50 p-3">
+                                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
+                                  {label}
+                                </p>
+                                <div className="space-y-2">
+                                  {photos.map((photo, pIdx, arr) => (
+                                    <div
+                                      key={pIdx}
+                                      className="flex items-start gap-2 rounded-lg border border-neutral-200 bg-white p-2"
+                                    >
+                                      <div className="flex-1">
+                                        <ImageUploadField
+                                          value={(photo.image_url as string | null) ?? null}
+                                          onChange={(url) => updateCellPhoto(f.key, col, pIdx, "image_url", url)}
+                                          folder={imageFolder ?? table}
+                                        />
+                                        <input
+                                          type="text"
+                                          value={String(photo.caption ?? "")}
+                                          placeholder="설명 (선택)"
+                                          onChange={(e) => updateCellPhoto(f.key, col, pIdx, "caption", e.target.value)}
+                                          className="mt-1.5 w-full rounded-lg border border-neutral-300 px-2.5 py-1.5 text-xs focus:border-brand focus:outline-none"
+                                        />
+                                      </div>
+                                      <div className="flex flex-col gap-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => moveCellPhoto(f.key, col, pIdx, -1)}
+                                          disabled={pIdx === 0}
+                                          className="rounded p-1 text-neutral-400 hover:bg-neutral-200 disabled:opacity-30"
+                                          aria-label="위로"
+                                        >
+                                          <ArrowUp size={12} />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => moveCellPhoto(f.key, col, pIdx, 1)}
+                                          disabled={pIdx === arr.length - 1}
+                                          className="rounded p-1 text-neutral-400 hover:bg-neutral-200 disabled:opacity-30"
+                                          aria-label="아래로"
+                                        >
+                                          <ArrowDown size={12} />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => removeCellPhoto(f.key, col, pIdx)}
+                                          className="rounded p-1 text-red-400 hover:bg-red-50"
+                                          aria-label="삭제"
+                                        >
+                                          <Trash2 size={12} />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                  <button
+                                    type="button"
+                                    onClick={() => addCellPhoto(f.key, col)}
+                                    className="inline-flex items-center gap-1 rounded-full border border-neutral-200 px-2.5 py-1 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
+                                  >
+                                    <Plus size={12} />
+                                    사진 추가
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
                   {f.helpText && <p className="mt-1 text-xs text-neutral-400">{f.helpText}</p>}
                 </div>
               ))}

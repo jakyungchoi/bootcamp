@@ -95,10 +95,18 @@ export type ManagementHighlight = {
   is_published: boolean;
 };
 
-// 개월차별 관리 카드에서, 클릭했을 때 좌우로 넘겨보는 사진 한 장
+// 개월차별 관리 카드에서, 칸(열)을 클릭했을 때 좌우로 넘겨보는 사진 한 장
 export type ManagementMonthPhoto = {
   image_url: string | null;
   caption: string;
+};
+
+// 간트 차트의 특정 칸(열) 하나에 등록된 사진 묶음. column은 management_months_columns 배열의
+// 몇 번째 칸인지를 가리키는 1부터 시작하는 번호다(month_start/month_end와 같은 체계). 구간이
+// 여러 칸에 걸쳐 있으면(예: "프로젝트"가 1~6개월차) 칸마다 서로 다른 사진을 등록할 수 있다.
+export type ManagementMonthCellPhotos = {
+  column: number;
+  photos: ManagementMonthPhoto[];
 };
 
 // 교육 관리 페이지 "개월차별 관리" 카드. 학습부진자 지도 계획(SupportPlanTrack)과는 별개의 새 섹션이다.
@@ -114,7 +122,7 @@ export type ManagementMonth = {
   title: string;
   description: string;
   tags: string[];
-  photos: ManagementMonthPhoto[];
+  cell_photos: ManagementMonthCellPhotos[]; // 칸(열)별로 등록된 사진. 칸을 클릭하면 그 칸의 사진만 팝업으로 보인다.
   color: string | null; // 간트 차트에서 이 구간 막대의 색상 (hex). 비어있으면 자동으로 배정된 색을 쓴다.
   order: number;
   is_published: boolean;

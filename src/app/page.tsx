@@ -22,7 +22,7 @@ export default async function HomePage() {
             <h1 className="mt-3 whitespace-pre-line text-3xl font-bold leading-tight tracking-tight text-neutral-900 sm:text-4xl md:text-[2.75rem] dark:text-white">
               {settings.home_hero_title}
             </h1>
-            <p className="mt-4 text-base leading-relaxed text-neutral-500 sm:text-lg dark:text-neutral-400">
+            <p className="mt-4 whitespace-pre-line text-base leading-relaxed text-neutral-500 sm:text-lg dark:text-neutral-400">
               {settings.home_hero_subtitle}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
